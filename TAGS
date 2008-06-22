@@ -1,0 +1,84 @@
+
+controller.rb,610
+module DIST::DIST14,200
+  class Controller::DIST::Controller15,214
+    def Controller.start::DIST::Controller.start16,235
+    def initialize::DIST::Controller#initialize22,330
+    attr :peer::DIST::Controller#peer34,561
+    def start::DIST::Controller#start36,596
+    def accept::DIST::Controller#accept42,722
+    def reply::DIST::Controller#reply58,1012
+    def recv::DIST::Controller#recv86,1521
+    def req::DIST::Controller#req90,1580
+    def send_to::DIST::Controller#send_to94,1638
+    def set_root::DIST::Controller#set_root110,2004
+    def root::DIST::Controller#root115,2083
+
+dist.rb,770
+module DIST::DIST20,266
+  def Reference::DIST#Reference22,315
+  class Reference::DIST::Reference37,526
+    def Reference.serialize::DIST::Reference.serialize41,608
+    def Reference.materialize::DIST::Reference.materialize55,899
+    def Reference.register::DIST::Reference.register63,1072
+    def initialize::DIST::Reference#initialize68,1175
+    def service_manager::DIST::Reference#service_manager73,1292
+    def peer::DIST::Reference#peer77,1341
+    def peer_id::DIST::Reference#peer_id81,1413
+    def method_missing::DIST::Reference#method_missing85,1446
+    def to_s::DIST::Reference#to_s96,1685
+    def to_a::DIST::Reference#to_a100,1756
+    def coerce::DIST::Reference#coerce104,1819
+    def inspect::DIST::Reference#inspect108,1891
+
+packet.rb,2096
+module DIST::DIST14,196
+  module Packet::DIST::Packet17,220
+    def Packet.materialize::DIST::Packet.materialize18,238
+    class Packet::DIST::Packet::Packet22,343
+      def initialize::DIST::Packet::Packet#initialize23,362
+      attr :receiver::DIST::Packet::Packet#receiver27,432
+      attr :seq::DIST::Packet::Packet#seq28,453
+    class Request::DIST::Packet::Request33,505
+      def Request.request::DIST::Packet::Request.request36,555
+      def Request.receipt::DIST::Packet::Request.receipt42,678
+      def Request.materialize_sub::DIST::Packet::Request.materialize_sub48,808
+      def initialize::DIST::Packet::Request#initialize55,1018
+      def init_req::DIST::Packet::Request#init_req61,1140
+      def set_seq::DIST::Packet::Request#set_seq66,1204
+      def apply_on::DIST::Packet::Request#apply_on70,1254
+      def serialize::DIST::Packet::Request#serialize78,1453
+      def request?::DIST::Packet::Request#request?82,1560
+      def iterator?::DIST::Packet::Request#iterator?86,1601
+      def result::DIST::Packet::Request#result90,1630
+      attr :method::DIST::Packet::Request#method98,1735
+      attr :args::DIST::Packet::Request#args99,1754
+    class IteratorRequest::DIST::Packet::IteratorRequest102,1778
+      def apply_on::DIST::Packet::IteratorRequest#apply_on103,1816
+      def iterator?::DIST::Packet::IteratorRequest#iterator?114,2122
+      def results::DIST::Packet::IteratorRequest#results118,2150
+    class Reply::DIST::Packet::Reply129,2302
+      def Reply.materialize_sub::DIST::Packet::Reply.materialize_sub130,2329
+      def initialize::DIST::Packet::Reply#initialize134,2473
+      def serialize::DIST::Packet::Reply#serialize140,2573
+      def request?::DIST::Packet::Reply#request?146,2715
+      def iterator?::DIST::Packet::Reply#iterator?150,2757
+      attr :result::DIST::Packet::Reply#result154,2786
+    class IteratorReply::DIST::Packet::IteratorReply157,2812
+      def iterator?::DIST::Packet::IteratorReply#iterator?158,2859
+      def finish?::DIST::Packet::IteratorReply#finish?162,2898
+
+test.rb,339
+def p#p28,330
+class Foo::Foo40,467
+  def foo::Foo#foo41,479
+def test_1#test_154,653
+def test_2#test_260,736
+def test_3#test_373,933
+def test_4#test_479,1036
+def test_5#test_586,1143
+def test_6#test_696,1391
+def test_7#test_7106,1632
+def test_71#test_71121,1900
+def test_8#test_8134,2126
+def test_9#test_9157,2354

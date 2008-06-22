@@ -1,0 +1,17 @@
+					  -*- indented-text -*-
+
+* 間接リファレンス
+* リモートクラスメソッド
+* method_missingからの独立
+
+* シンボルの取り扱い
+* メソッドスペック
+  + instance_eval
+  + module_eval
+* ネーミングサーバ
+
+* リモートクラスクラスオブジェクト
+  + リモートスーパークラス
+    class Foo < RemoteSuperClass
+	...
+    end

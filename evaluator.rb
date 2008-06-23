@@ -1,19 +1,19 @@
-#!/usr/local/bin/ruby
 #
 #   evaluator.rb - 
 #   	$Release Version: $
 #   	$Revision: 1.1 $
 #   	$Date: 1997/08/08 00:57:08 $
-#   	by Keiju ISHITSUKA(Nihon Rational Software Co.,Ltd)
+#   	by Keiju ISHITSUKA(Penta Advanced Labrabries, Co.,Ltd)
 #
 # --
 #
 #   
 #
 
-require "event"
 
-module DIST
+require "deep-connect/event"
+
+module DeepConnect
   class Evaluator
     def initialize(org)
       @organizer = org

@@ -1,10 +1,10 @@
 #!/usr/local/bin/ruby
 #
-#   packet.rb - 
+#   event.rb - 
 #   	$Release Version: $
 #   	$Revision: 1.1 $
 #   	$Date: 1997/08/08 00:57:08 $
-#   	by Keiju ISHITSUKA(Nihon Rational Software Co.,Ltd)
+#   	by Keiju ISHITSUKA(Penta Advanced Labrabries, Co.,Ltd)
 #
 # --
 #
@@ -13,7 +13,7 @@
 
 require "reference"
 
-module DIST
+module DeepConnect
   module Event
     def Event.materialize(session, type, *rest)
       type.materialize_sub(session, type, *rest)

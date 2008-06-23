@@ -1,10 +1,9 @@
-#!/usr/local/bin/ruby
 #
 #   organizer.rb - 
 #   	$Release Version: $
 #   	$Revision: 1.1 $
 #   	$Date: 1997/08/08 00:57:08 $
-#   	by Keiju ISHITSUKA(Nihon Rational Software Co.,Ltd)
+#   	by Keiju ISHITSUKA(Penta Advanced Labrabries, Co.,Ltd)
 #
 # --
 #  UC1: サーバ起動
@@ -14,14 +13,14 @@
 #   
 #
 
-require "dist/accepter"
-require "dist/evaluator"
-require "dist/session"
-require "dist/port"
+require "deep-connect/accepter"
+require "deep-connect/evaluator"
+require "deep-connect/session"
+require "deep-connect/port"
 
 trap("SIGPIPE", "IGNORE")
 
-module DIST
+module DeepConnect
   class Organizer
     def initialize
       @accepter = Accepter.new(self)

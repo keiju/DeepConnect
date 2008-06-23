@@ -1,10 +1,9 @@
-#!/usr/local/bin/ruby
 #
 #   session.rb - 
 #   	$Release Version: $
 #   	$Revision: 1.1 $
 #   	$Date: 1997/08/08 00:57:08 $
-#   	by Keiju ISHITSUKA(Nihon Rational Software Co.,Ltd)
+#   	by Keiju ISHITSUKA(Penta Advanced Labrabries, Co.,Ltd)
 #
 # --
 #
@@ -15,10 +14,10 @@ require "thread"
 require "mutex_m"
 require "ipaddr"
 
-module DIST
+module DeepConnect
   class Session
 
-#    SESSION_SERVICE_NAME = "DIST::SESSION"
+#    SESSION_SERVICE_NAME = "DeepConnect::SESSION"
 
     def initialize(org, port)
       @organizer = org

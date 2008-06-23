@@ -1,4 +1,16 @@
-module DIST
+#
+#   reference.rb - 
+#   	$Release Version: $
+#   	$Revision: 1.1 $
+#   	$Date: 1997/08/08 00:57:08 $
+#   	by Keiju ISHITSUKA(Penta Advanced Labrabries, Co.,Ltd)
+#
+# --
+#
+#   
+#
+
+module DeepConnect
   # session.peer上のオブジェクトのプロキシを生成するファクトリ
   def Reference(session, v)
     case v
@@ -48,7 +60,7 @@ module DIST
 puts "MAT0: #{serial.collect{|e| e.to_s}.join(', ')}"
 puts "MAT1: #{session.organizer.session(serial[0])}"
 puts "MAT2: #{type.new(session.organizer.session(serial[0]), serial[1]).inspect}"
-#	DIST::Reference(session, type.new(session.organizer.session(serial[0]), serial[1]))
+#	DeepConnect::Reference(session, type.new(session.organizer.session(serial[0]), serial[1]))
 	type.new(session.organizer.session(serial[0]), serial[1])
       else
 	serial[0]

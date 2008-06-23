@@ -1,10 +1,9 @@
-#!/usr/local/bin/ruby
 #
 #   port.rb - 
 #   	$Release Version: $
 #   	$Revision: 1.1 $
 #   	$Date: 1997/08/08 00:57:08 $
-#   	by Keiju ISHITSUKA(Nihon Rational Software Co.,Ltd)
+#   	by Keiju ISHITSUKA(Penta Advanced Labrabries, Co.,Ltd)
 #
 # --
 #
@@ -13,9 +12,9 @@
 
 require "e2mmap"
 
-require "event"
+require "deep-connect/event"
 
-module DIST
+module DeepConnect
   class Port
     extend Exception2MessageMapper
 

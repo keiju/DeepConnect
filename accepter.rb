@@ -1,10 +1,9 @@
-#!/usr/local/bin/ruby
 #
 #   accepter.rb - 
 #   	$Release Version: $
 #   	$Revision: 1.1 $
 #   	$Date: 1997/08/08 00:57:08 $
-#   	by Keiju ISHITSUKA(Nihon Rational Software Co.,Ltd)
+#   	by Keiju ISHITSUKA(Penta Advanced Laboratories Co.,Ltd)
 #
 # --
 #
@@ -13,8 +12,7 @@
 
 require "socket"
 
-module DIST
-
+module DeepConnect
   class Accepter
     def initialize(org)
       @organizer = org

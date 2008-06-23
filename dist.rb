@@ -1,20 +1,20 @@
-#!/usr/local/bin/ruby
 #
 #   dist.rb - 
 #   	$Release Version: $
 #   	$Revision: 1.1 $
 #   	$Date: 1997/08/08 00:57:08 $
-#   	by Keiju ISHITSUKA(Nihon Rational Software Co.,Ltd)
+#   	by Keiju ISHITSUKA(Penta Advanced Labrabries, Co.,Ltd)
 #
 # --
 #
 #   
 #
+
 require "forwarding"
 
-require "dist/organizer"
+require "deep-connect/organizer"
 
-module DIST
+module DeepConnect
   @RCS_ID='-$Id:  $-'
 
   class Dist
@@ -36,7 +36,7 @@ module DIST
     def_delegator :@organizer, :open_session
   end
 
-  def DIST.start(service = nil)
+  def DeepConnect.start(service = nil)
     Dist.start(service)
   end
 end

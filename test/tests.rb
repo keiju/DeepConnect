@@ -21,9 +21,9 @@ require "deep-connect/dist"
 Thread.abort_on_exception=true
 
 #Tracer.on
-org = DeepConnect.start(19999)
-org.register_service("TEST", "foo")
-org.register_service("TEST1", [1, 2, 3])
+dc = DeepConnect.start(19999)
+dc.register_service("TEST", "foo")
+dc.register_service("TEST1", [1, 2, 3])
 
 sleep 1000
 

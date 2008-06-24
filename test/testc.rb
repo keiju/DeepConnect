@@ -19,8 +19,8 @@ Thread.abort_on_exception=true
 STDOUT.sync
 
 #Tracer.on
-org = DeepConnect.start(19998)
-session = org.open_session("localhost", 19999)
+dc = DeepConnect.start(19998)
+session = dc.open_session("localhost", 19999)
 ref = session.get_service("TEST")
 p ref 
 

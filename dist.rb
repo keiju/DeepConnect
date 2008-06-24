@@ -17,13 +17,13 @@ require "deep-connect/organizer"
 module DeepConnect
   @RCS_ID='-$Id:  $-'
 
-  class Dist
+  class DConnect
     extend Forwarding
 
-    def Dist.start(service)
-      dist = new
-      dist.start(service)
-      dist
+    def self.start(service)
+      dc = new
+      dc.start(service)
+      dc
     end
 
     def initialize
@@ -37,7 +37,7 @@ module DeepConnect
   end
 
   def DeepConnect.start(service = nil)
-    Dist.start(service)
+    DConnect.start(service)
   end
 end
 

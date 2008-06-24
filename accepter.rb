@@ -13,7 +13,7 @@
 require "socket"
 require "ipaddr"
 
-require "event"
+require "deep-connect/event"
 
 module DeepConnect
   class Accepter

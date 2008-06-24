@@ -11,7 +11,7 @@
 #   
 #
 
-require "reference"
+require "deep-connect/reference"
 
 module DeepConnect
   module Event

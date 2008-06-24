@@ -16,6 +16,7 @@ require "reference"
 module DeepConnect
   module Event
     def Event.materialize(session, type, *rest)
+puts rest
       type.materialize_sub(session, type, *rest)
     end
 
@@ -30,15 +31,12 @@ module DeepConnect
     
       public :iterator?
 
-
       def inspect
 	sprintf "#<#{self.class}, session=#{@session}, seq=#{@seq}, receiver=#{@receiver}>"
       end
     end
 
     class Request < Event
-      SEQ = [0]
-    
       def Request.request(session, receiver, method, *args)
 	req = new(session, receiver, method, *args)
 	req.init_req
@@ -78,8 +76,12 @@ module DeepConnect
       end
     
       def serialize
+puts "TTIN"
 	args = @args.collect{|elm| Reference.serialize(@session, elm)}
-	[self.class, @seq, @receiver.peer_id, @method].concat(args)
+puts "TT#1 #{@receiver}"
+	x = [self.class, @seq, @receiver.peer_id, @method].concat(args)
+puts "TTOU"
+	x
       end
     
       def request?
@@ -92,7 +94,7 @@ module DeepConnect
     
       def result(*ret)
 	if ret.size == 0
-	  @results.pop
+	  @results.pop.result
 	else
 	  @results.push *ret
 	end
@@ -117,9 +119,10 @@ module DeepConnect
     
       def results(*ret)
 	if ret.empty?
-	  while (ret = @results.pop) != :finish
-	    yield ret
+	  while !(ret = @results.pop).kind_of?(IteratorReplyFinish)
+	    yield ret.result
 	  end
+	  ret.result
 	else
 	  @results.push *ret
 	end
@@ -216,5 +219,23 @@ module DeepConnect
 	sprintf "#<#{self.class}, session=#{@session}, seq=#{@seq},  result=#{@result.inspect}}>"
       end
     end
+
+    class InitSessionEvent<Event
+      def self.materialize_sub(session, type, klass, local_id)
+	new(local_id)
+      end
+
+      def initialize(local_id)
+	@local_id=local_id
+      end
+
+      attr_reader :local_id
+
+      def serialize
+	[self.class, @local_id]
+      end
+    end
   end
 end
+
+

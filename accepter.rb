@@ -11,12 +11,26 @@
 #
 
 require "socket"
+require "ipaddr"
+
+require "event"
 
 module DeepConnect
   class Accepter
     def initialize(org)
       @organizer = org
       @probe = nil
+    end
+
+#     def uuid
+#       addr, port = @probe.addr.values_at(3,1)
+# p      ipaddr = IPAddr.new(addr)
+#       ipaddr = ipaddr.ipv4_mapped if ipaddr.ipv4?
+#       [ipaddr.to_s, port]
+#     end
+
+    def port_number
+      @probe.addr[1]
     end
 
     def open(service)
@@ -28,7 +42,10 @@ module DeepConnect
 	loop do
 	  sock = @probe.accept
 	  port = Port.new(sock)
-	  @organizer.register_session_on_port port
+	  unless (ev = port.import).kind_of?(Event::InitSessionEvent)
+	    raise "プロトコルエラー"
+	  end
+	  @organizer.register_session_on_port port, ev.local_id
 	end
       }
     end

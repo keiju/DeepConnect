@@ -19,9 +19,18 @@ module DeepConnect
 
 #    SESSION_SERVICE_NAME = "DeepConnect::SESSION"
 
-    def initialize(org, port)
+    def initialize(org, port, local_id = nil)
       @organizer = org
       @port = port
+puts "local_id=#{local_id}"      
+      unless local_id
+	local_id = @port.peeraddr[1]
+      end
+
+      addr = @port.peeraddr[3]
+      ipaddr = IPAddr.new(addr)
+      ipaddr = ipaddr.ipv4_mapped if ipaddr.ipv4?
+      @peer_uuid = [ipaddr.to_s, local_id]
 
       @export_queue = Queue.new
       @import_queue = Queue.new
@@ -35,6 +44,9 @@ module DeepConnect
     end
 
     attr_reader :organizer
+
+    attr_reader :peer_uuid
+    alias peer_id peer_uuid
 
     def start
 #      @organizer.register_service(SESSION_SERVOCE_NAME, self)
@@ -91,11 +103,11 @@ module DeepConnect
 	      req = @waiting[ev.seq]
 	    end
 	  else
-p @waiting
+puts "WAITING: #{@waiting.inspect}"
 	    req = @waiting.delete(ev.seq)
 	  end
 	end
-	req.result ev.result
+	req.result ev
       end
     end
 
@@ -114,10 +126,7 @@ p @waiting
 	  @waiting[ev.seq] = ev
 	end
 	@export_queue.push ev
-	ev.results do
-	  |elm|
-	  yield elm
-	end
+	ev.results{|elm| yield elm}
       else
 puts "XXX1"
 	ev = Event::Request.request(self, ref, method, *args)
@@ -152,21 +161,21 @@ puts "XXX7"
       @roots[id]
     end
 
-    def universal_id
-      addr, port = @port.addr.values_at(3,1)
-      ipaddr = IPAddr.new(addr)
-      ipaddr = ipaddr.ipv4_mapped if ipaddr.ipv4?
-      return ipaddr.to_s, port
-    end
+#     def universal_id
+#       addr, port = @port.addr.values_at(3,1)
+#       ipaddr = IPAddr.new(addr)
+#       ipaddr = ipaddr.ipv4_mapped if ipaddr.ipv4?
+#       return ipaddr.to_s, port
+#     end
 
-    # peer情報
-    def peer_universal_id
-      addr, port = @port.peeraddr.values_at(3,1)
-      ipaddr = IPAddr.new(addr)
-      ipaddr = ipaddr.ipv4_mapped if ipaddr.ipv4?
-      return ipaddr.to_s, port
-    end
-    alias peer_id peer_universal_id
+#     # peer情報
+#     def peer_universal_id
+#       addr, port = @port.peeraddr.values_at(3,1)
+#       ipaddr = IPAddr.new(addr)
+#       ipaddr = ipaddr.ipv4_mapped if ipaddr.ipv4?
+#       return ipaddr.to_s, port
+#     end
+#     alias peer_id peer_universal_id
 
     def send_peer_session(req, *args)
       ev = Event::SessionRequest.request(self, (req.id2name+"_impl").intern, *args)

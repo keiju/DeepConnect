@@ -23,7 +23,8 @@ module DeepConnect
     PacketId2Class = [
       Event::Event, 
       Event::Request, Event::IteratorRequest, Event::SessionRequest,
-      Event::Reply, Event::IteratorReply, Event::IteratorReplyFinish, Event::SessionReply
+      Event::Reply, Event::IteratorReply, Event::IteratorReplyFinish, Event::SessionReply,
+      Event::InitSessionEvent
     ]
     Class2PacketId = {}
     PacketId2Class.each_with_index do
@@ -78,7 +79,8 @@ puts "IMPORT: #{ev.inspect}"
     end
 
     def export(ev)
-puts  "EXPORT: #{ev.inspect}"
+puts "EXPORT: #{ev.inspect}"
+puts "SEL: #{ev.serialize.inspect}"
       s = Marshal.dump(ev.serialize)
       @io.write([Class2PacketId[ev.class], s.size, s].pack("nNa#{s.size}"))
     end

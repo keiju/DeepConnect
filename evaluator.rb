@@ -35,12 +35,12 @@ module DeepConnect
       session.accept event.reply_class.new(session, event.seq, event.receiver, ret)
     end
 
-    def evaluate_request_iterator(session, event)
-      event.receiver.send(event.method, *event.args) do
+    def evaluate_iterator_request(session, event)
+      fin = event.receiver.send(event.method, *event.args){
 	|ret|
-	session.accept IteratorReply.new(event.seq, event.receiver, ret)
-      end
-      session.accept IteratorReplyFinish.new(event.seq, event.receiver)
+	session.accept Event::IteratorReply.new(session, event.seq, event.receiver, ret)
+      }
+      session.accept Event::IteratorReplyFinish.new(session, event.seq, event.receiver, fin)
     end
   end
 end

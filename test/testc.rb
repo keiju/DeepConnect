@@ -25,10 +25,10 @@ ref = session.get_service("TEST")
 p ref 
 
 ref = session.get_service("TEST1")
+#p ref
 p ref[0]
 p ref.push 3
 p ref.peer_inspect
-
 
 
 

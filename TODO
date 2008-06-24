@@ -1,7 +1,10 @@
 					  -*- indented-text -*-
-
+-- 完了
 * 間接リファレンス
+-- スケジュール
+* no method error 等例外処理
 * リモートクラスメソッド
+-- 識別
 * method_missingからの独立
 
 * シンボルの取り扱い

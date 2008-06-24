@@ -1,0 +1,12 @@
+2008-06-24  Keiju Ishitsuka  <keiju@emperor2.pendome>
+
+	* ポート番号をacceptorのものにした.
+	* イテレータが動作するようにした.
+
+2008-06-23  Keiju Ishitsuka  <keiju@ishitsuka.com>
+
+	* DeepConnect 最初版
+
+	
+	
+

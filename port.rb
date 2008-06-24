@@ -1,10 +1,9 @@
-#!/usr/local/bin/ruby
 #
 #   port.rb - 
 #   	$Release Version: $
 #   	$Revision: 1.1 $
 #   	$Date: 1997/08/08 00:57:08 $
-#   	by Keiju ISHITSUKA(Nihon Rational Software Co.,Ltd)
+#   	by Keiju ISHITSUKA(Penta Advanced Labrabries, Co.,Ltd)
 #
 # --
 #
@@ -13,9 +12,9 @@
 
 require "e2mmap"
 
-require "event"
+require "deep-connect/event"
 
-module DIST
+module DeepConnect
   class Port
     extend Exception2MessageMapper
 
@@ -24,7 +23,8 @@ module DIST
     PacketId2Class = [
       Event::Event, 
       Event::Request, Event::IteratorRequest, Event::SessionRequest,
-      Event::Reply, Event::IteratorReply, Event::IteratorReplyFinish, Event::SessionReply
+      Event::Reply, Event::IteratorReply, Event::IteratorReplyFinish, Event::SessionReply,
+      Event::InitSessionEvent
     ]
     Class2PacketId = {}
     PacketId2Class.each_with_index do
@@ -79,7 +79,8 @@ puts "IMPORT: #{ev.inspect}"
     end
 
     def export(ev)
-puts  "EXPORT: #{ev.inspect}"
+puts "EXPORT: #{ev.inspect}"
+puts "SEL: #{ev.serialize.inspect}"
       s = Marshal.dump(ev.serialize)
       @io.write([Class2PacketId[ev.class], s.size, s].pack("nNa#{s.size}"))
     end

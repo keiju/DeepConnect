@@ -1,4 +1,16 @@
-module DIST
+#
+#   reference.rb - 
+#   	$Release Version: $
+#   	$Revision: 1.1 $
+#   	$Date: 1997/08/08 00:57:08 $
+#   	by Keiju ISHITSUKA(Penta Advanced Labrabries, Co.,Ltd)
+#
+# --
+#
+#   
+#
+
+module DeepConnect
   # session.peer上のオブジェクトのプロキシを生成するファクトリ
   def Reference(session, v)
     case v
@@ -31,27 +43,32 @@ module DIST
     #	[クラス名, ローカルSESSION, 値]
     def Reference.serialize(session, value)
       if value.kind_of? Reference
-	[value.class, value.session.peer_id, value.peer_id]
+	[value.class, value.peer_id, value.session.uuid]
       else
 	case value
 	when Fixnum, TRUE, FALSE, nil, Symbol, String
 	  [value.class, value]
 	else
 	  object_id = session.set_root(value)
-	  [Reference, session.universal_id, object_id]
+	  [Reference,  object_id]
 	end
       end
     end
     
-    def Reference.materialize(session, type, *serial)
+    def Reference.materialize(session, type, object_id, uuid=nil)
       if type == Reference
-puts "MAT0: #{serial.collect{|e| e.to_s}.join(', ')}"
-puts "MAT1: #{session.organizer.session(serial[0])}"
-puts "MAT2: #{type.new(session.organizer.session(serial[0]), serial[1]).inspect}"
-#	DIST::Reference(session, type.new(session.organizer.session(serial[0]), serial[1]))
-	type.new(session.organizer.session(serial[0]), serial[1])
+#puts "MAT0: #{serial.collect{|e| e.to_s}.join(', ')}"
+#puts "MAT1: #{session.organizer.session(serial[0])}"
+#puts "MAT2: #{type.new(session.organizer.session(serial[0]), serial[1]).inspect}"
+#	DeepConnect::Reference(session, type.new(session.organizer.session(serial[0]), serial[1]))
+	if uuid
+	  type.new(session.organizer.session(uuid), object_id)
+	else
+	  type.new(session, object_id)
+	end
       else
-	serial[0]
+	# 即値
+	object_id
       end
     end
     

@@ -1,19 +1,19 @@
-#!/usr/local/bin/ruby
 #
 #   evaluator.rb - 
 #   	$Release Version: $
 #   	$Revision: 1.1 $
 #   	$Date: 1997/08/08 00:57:08 $
-#   	by Keiju ISHITSUKA(Nihon Rational Software Co.,Ltd)
+#   	by Keiju ISHITSUKA(Penta Advanced Labrabries, Co.,Ltd)
 #
 # --
 #
 #   
 #
 
-require "event"
 
-module DIST
+require "deep-connect/event"
+
+module DeepConnect
   class Evaluator
     def initialize(org)
       @organizer = org
@@ -35,12 +35,12 @@ module DIST
       session.accept event.reply_class.new(session, event.seq, event.receiver, ret)
     end
 
-    def evaluate_request_iterator(session, event)
-      event.receiver.send(event.method, *event.args) do
+    def evaluate_iterator_request(session, event)
+      fin = event.receiver.send(event.method, *event.args){
 	|ret|
-	session.accept IteratorReply.new(event.seq, event.receiver, ret)
-      end
-      session.accept IteratorReplyFinish.new(event.seq, event.receiver)
+	session.accept Event::IteratorReply.new(session, event.seq, event.receiver, ret)
+      }
+      session.accept Event::IteratorReplyFinish.new(session, event.seq, event.receiver, fin)
     end
   end
 end

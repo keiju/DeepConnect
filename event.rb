@@ -80,7 +80,7 @@ puts "TTIN"
 	args = @args.collect{|elm| Reference.serialize(@session, elm)}
 puts "TT#1 #{@receiver}"
 	x = [self.class, @seq, @receiver.peer_id, @method].concat(args)
-puts "TTOU"
+puts "TTOU: x:#{x.collect{|e| e.to_s}.join(', ')}"
 	x
       end
     

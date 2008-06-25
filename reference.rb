@@ -58,8 +58,8 @@ module DeepConnect
     def Reference.materialize(session, type, object_id, uuid=nil)
       if type == Reference
 #puts "MAT0: #{serial.collect{|e| e.to_s}.join(', ')}"
-puts "MAT1: uuid=#{uuid}"
-puts "MAT1: #{session.organizer.session(uuid)}"
+#puts "MAT1: uuid=#{uuid}"
+#puts "MAT1: #{session.organizer.session(uuid)}"
 #puts "MAT2: #{type.new(session.organizer.session(serial[0]), serial[1]).inspect}"
 #	DeepConnect::Reference(session, type.new(session.organizer.session(serial[0]), serial[1]))
 	if uuid
@@ -101,7 +101,7 @@ puts "MAT1: #{session.organizer.session(uuid)}"
     end
     
     def method_missing(method, *args)
-puts "METHOD_MISSING: #{method.id2name} "
+#puts "METHOD_MISSING: #{method.id2name} "
       if iterator?
 	@session.send_to(self, method, *args) do
 	  |elm|

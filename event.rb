@@ -14,9 +14,18 @@
 require "deep-connect/reference"
 
 module DeepConnect
+
+  class PeerSideException<StandardError
+    def initialize(exp)
+      super(exp.message)
+      @peer_exception = exp
+    end
+    
+    attr_reader :peer_exception
+  end
+
   module Event
     def Event.materialize(session, type, *rest)
-puts rest
       type.materialize_sub(session, type, *rest)
     end
 
@@ -76,12 +85,8 @@ puts rest
       end
     
       def serialize
-puts "TTIN"
 	args = @args.collect{|elm| Reference.serialize(@session, elm)}
-puts "TT#1 #{@receiver}"
-	x = [self.class, @seq, @receiver.peer_id, @method].concat(args)
-puts "TTOU: x:#{x.collect{|e| e.to_s}.join(', ')}"
-	x
+	[self.class, @seq, @receiver.peer_id, @method].concat(args)
       end
     
       def request?
@@ -94,7 +99,11 @@ puts "TTOU: x:#{x.collect{|e| e.to_s}.join(', ')}"
     
       def result(*ret)
 	if ret.size == 0
-	  @results.pop.result
+	  ev = @results.pop
+	  if ev.exp
+	    raise PeerSideException.new(ev.exp)
+	  end
+	  ev.result
 	else
 	  @results.push *ret
 	end
@@ -137,10 +146,8 @@ puts "TTOU: x:#{x.collect{|e| e.to_s}.join(', ')}"
       end
 
       def SessionRequest.receipt(session, seq, dummy, method, *args)
-#	p "ZXXS"
 	rec = new(session, session, method, *args)
 	rec.set_seq(seq)
-#	p rec
 	rec
       end
 
@@ -154,33 +161,49 @@ puts "TTOU: x:#{x.collect{|e| e.to_s}.join(', ')}"
     end
 
     class Reply < Event
-      def Reply.materialize_sub(session, type, klass, seq, receiver, ret)
-	type.new(session, seq, 
-		 session.root(receiver), 
-		 Reference.materialize(session, *ret))
+      def Reply.materialize_sub(session, type, klass, seq, receiver, ret, exp=nil)
+	if exp
+	  type.new(session, seq, 
+		   session.root(receiver), 
+		   Reference.materialize(session, *ret),
+		   Reference.materialize(session, *exp))
+	else
+	  type.new(session, seq, 
+		   session.root(receiver), 
+		   Reference.materialize(session, *ret))
+	end
       end
     
-      def initialize(session, seq, receiver, ret)
+      def initialize(session, seq, receiver, ret, exp=nil)
 	super(session, receiver)
 	@seq = seq
 	@result = ret
+	@exp = exp
       end
     
       def serialize
-	[self.class, @seq, 
-	  Reference.serialize(@session, @receiver),
-	  Reference.serialize(@session, @result)]
+	if @exp
+	  [self.class, @seq, 
+	    Reference.serialize(@session, @receiver),
+	    Reference.serialize(@session, @result),
+	    Reference.serialize(@session, @exp)]
+	else
+	  [self.class, @seq, 
+	    Reference.serialize(@session, @receiver),
+	    Reference.serialize(@session, @result)]
+	end
       end
-    
+
       def request?
-	FALSE
+	false
       end
     
       def iterator?
-	FALSE
+	false
       end
     
-      attr :result
+      attr_reader :result
+      attr_reader :exp
 
       def inspect
 	sprintf "#<#{self.class}, session=#{@session}, seq=#{@seq}, receiver=#{@receiver}, result=#{@result}}>"
@@ -189,7 +212,7 @@ puts "TTOU: x:#{x.collect{|e| e.to_s}.join(', ')}"
 
     class IteratorReply < Reply
       def iterator?
-	TRUE
+	true
       end
     
       def finish?
@@ -199,7 +222,7 @@ puts "TTOU: x:#{x.collect{|e| e.to_s}.join(', ')}"
 
     class IteratorReplyFinish < IteratorReply
       def iterator?
-	TRUE
+	true
       end
     
       def finish?
@@ -209,7 +232,7 @@ puts "TTOU: x:#{x.collect{|e| e.to_s}.join(', ')}"
 
     class SessionReply < Reply
       def SessionReply.materialize_sub(session, type, klass, seq, receiver, ret)
-	puts "SESSIONREPLY: #{type}, #{session}, #{ret.collect{|e| e.to_s}.join(',')}"	
+#	puts "SESSIONREPLY: #{type}, #{session}, #{ret.collect{|e| e.to_s}.join(',')}"	
 	type.new(session, seq, 
 		 session, 
 		 Reference.materialize(session, *ret))

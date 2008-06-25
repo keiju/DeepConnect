@@ -13,7 +13,7 @@
 $DEBUG = 1
 require "tracer"
 
-require "dist"
+require "deep-connect/deep-connect"
 
 Thread.abort_on_exception=true
 STDOUT.sync

@@ -22,7 +22,7 @@ module DeepConnect
     def initialize(org, port, local_id = nil)
       @organizer = org
       @port = port
-puts "local_id=#{local_id}"      
+#puts "local_id=#{local_id}"      
       unless local_id
 	local_id = @port.peeraddr[1]
       end
@@ -103,7 +103,7 @@ puts "local_id=#{local_id}"
 	      req = @waiting[ev.seq]
 	    end
 	  else
-puts "WAITING: #{@waiting.inspect}"
+#puts "WAITING: #{@waiting.inspect}"
 	    req = @waiting.delete(ev.seq)
 	  end
 	end
@@ -128,20 +128,12 @@ puts "WAITING: #{@waiting.inspect}"
 	@export_queue.push ev
 	ev.results{|elm| yield elm}
       else
-puts "XXX1"
 	ev = Event::Request.request(self, ref, method, *args)
-puts "XXX2"
 	@waiting.synchronize do
-puts "XXX3"
 	  @waiting[ev.seq] = ev
-puts "XXX4"
 	end
-puts "XXX5: #{ev.inspect}"
 	@export_queue.push ev
-puts "XXX6"
-	r = ev.result
-puts "XXX7"
-	r
+	ev.result
       end
     end
 

@@ -31,16 +31,27 @@ module DeepConnect
     end
 
     def evaluate_request(session, event)
-      ret = event.receiver.send(event.method, *event.args)
-      session.accept event.reply_class.new(session, event.seq, event.receiver, ret)
+      begin
+	ret = event.receiver.send(event.method, *event.args)
+	session.accept event.reply_class.new(session, event.seq, event.receiver, ret)
+      rescue Exception
+	session.accept event.reply_class.new(session, event.seq, event.receiver, ret, $!)
+      end
     end
 
     def evaluate_iterator_request(session, event)
-      fin = event.receiver.send(event.method, *event.args){
-	|ret|
-	session.accept Event::IteratorReply.new(session, event.seq, event.receiver, ret)
-      }
-      session.accept Event::IteratorReplyFinish.new(session, event.seq, event.receiver, fin)
+      begin 
+	fin = event.receiver.send(event.method, *event.args){|ret|
+	  begin
+	    session.accept Event::IteratorReply.new(session, event.seq, event.receiver, ret)
+	  rescue
+	    session.accept Event::IteratorReply.new(session, event.seq, event.receiver, ret, $!)
+	  end
+	}
+	session.accept Event::IteratorReplyFinish.new(session, event.seq, event.receiver, fin)
+      rescue Exception
+	session.accept Event::IteratorReplyFinish.new(session, event.seq, event.receiver, ret, $!)
+      end
     end
   end
 end

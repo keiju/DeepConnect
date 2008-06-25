@@ -1,4 +1,8 @@
-2008-06-24  Keiju Ishitsuka  <keiju@emperor2.pendome>
+2008-06-25  Keiju Ishitsuka  <keiju@ishitsuka.com>
+
+	* 例外の通知
+
+2008-06-24  Keiju Ishitsuka  <keiju@ishitsuka.com>
 
 	* ポート番号をacceptorのものにした.
 	* イテレータが動作するようにした.

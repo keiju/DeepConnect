@@ -72,7 +72,7 @@ module DeepConnect
       t = PacketId2Class[pid]
       bin = read(sz).unpack("a#{sz}")
       a = Marshal.load(bin.first)
-puts "DUMP: #{a.inspect}"
+#puts "DUMP: #{a.inspect}"
       ev = Event.materialize(@session, t, *a)
 puts "IMPORT: #{ev.inspect}"
       ev
@@ -80,7 +80,7 @@ puts "IMPORT: #{ev.inspect}"
 
     def export(ev)
 puts "EXPORT: #{ev.inspect}"
-puts "SEL: #{ev.serialize.inspect}"
+#puts "SEL: #{ev.serialize.inspect}"
       s = Marshal.dump(ev.serialize)
       @io.write([Class2PacketId[ev.class], s.size, s].pack("nNa#{s.size}"))
     end

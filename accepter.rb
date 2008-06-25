@@ -22,13 +22,6 @@ module DeepConnect
       @probe = nil
     end
 
-#     def uuid
-#       addr, port = @probe.addr.values_at(3,1)
-# p      ipaddr = IPAddr.new(addr)
-#       ipaddr = ipaddr.ipv4_mapped if ipaddr.ipv4?
-#       [ipaddr.to_s, port]
-#     end
-
     def port_number
       @probe.addr[1]
     end

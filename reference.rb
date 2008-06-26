@@ -43,7 +43,11 @@ module DeepConnect
     #	[クラス名, ローカルSESSION, 値]
     def Reference.serialize(session, value)
       if value.kind_of? Reference
-	[value.class, value.peer_id, value.session.peer_uuid]
+	if session == value.session
+	  [value.class, value.peer_id, :PEER_OBJECT]
+	else
+	  [value.class, value.peer_id, value.session.peer_uuid]
+	end
       else
 	case value
 	when Fixnum, TRUE, FALSE, nil, Symbol, String
@@ -63,7 +67,8 @@ module DeepConnect
 #puts "MAT2: #{type.new(session.organizer.session(serial[0]), serial[1]).inspect}"
 #	DeepConnect::Reference(session, type.new(session.organizer.session(serial[0]), serial[1]))
 	if uuid
-	  if session.organizer.local_id == uuid[1]
+#	  if session.organizer.local_id == uuid[1]
+	  if uuid == :PEER_OBJECT
 	    session.root(object_id)
 	  else
 	    peer_session = session.organizer.session(uuid)

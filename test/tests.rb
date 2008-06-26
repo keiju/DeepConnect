@@ -21,9 +21,10 @@ require "deep-connect/deep-connect"
 Thread.abort_on_exception=true
 
 #Tracer.on
-dc = DeepConnect.start(19999)
+dc = DeepConnect.start(65535)
 dc.register_service("TEST", "foo")
 dc.register_service("TEST1", [1, 2, 3])
+dc.register_service("TEST2", ["foo", "bar", "baz"])
 
 sleep 1000
 

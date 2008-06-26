@@ -75,7 +75,11 @@ when "4.3"
 #     a += 1
 #     retry if a==2
 #   end
-end
 
+
+when "5"
+  r = session.get_service("TEST.S2")
+  p r[0]
+end
 
 sleep 1

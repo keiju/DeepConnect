@@ -6,9 +6,6 @@
 #   	by Keiju ISHITSUKA(Penta Advanced Labrabries, Co.,Ltd)
 #
 # --
-#  UC1: サーバ起動
-#  UC2: クライアント接続
-#  UC3: クライアント接続要求
 #
 #   
 #
@@ -61,8 +58,15 @@ module DeepConnect
       @accepter.close
     end
 
-    def session(peer_id)
-      @sessions[peer_id]
+    def session(peer_id, &block)
+      if session = @sessions[peer_id]
+	return session
+      end
+
+      # セッションを自動的に開く
+      session = open_session(*peer_id)
+      block.call session 
+      session
     end
 
     # session登録
@@ -93,6 +97,13 @@ module DeepConnect
       @naming[name]
     end
 
+    def id2obj(id)
+      for peer_id, s in @sessions
+	if o = s.root(id)
+	  return o
+	end
+      end
+    end
   end
 end
 

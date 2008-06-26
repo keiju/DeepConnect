@@ -226,6 +226,13 @@ module DeepConnect
       @organizer.service(name)
     end
 
+    def register_root(id)
+      send_peer_session(:register_root, id)
+    end
+
+    def register_root_impl(id)
+      @roots[id] = @organizer.id2obj(id)
+    end
   end
 end
 

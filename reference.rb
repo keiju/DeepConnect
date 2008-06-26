@@ -71,8 +71,10 @@ module DeepConnect
 	  if uuid == :PEER_OBJECT
 	    session.root(object_id)
 	  else
-	    peer_session = session.organizer.session(uuid)
-	    type.new(session.organizer.session(uuid), object_id)
+	    peer_session = session.organizer.session(uuid) do |s|
+	      s.register_root(object_id)
+	    end
+	    type.new(peer_session, object_id)
 	  end
 	else
 	  type.new(session, object_id)

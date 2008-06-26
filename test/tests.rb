@@ -26,6 +26,13 @@ dc.register_service("TEST", "foo")
 dc.register_service("TEST1", [1, 2, 3])
 dc.register_service("TEST2", ["foo", "bar", "baz"])
 
+case ARGV[0]
+when "S2"
+  session = dc.open_session("localhost", 65533)
+  s2ary = session.get_service("s2ary")
+  dc.register_service("TEST.S2", s2ary)
+end
+
 sleep 1000
 
 

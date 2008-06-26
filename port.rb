@@ -22,8 +22,14 @@ module DeepConnect
 
     PacketId2Class = [
       Event::Event, 
-      Event::Request, Event::IteratorRequest, Event::SessionRequest,
-      Event::Reply, Event::IteratorReply, Event::IteratorReplyFinish, Event::SessionReply,
+      Event::Request, 
+      Event::IteratorRequest, 
+      Event::IteratorNextRequest, 
+#      Event::IteratorRetryRequest, 
+      Event::IteratorExitRequest, 
+      Event::SessionRequest,
+      Event::Reply, Event::IteratorReply, Event::IteratorReplyFinish, 
+      Event::SessionReply,
       Event::InitSessionEvent
     ]
     Class2PacketId = {}
@@ -66,6 +72,12 @@ module DeepConnect
 # 	end
 #       }
 #     end
+
+    def event2packet_id(ev)
+      unless id = Class2PacketId[ev.class]
+	raise "#{ev.class}がPort::Class2PacketIdに登録されていません"
+      end
+    end
 
     def import
       pid, sz = read(PACK_n_SIZE + PACK_N_SIZE).unpack("nN")

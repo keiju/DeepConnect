@@ -105,13 +105,10 @@ module DeepConnect
       @peer_id
     end
     
-    def method_missing(method, *args)
+    def method_missing(method, *args, &block)
 #puts "METHOD_MISSING: #{method.id2name} "
       if iterator?
-	@session.send_to(self, method, *args) do
-	  |elm|
-	  yield elm
-	end
+	@session.send_to(self, method, *args, &block)
       else
 	@session.send_to(self, method, *args)
       end

@@ -12,6 +12,8 @@
 
 require "thread"
 require "mutex_m"
+require "monitor"
+
 require "ipaddr"
 
 module DeepConnect
@@ -36,6 +38,8 @@ module DeepConnect
       @import_queue = Queue.new
       @waiting = Hash.new
       @waiting.extend Mutex_m
+
+      @iterator_event_queues = {}
       
       @roots = Hash.new
 
@@ -91,7 +95,19 @@ module DeepConnect
     def receive(ev)
       if ev.request?
 	Thread.start do
-	  @organizer.evaluator.evaluate(self, ev)
+	  case ev
+	    # when ItratorAbort
+	  when Event::IteratorNextRequest
+#             , Event::IteratorRetryRequest
+	    @iterator_event_queues[ev.itr_id].push ev
+	  when Event::IteratorExitRequest
+	    @iterator_event_queues[ev.itr_id].push ev
+	  when Event::IteratorRequest
+	    @iterator_event_queues[ev.seq] = Queue.new
+	    @organizer.evaluator.evaluate_iterator_request(self, ev)
+	  else
+	    @organizer.evaluator.evaluate_request(self, ev)
+	  end
 	end
       else
 	req = nil
@@ -111,6 +127,15 @@ module DeepConnect
       end
     end
 
+
+    def iterator_event_pop(itr_id)
+      @iterator_event_queues[itr_id].pop
+    end
+
+    def iterator_exit(itr_id)
+      @iterator_event_queues.delete(itr_id)
+    end
+
     # イベントの受け取り
     def accept(ev)
 #      loop do
@@ -126,7 +151,22 @@ module DeepConnect
 	  @waiting[ev.seq] = ev
 	end
 	@export_queue.push ev
-	ev.results{|elm| yield elm}
+	ev.results do |elm|
+	  begin
+	    exit = true
+	    yield elm
+	    exit = false
+	  ensure
+	    if exit
+	      next_ev = Event::IteratorExitRequest.request(self, ref, method, ev.seq)
+	      next_ev.set_seq(ev.seq)
+	      @export_queue.push next_ev
+	    end
+	  end
+	  next_ev = Event::IteratorNextRequest.request(self, ref, method, ev.seq)
+	  next_ev.set_seq(ev.seq)
+	  @export_queue.push next_ev
+	end
       else
 	ev = Event::Request.request(self, ref, method, *args)
 	@waiting.synchronize do

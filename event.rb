@@ -126,10 +126,11 @@ module DeepConnect
 	TRUE
       end
     
-      def results(*ret)
+      def results(*ret, &block)
 	if ret.empty?
 	  while !(ret = @results.pop).kind_of?(IteratorReplyFinish)
-	    yield ret.result
+	    block.call ret.result
+#	    yield ret.result
 	  end
 	  ret.result
 	else
@@ -137,6 +138,16 @@ module DeepConnect
 	end
       end
     end
+
+    class IteratorSubRequest < Request
+      def itr_id
+	@args[0]
+      end
+    end
+
+    class IteratorNextRequest<IteratorSubRequest; end
+    class IteratorExitRequest<IteratorSubRequest; end
+#    class IteratorRetryRequest<IteratorSubRequest; end
 
     class SessionRequest < Request
       def SessionRequest.request(session, method, *args)

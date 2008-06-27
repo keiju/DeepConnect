@@ -17,15 +17,21 @@ module DeepConnect
     when Fixnum, TRUE, FALSE, nil, String
       v
     when Reference
-      if session == v.session
-	v.peer
-      else
-	v
-      end
+      v
+#       if session == v.session
+# 	v.peer
+#       else
+# 	v
+#       end
     when Module
       ReferenceClass(session, v)
     else
-      Reference.new(session, v)
+#      if r = session.import_reference(v)
+#	return r
+#      end
+      r = Reference.new(session, v)
+#      session.register_import_reference(r)
+#      r
     end
   end
   module_function :Reference
@@ -38,6 +44,7 @@ module DeepConnect
   end
 
   class Reference
+
     # session ローカルなプロキシを生成
     #	[クラス名, 値]
     #	[クラス名, ローカルSESSION, 値]
@@ -72,22 +79,31 @@ module DeepConnect
 	    session.root(object_id)
 	  else
 	    peer_session = session.organizer.session(uuid) do |s|
-	      s.register_root(object_id)
+	      s.register_root_to_peer(object_id)
 	    end
 	    type.new(peer_session, object_id)
 	  end
 	else
-	  type.new(session, object_id)
+	    type.new(session, object_id)
 	end
       else
 	# 即値
 	object_id
       end
     end
-    
+
     def Reference.register(session, o)
       session.peer.set_root(o)
       Reference.new(session, o.id)
+    end
+
+    def Reference.new(session, peer_id)
+      if r = session.import_reference(peer_id)
+	return r
+      end
+      r = super
+      session.register_import_reference(r)
+      r
     end
     
     def initialize(session, peer_id)

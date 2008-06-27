@@ -35,10 +35,14 @@ module DeepConnect
 	loop do
 	  sock = @probe.accept
 	  port = Port.new(sock)
-	  unless (ev = port.import).kind_of?(Event::InitSessionEvent)
-	    raise "プロトコルエラー"
+	  begin
+	    unless (ev = port.import).kind_of?(Event::InitSessionEvent)
+	      puts "WARN: 接続初期化エラー: [#{port.peeraddr}]"
+	    end
+	    @organizer.start_session_on_port port, ev.local_id
+	  rescue EOFError
+	    puts "WARN: 接続初期化中に[#{port.peeraddr}]との接続が切れました"
 	  end
-	  @organizer.register_session_on_port port, ev.local_id
 	end
       }
     end

@@ -35,9 +35,13 @@ module DeepConnect
     def evaluate_request(session, event)
       begin
 	ret = event.receiver.send(event.method, *event.args)
-	session.accept event.reply_class.new(session, event.seq, event.receiver, ret)
+	unless event.kind_of?(Event::NoReply)
+	  session.accept event.reply_class.new(session, event.seq, event.receiver, ret)
+	end
       rescue Exception
-	session.accept event.reply_class.new(session, event.seq, event.receiver, ret, $!)
+	unless event.kind_of?(Event::NoReply)
+	  session.accept event.reply_class.new(session, event.seq, event.receiver, ret, $!)
+	end
       end
     end
 

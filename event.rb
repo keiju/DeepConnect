@@ -45,6 +45,8 @@ module DeepConnect
       end
     end
 
+    module NoReply; end
+
     class Request < Event
       def Request.request(session, receiver, method, *args)
 	req = new(session, receiver, method, *args)
@@ -169,6 +171,10 @@ module DeepConnect
       def inspect
 	sprintf "#<#{self.class}, session=#{@session}, seq=#{@seq}, method=#{@method.id2name}, args=#{@args.collect{|e| e.to_s}.join(', ')}>"
       end
+    end
+
+    class SessionRequestNoReply<SessionRequest
+      include NoReply
     end
 
     class Reply < Event

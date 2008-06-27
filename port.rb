@@ -19,6 +19,7 @@ module DeepConnect
     extend Exception2MessageMapper
 
     def_exception :ProtocolError, "Protocol error!!"
+    def_exception :DisconnectClient, "%sの接続が切れました"
 
     PacketId2Class = [
       Event::Event, 
@@ -28,6 +29,7 @@ module DeepConnect
 #      Event::IteratorRetryRequest, 
       Event::IteratorExitRequest, 
       Event::SessionRequest,
+      Event::SessionRequestNoReply,
       Event::Reply, Event::IteratorReply, Event::IteratorReplyFinish, 
       Event::SessionReply,
       Event::InitSessionEvent
@@ -43,6 +45,7 @@ module DeepConnect
 
     def initialize(sock)
       @io = sock
+      @peeraddr = @io.peeraddr
     end
 
     def addr
@@ -50,7 +53,7 @@ module DeepConnect
     end
 
     def peeraddr
-      @io.peeraddr
+      @peeraddr
     end
 
     def attach(session)
@@ -77,6 +80,7 @@ module DeepConnect
       unless id = Class2PacketId[ev.class]
 	raise "#{ev.class}がPort::Class2PacketIdに登録されていません"
       end
+      id
     end
 
     def import
@@ -93,15 +97,31 @@ puts "IMPORT: #{ev.inspect}"
     def export(ev)
 puts "EXPORT: #{ev.inspect}"
 #puts "SEL: #{ev.serialize.inspect}"
+      id = event2packet_id(ev)
       s = Marshal.dump(ev.serialize)
-      @io.write([Class2PacketId[ev.class], s.size, s].pack("nNa#{s.size}"))
+      packet = [id, s.size, s].pack("nNa#{s.size}")
+      @io.write(packet)
     end
 
     def read(n)
-      packet = @io.read(n)
-      fail EOFError, "socket closed" unless packet
-      Fail ProtocolError unless packet.size == n
-      packet
+      begin
+	packet = @io.read(n)
+	fail EOFError, "socket closed" unless packet
+	Fail ProtocolError unless packet.size == n
+	packet
+      rescue Errno::ECONNRESET
+	puts "WARN: read中に[#{peeraddr.join(', ')}]の接続が切れました"
+	raise DisconnectClient, peeraddr
+      end
+    end
+    
+    def write(packet)
+      begin
+	@io.write(packet)
+      rescue Errno::ECONNRESET
+	puts "WARN: write中に[#{peeraddr.join(', ')}]の接続が切れました"
+	raise DisconnectClient, peeraddr
+      end
     end
   end
 end

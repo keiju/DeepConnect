@@ -80,6 +80,27 @@ when "4.3"
 when "5"
   r = session.get_service("TEST.S2")
   p r[0]
+
+when "6"
+  a = session.get_service("TEST3")
+  10.times do
+    a.new(10)
+  end
+
+  ObjectSpace.garbage_collect
+  puts "Sleep IN"
+#  sleep 10
+#  require "tracer"
+#  Tracer.on
+#  sleep 
+when "6.2"
+  a = session.get_service("TEST.S2ARRAY")
+  10.times do
+    a.new(10)
+  end
+
+  ObjectSpace.garbage_collect
+  puts "Sleep IN"
 end
 
 sleep 1

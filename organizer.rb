@@ -65,12 +65,12 @@ module DeepConnect
 
       # セッションを自動的に開く
       session = open_session(*peer_id)
-      block.call session 
+      block.call session if block_given?
       session
     end
 
-    # session登録
-    def register_session_on_port(port, local_id = nil)
+    # sessionサービス開始
+    def start_session_on_port(port, local_id = nil)
       session = Session.new(self, port, local_id)
       port.attach(session)
 #      uuid = session.peer_id unless uuid
@@ -85,7 +85,7 @@ module DeepConnect
       port = Port.new(sock)
       init_session_ev = Event::InitSessionEvent.new(local_id)
       port.export init_session_ev
-      register_session_on_port(port)
+      start_session_on_port(port)
     end
 
     # naming
@@ -103,6 +103,7 @@ module DeepConnect
 	  return o
 	end
       end
+      raise "登録されていません.#{id}"
     end
   end
 end

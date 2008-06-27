@@ -6,9 +6,6 @@
 #   	by Keiju ISHITSUKA(Penta Advanced Labrabries, Co.,Ltd)
 #
 # --
-#  UC1: サーバ起動
-#  UC2: クライアント接続
-#  UC3: クライアント接続要求
 #
 #   
 #
@@ -61,12 +58,19 @@ module DeepConnect
       @accepter.close
     end
 
-    def session(peer_id)
-      @sessions[peer_id]
+    def session(peer_id, &block)
+      if session = @sessions[peer_id]
+	return session
+      end
+
+      # セッションを自動的に開く
+      session = open_session(*peer_id)
+      block.call session if block_given?
+      session
     end
 
-    # session登録
-    def register_session_on_port(port, local_id = nil)
+    # sessionサービス開始
+    def start_session_on_port(port, local_id = nil)
       session = Session.new(self, port, local_id)
       port.attach(session)
 #      uuid = session.peer_id unless uuid
@@ -81,7 +85,7 @@ module DeepConnect
       port = Port.new(sock)
       init_session_ev = Event::InitSessionEvent.new(local_id)
       port.export init_session_ev
-      register_session_on_port(port)
+      start_session_on_port(port)
     end
 
     # naming
@@ -93,6 +97,14 @@ module DeepConnect
       @naming[name]
     end
 
+    def id2obj(id)
+      for peer_id, s in @sessions
+	if o = s.root(id)
+	  return o
+	end
+      end
+      raise "登録されていません.#{id}"
+    end
   end
 end
 

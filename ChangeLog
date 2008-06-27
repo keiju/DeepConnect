@@ -1,3 +1,13 @@
+2008-06-27  Keiju Ishitsuka  <keiju@emperor2.pendome>
+
+	* 簡易分散GC
+
+2008-06-26  Keiju Ishitsuka  <keiju@ishitsuka.com>
+
+	* リファレンス周りのバグ修正
+	* block再実装
+	* 間接リファレンスの接続処理
+	
 2008-06-25  Keiju Ishitsuka  <keiju@ishitsuka.com>
 
 	* 例外の通知

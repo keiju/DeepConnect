@@ -17,15 +17,21 @@ module DeepConnect
     when Fixnum, TRUE, FALSE, nil, String
       v
     when Reference
-      if session == v.session
-	v.peer
-      else
-	v
-      end
+      v
+#       if session == v.session
+# 	v.peer
+#       else
+# 	v
+#       end
     when Module
       ReferenceClass(session, v)
     else
-      Reference.new(session, v)
+#      if r = session.import_reference(v)
+#	return r
+#      end
+      r = Reference.new(session, v)
+#      session.register_import_reference(r)
+#      r
     end
   end
   module_function :Reference
@@ -38,12 +44,17 @@ module DeepConnect
   end
 
   class Reference
+
     # session ローカルなプロキシを生成
     #	[クラス名, 値]
     #	[クラス名, ローカルSESSION, 値]
     def Reference.serialize(session, value)
       if value.kind_of? Reference
-	[value.class, value.peer_id, value.session.peer_uuid]
+	if session == value.session
+	  [value.class, value.peer_id, :PEER_OBJECT]
+	else
+	  [value.class, value.peer_id, value.session.peer_uuid]
+	end
       else
 	case value
 	when Fixnum, TRUE, FALSE, nil, Symbol, String
@@ -63,24 +74,36 @@ module DeepConnect
 #puts "MAT2: #{type.new(session.organizer.session(serial[0]), serial[1]).inspect}"
 #	DeepConnect::Reference(session, type.new(session.organizer.session(serial[0]), serial[1]))
 	if uuid
-	  if session.organizer.local_id == uuid[1]
+#	  if session.organizer.local_id == uuid[1]
+	  if uuid == :PEER_OBJECT
 	    session.root(object_id)
 	  else
-	    peer_session = session.organizer.session(uuid)
-	    type.new(session.organizer.session(uuid), object_id)
+	    peer_session = session.organizer.session(uuid) do |s|
+	      s.register_root_to_peer(object_id)
+	    end
+	    type.new(peer_session, object_id)
 	  end
 	else
-	  type.new(session, object_id)
+	    type.new(session, object_id)
 	end
       else
 	# 即値
 	object_id
       end
     end
-    
+
     def Reference.register(session, o)
       session.peer.set_root(o)
       Reference.new(session, o.id)
+    end
+
+    def Reference.new(session, peer_id)
+      if r = session.import_reference(peer_id)
+	return r
+      end
+      r = super
+      session.register_import_reference(r)
+      r
     end
     
     def initialize(session, peer_id)
@@ -99,14 +122,11 @@ module DeepConnect
     def peer_id
       @peer_id
     end
-    
-    def method_missing(method, *args)
+
+    def method_missing(method, *args, &block)
 #puts "METHOD_MISSING: #{method.id2name} "
       if iterator?
-	@session.send_to(self, method, *args) do
-	  |elm|
-	  yield elm
-	end
+	@session.send_to(self, method, *args, &block)
       else
 	@session.send_to(self, method, *args)
       end
@@ -123,9 +143,11 @@ module DeepConnect
 #       @session.send_to(self, :to_s)
 #     end
     
-#     def to_a
-#       @session.send_to(self, :to_a)
-#     end
+     def to_a
+       a = []
+       @session.send_to(self, :to_a).each{|e| a.push e}
+       a
+     end
     
     def coerce(other)
       return  other, peer

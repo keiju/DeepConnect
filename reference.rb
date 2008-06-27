@@ -122,7 +122,7 @@ module DeepConnect
     def peer_id
       @peer_id
     end
-    
+
     def method_missing(method, *args, &block)
 #puts "METHOD_MISSING: #{method.id2name} "
       if iterator?
@@ -143,9 +143,11 @@ module DeepConnect
 #       @session.send_to(self, :to_s)
 #     end
     
-#     def to_a
-#       @session.send_to(self, :to_a)
-#     end
+     def to_a
+       a = []
+       @session.send_to(self, :to_a).each{|e| a.push e}
+       a
+     end
     
     def coerce(other)
       return  other, peer

@@ -1,3 +1,9 @@
+2008-06-30  Keiju Ishitsuka  <keiju@emperor2.pendome>
+
+	* Reference#id 追加
+	* DeepConnect#local_id 追加
+	* Accepterを不定ポート番号にできるようにした.
+
 2008-06-27  Keiju Ishitsuka  <keiju@emperor2.pendome>
 
 	* 簡易分散GC

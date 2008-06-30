@@ -20,6 +20,12 @@ module DeepConnect
       super(exp.message)
       @peer_exception = exp
     end
+
+#     def backtrace
+# #      bt = @peer_exception.backtrace.to_a
+# #      bt.push *super
+#       bt
+#     end
     
     attr_reader :peer_exception
   end

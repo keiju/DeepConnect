@@ -132,22 +132,26 @@ module DeepConnect
       end
     end
     
-     def peer_to_s
-       @session.send_to(self, :to_s)
-     end
-     def peer_inspect
-       @session.send_to(self, :inspect)
-     end
+    def peer_to_s
+      @session.send_to(self, :to_s)
+    end
+    def peer_inspect
+      @session.send_to(self, :inspect)
+    end
     
-#     def to_s
-#       @session.send_to(self, :to_s)
-#     end
+    #     def to_s
+    #       @session.send_to(self, :to_s)
+    #     end
     
-     def to_a
-       a = []
-       @session.send_to(self, :to_a).each{|e| a.push e}
-       a
-     end
+    def to_a
+      a = []
+      @session.send_to(self, :to_a).each{|e| a.push e}
+      a
+    end
+
+    def id
+      @session.send_to(self, :id)
+    end
     
     def coerce(other)
       return  other, peer

@@ -78,9 +78,8 @@ module DeepConnect
 	  if uuid == :PEER_OBJECT
 	    session.root(object_id)
 	  else
-	    peer_session = session.organizer.session(uuid) do |s|
-	      s.register_root_to_peer(object_id)
-	    end
+	    peer_session = session.organizer.session(uuid)
+	    peer_session.register_root_to_peer(object_id)
 	    type.new(peer_session, object_id)
 	  end
 	else
@@ -138,10 +137,18 @@ module DeepConnect
     def peer_inspect
       @session.send_to(self, :inspect)
     end
+    def peer_class
+      @session.send_to(self, :class)
+    end
     
-    #     def to_s
-    #       @session.send_to(self, :to_s)
-    #     end
+#    def to_s
+#      @session.send_to(self, :to_s)
+#    end
+
+#    def to_s
+#      klass_name = @session.send_to(self, :class).name
+#      "#<Ref: #{klass_name}>"
+#    end
     
     def to_a
       a = []

@@ -1,3 +1,8 @@
+2008-07-01  Keiju Ishitsuka  <keiju@emperor2.pendome>
+
+	* WeakRef周りの不具合修正
+	* fairy v0.2.1-002 対応
+
 2008-06-30  Keiju Ishitsuka  <keiju@emperor2.pendome>
 
 	* Reference#id 追加

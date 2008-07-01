@@ -202,7 +202,12 @@ module DeepConnect
 
     def import_reference(id)
       if wr = @import_reference[id]
-	wr.__getobj__
+	begin
+	  wr.__getobj__
+	rescue
+	  @import_reference.delete(id)
+	  nil
+	end
       else
 	nil
       end
@@ -211,6 +216,7 @@ module DeepConnect
     def register_import_reference(v)
       @import_reference[v.peer_id] = WeakRef.new(v)
       ObjectSpace.define_finalizer(v, deregister_import_reference_proc)
+      nil
     end
 
     def deregister_import_reference_proc
@@ -257,11 +263,17 @@ module DeepConnect
     end
 
     def get_service_impl(name)
-      @organizer.service(name)
+      if sv = @organizer.service(name)
+	puts "INFO: get_service: #{name}, #{sv}"
+      else
+	puts "WARN: service Not Found: #{name}"
+      end
+      sv
     end
 
     def register_root_to_peer(id)
       send_peer_session(:register_root, id)
+      nil
     end
 
     def register_root_impl(id)
@@ -275,6 +287,7 @@ module DeepConnect
 
     def deregister_root_impl(id)
       @roots.delete(id)
+      nil
     end
   end
 end

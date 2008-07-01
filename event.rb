@@ -262,7 +262,7 @@ module DeepConnect
       end
 
       def inspect
-	sprintf "#<#{self.class}, session=#{@session}, seq=#{@seq},  result=#{@result.inspect}}>"
+	sprintf "#<#{self.class}, session=#{@session}, seq=#{@seq},  result=#{@result}}>"
       end
     end
 
@@ -274,6 +274,7 @@ module DeepConnect
       def initialize(local_id)
 	@local_id=local_id
       end
+
 
       attr_reader :local_id
 

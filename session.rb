@@ -22,44 +22,32 @@ module DeepConnect
 
 #    SESSION_SERVICE_NAME = "DeepConnect::SESSION"
 
-    def initialize(org, port, local_id = nil)
-      @organizer = org
+    def initialize(deep_space, port, local_id = nil)
+      @organizer = deep_space.organizer
+      @deep_space = deep_space
       @port = port
 #puts "local_id=#{local_id}"      
-      unless local_id
-	local_id = @port.peeraddr[1]
-      end
-
-      addr = @port.peeraddr[3]
-      ipaddr = IPAddr.new(addr)
-      ipaddr = ipaddr.ipv4_mapped if ipaddr.ipv4?
-      @peer_uuid = [ipaddr.to_s, local_id]
 
       @export_queue = Queue.new
-      @import_queue = Queue.new
+#      @import_queue = Queue.new
       @waiting = Hash.new
       @waiting_mutex = Mutex.new
 
       @iterator_event_queues = {}
       
-      # exportされている
-      @roots = {}
-
-      # importしている
-      @import_reference = {}
-
       @next_request_event_id = 0
       @next_request_event_id_mutex = Mutex.new
     end
 
     attr_reader :organizer
+    attr_reader :deep_space
 
-    attr_reader :peer_uuid
+    def peer_uuid
+      @deep_space.peer_uuid
+    end
     alias peer_id peer_uuid
 
     def start
-#      @organizer.register_service(SESSION_SERVOCE_NAME, self)
-
       @import_thread = Thread.start {
 	loop do
 	  begin
@@ -87,15 +75,12 @@ module DeepConnect
 	  end
 	end
       }
-
       self
     end
 
     def stop
-#      Thread.start {
-	@import_thread.exit
-	@export_thread.exit
-#      }
+      @import_thread.exit
+      @export_thread.exit
     end
 
     # peerからの受取り
@@ -134,7 +119,6 @@ module DeepConnect
       end
     end
 
-
     def iterator_event_pop(itr_id)
       @iterator_event_queues[itr_id].pop
     end
@@ -145,9 +129,7 @@ module DeepConnect
 
     # イベントの受け取り
     def accept(ev)
-#      loop do
       @export_queue.push ev
-#      end
     end
 
     # イベントの生成/送信
@@ -191,59 +173,6 @@ module DeepConnect
       end
     end
 
-    def set_root(root)
-      @roots[root.object_id] = root
-      root.object_id
-    end
-    
-    def root(id)
-      @roots[id]
-    end
-
-    def import_reference(id)
-      if wr = @import_reference[id]
-	begin
-	  wr.__getobj__
-	rescue
-	  @import_reference.delete(id)
-	  nil
-	end
-      else
-	nil
-      end
-    end
-
-    def register_import_reference(v)
-      @import_reference[v.peer_id] = WeakRef.new(v)
-      ObjectSpace.define_finalizer(v, deregister_import_reference_proc)
-      nil
-    end
-
-    def deregister_import_reference_proc
-      proc do |id|
-	@import_reference.delete(id)
-#	Thread.start do
-	  deregister_root_to_peer(id)
-#	end
-      end
-    end
-
-#     def universal_id
-#       addr, port = @port.addr.values_at(3,1)
-#       ipaddr = IPAddr.new(addr)
-#       ipaddr = ipaddr.ipv4_mapped if ipaddr.ipv4?
-#       return ipaddr.to_s, port
-#     end
-
-#     # peer情報
-#     def peer_universal_id
-#       addr, port = @port.peeraddr.values_at(3,1)
-#       ipaddr = IPAddr.new(addr)
-#       ipaddr = ipaddr.ipv4_mapped if ipaddr.ipv4?
-#       return ipaddr.to_s, port
-#     end
-#     alias peer_id peer_universal_id
-
     def send_peer_session(req, *args)
       ev = Event::SessionRequest.request(self, (req.id2name+"_impl").intern, *args)
       @waiting_mutex.synchronize do
@@ -277,16 +206,16 @@ module DeepConnect
     end
 
     def register_root_impl(id)
-      @roots[id] = @organizer.id2obj(id)
+      @deep_space.register_root_from_other_session(id)
     end
-
 
     def deregister_root_to_peer(id)
       send_peer_session_no_recv(:deregister_root, id)
     end
 
     def deregister_root_impl(id)
-      @roots.delete(id)
+      @deep_space.delete_root(id)
+      nil
       nil
     end
   end

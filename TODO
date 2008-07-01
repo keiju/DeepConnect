@@ -5,10 +5,14 @@
 * block再実装
 * 間接リファレンスの接続処理
 * 簡易分散GC
--- スケジュール
 * クライアント(異常)切断時の処理
-* 簡易分散GCのパフォーマンスアップ
--- 識別
+* Session->ObjectSpace+Session分離
+* DeepSpace#import/export
+-- スケジュール
+* クライアントの切断時のsessionの処理
+* 簡易分散GCのパフォーマンスアップ(バッチ化)
+* protorype宣言 (Marshal指定機能)
+--- 識別
 * リモートクラスメソッド
 * method_missingからの独立
 

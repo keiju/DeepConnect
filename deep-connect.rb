@@ -32,8 +32,11 @@ module DeepConnect
 
     def_delegator :@organizer, :start
     def_delegator :@organizer, :stop
+    def_delegator :@organizer, :export
     def_delegator :@organizer, :register_service
-    def_delegator :@organizer, :open_session
+    def_delegator :@organizer, :open_deep_space
+    def_delegator :@organizer, :open_deepspace
+    def_delegator :@organizer, :local_id
     def_delegator :@organizer, :local_id
   end
 

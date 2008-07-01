@@ -39,7 +39,7 @@ module DeepConnect
 	    unless (ev = port.import).kind_of?(Event::InitSessionEvent)
 	      puts "WARN: 接続初期化エラー: [#{port.peeraddr}]"
 	    end
-	    @organizer.start_session_on_port port, ev.local_id
+	    @organizer.connect_deep_space_with_port port, ev.local_id
 	  rescue EOFError
 	    puts "WARN: 接続初期化中に[#{port.peeraddr}]との接続が切れました"
 	  end

@@ -20,11 +20,11 @@ STDOUT.sync
 
 #Tracer.on
 dc = DeepConnect.start(65534)
-session = dc.open_session("localhost", 65535)
+session = dc.open_deep_space("localhost", 65535)
 
 case ARGV[0]
 when "1"
-  ref = session.get_service("TEST")
+  ref = session.import("TEST")
   p ref 
 
 when "2"

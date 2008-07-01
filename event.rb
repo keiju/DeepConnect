@@ -62,9 +62,9 @@ module DeepConnect
     
       def Request.materialize_sub(session, type, klass, seq, receiver, method, *args)
 	type.receipt(session, seq,
-		     session.root(receiver),
+		     session.deep_space.root(receiver),
 		     method,
-		     *args.collect{|elm| Reference.materialize(session, *elm)})
+		     *args.collect{|elm| Reference.materialize(session.deep_space, *elm)})
       end
 
       def reply_class
@@ -87,7 +87,8 @@ module DeepConnect
       end
     
       def serialize
-	args = @args.collect{|elm| Reference.serialize(@session, elm)}
+	args = @args.collect{|elm| Reference.serialize(@session.deep_space, elm)}
+	@receiver.peer_id
 	[self.class, @seq, @receiver.peer_id, @method].concat(args)
       end
     
@@ -181,13 +182,13 @@ module DeepConnect
       def Reply.materialize_sub(session, type, klass, seq, receiver, ret, exp=nil)
 	if exp
 	  type.new(session, seq, 
-		   session.root(receiver), 
-		   Reference.materialize(session, *ret),
-		   Reference.materialize(session, *exp))
+		   session.deep_space.root(receiver), 
+		   Reference.materialize(session.deep_space, *ret),
+		   Reference.materialize(session.deep_space, *exp))
 	else
 	  type.new(session, seq, 
-		   session.root(receiver), 
-		   Reference.materialize(session, *ret))
+		   session.deep_space.root(receiver), 
+		   Reference.materialize(session.deep_space, *ret))
 	end
       end
     
@@ -201,13 +202,13 @@ module DeepConnect
       def serialize
 	if @exp
 	  [self.class, @seq, 
-	    Reference.serialize(@session, @receiver),
-	    Reference.serialize(@session, @result),
-	    Reference.serialize(@session, @exp)]
+	    Reference.serialize(@session.deep_space, @receiver),
+	    Reference.serialize(@session.deep_space, @result),
+	    Reference.serialize(@session.deep_space, @exp)]
 	else
 	  [self.class, @seq, 
-	    Reference.serialize(@session, @receiver),
-	    Reference.serialize(@session, @result)]
+	    Reference.serialize(@session.deep_space, @receiver),
+	    Reference.serialize(@session.deep_space, @result)]
 	end
       end
 
@@ -252,7 +253,7 @@ module DeepConnect
 #	puts "SESSIONREPLY: #{type}, #{session}, #{ret.collect{|e| e.to_s}.join(',')}"	
 	type.new(session, seq, 
 		 session, 
-		 Reference.materialize(session, *ret))
+		 Reference.materialize(session.deep_space, *ret))
       end
 
       def inspect

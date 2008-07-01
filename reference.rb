@@ -11,80 +11,41 @@
 #
 
 module DeepConnect
-  # session.peer上のオブジェクトのプロキシを生成するファクトリ
-  def Reference(session, v)
-    case v
-    when Fixnum, TRUE, FALSE, nil, String
-      v
-    when Reference
-      v
-#       if session == v.session
-# 	v.peer
-#       else
-# 	v
-#       end
-    when Module
-      ReferenceClass(session, v)
-    else
-#      if r = session.import_reference(v)
-#	return r
-#      end
-      r = Reference.new(session, v)
-#      session.register_import_reference(r)
-#      r
-    end
-  end
-  module_function :Reference
-
-  def ReferenceClass(session, klass)
-    rklass = Class.new(ReferenceClass)
-#    rklass.module_eval {
-#      def foo;end
-#    }
-  end
-
   class Reference
 
     # session ローカルなプロキシを生成
     #	[クラス名, 値]
     #	[クラス名, ローカルSESSION, 値]
-    def Reference.serialize(session, value)
+    def Reference.serialize(deep_space, value)
       if value.kind_of? Reference
-	if session == value.session
+	if deep_space == value.deep_space
 	  [value.class, value.peer_id, :PEER_OBJECT]
 	else
-	  [value.class, value.peer_id, value.session.peer_uuid]
+	  [value.class, value.peer_id, value.deep_space.peer_uuid]
 	end
       else
 	case value
 	when Fixnum, TRUE, FALSE, nil, Symbol, String
 	  [value.class, value]
 	else
-	  object_id = session.set_root(value)
+	  object_id = deep_space.set_root(value)
 	  [Reference,  object_id]
 	end
       end
     end
     
-    def Reference.materialize(session, type, object_id, uuid=nil)
+    def Reference.materialize(deep_space, type, object_id, uuid=nil)
       if type == Reference
-#puts "MAT0: #{serial.collect{|e| e.to_s}.join(', ')}"
-#puts "MAT1: uuid=#{uuid}"
-#puts "MAT1: #{session.organizer.session(uuid)}"
-#puts "MAT2: #{type.new(session.organizer.session(serial[0]), serial[1]).inspect}"
-#	DeepConnect::Reference(session, type.new(session.organizer.session(serial[0]), serial[1]))
 	if uuid
-#	  if session.organizer.local_id == uuid[1]
 	  if uuid == :PEER_OBJECT
-	    session.root(object_id)
+	    deep_space.root(object_id)
 	  else
-	    peer_session = session.organizer.session(uuid) do |s|
-	      s.register_root_to_peer(object_id)
-	    end
-	    type.new(peer_session, object_id)
+	    peer_deep_space = deep_space.organizer.deep_space(uuid)
+	    peer_deep_space.register_root_to_peer(object_id)
+	    type.new(peer_deep_space, object_id)
 	  end
 	else
-	    type.new(session, object_id)
+	    type.new(deep_space, object_id)
 	end
       else
 	# 即値
@@ -92,31 +53,31 @@ module DeepConnect
       end
     end
 
-    def Reference.register(session, o)
-      session.peer.set_root(o)
-      Reference.new(session, o.id)
-    end
+#     def Reference.register(deep_space, o)
+#       deep_space.peer.set_root(o)
+#       Reference.new(session, o.id)
+#     end
 
-    def Reference.new(session, peer_id)
-      if r = session.import_reference(peer_id)
+    def Reference.new(deep_space, peer_id)
+      if r = deep_space.import_reference(peer_id)
 	return r
       end
       r = super
-      session.register_import_reference(r)
+      deep_space.register_import_reference(r)
       r
     end
     
-    def initialize(session, peer_id)
-      @session = session
+    def initialize(deep_space, peer_id)
+      @deep_space = deep_space
       @peer_id = peer_id
     end
     
-    def session
-      @session
+    def deep_space
+      @deep_space
     end
     
     def peer
-      @session.root(@peer_id)
+      @deep_space.root(@peer_id)
     end
     
     def peer_id
@@ -126,26 +87,26 @@ module DeepConnect
     def method_missing(method, *args, &block)
 #puts "METHOD_MISSING: #{method.id2name} "
       if iterator?
-	@session.send_to(self, method, *args, &block)
+	@deep_space.session.send_to(self, method, *args, &block)
       else
-	@session.send_to(self, method, *args)
+	@deep_space.session.send_to(self, method, *args)
       end
     end
     
      def peer_to_s
-       @session.send_to(self, :to_s)
+       @deep_space.session.send_to(self, :to_s)
      end
      def peer_inspect
-       @session.send_to(self, :inspect)
+       @deep_space.session.send_to(self, :inspect)
      end
     
 #     def to_s
-#       @session.send_to(self, :to_s)
+#       @deep_space.session.send_to(self, :to_s)
 #     end
     
      def to_a
        a = []
-       @session.send_to(self, :to_a).each{|e| a.push e}
+       @deep_space.session.send_to(self, :to_a).each{|e| a.push e}
        a
      end
     
@@ -154,7 +115,7 @@ module DeepConnect
     end
     
     def inspect
-      sprintf("<Reference: session=%s id=%x>", @session.to_s, @peer_id) 
+      sprintf("<Reference: deep_space=%s id=%x>", @deep_space.to_s, @peer_id) 
     end
   end
 

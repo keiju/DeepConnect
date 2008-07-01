@@ -1,3 +1,8 @@
+2008-07-01  Keiju Ishitsuka  <keiju@emperor2.pendome>
+
+	* Session->ObjectSpace+SessionÊ¬Î¥
+	* DeepSpace#import/export
+
 2008-06-27  Keiju Ishitsuka  <keiju@emperor2.pendome>
 
 	* ´Ê°×Ê¬»¶GC

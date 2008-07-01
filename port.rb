@@ -95,6 +95,9 @@ puts "IMPORT: #{ev.inspect}"
     end
 
     def export(ev)
+#       if ev.kind_of?(Event::Reply)
+# 	puts "EXPORT0: #{ev.class} seq=#{ev.seq} result=#{ev.result.instance_eval{self.class}}"
+#       end
 puts "EXPORT: #{ev.inspect}"
 #puts "SEL: #{ev.serialize.inspect}"
       id = event2packet_id(ev)

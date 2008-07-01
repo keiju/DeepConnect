@@ -26,7 +26,7 @@ module DeepConnect
       @probe.addr[1]
     end
 
-    def open(service)
+    def open(service = 0)
       @probe = TCPServer.open(service)
     end
 

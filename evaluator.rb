@@ -55,7 +55,7 @@ module DeepConnect
 #	    when Event::IteratorRetryRequest
 #	      retry
 	    when Event::IteratorExitRequest
-	      puts "ITERATOR: EXIT"
+#	      puts "ITERATOR: EXIT"
 	      return
 	    end
 	  rescue

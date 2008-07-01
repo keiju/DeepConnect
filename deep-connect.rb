@@ -20,7 +20,7 @@ module DeepConnect
   class DConnect
     extend Forwarding
 
-    def self.start(service)
+    def self.start(service=0)
       dc = new
       dc.start(service)
       dc
@@ -36,6 +36,7 @@ module DeepConnect
     def_delegator :@organizer, :register_service
     def_delegator :@organizer, :open_deep_space
     def_delegator :@organizer, :open_deepspace
+    def_delegator :@organizer, :local_id
   end
 
   def DeepConnect.start(service = nil)

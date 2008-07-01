@@ -20,6 +20,12 @@ module DeepConnect
       super(exp.message)
       @peer_exception = exp
     end
+
+#     def backtrace
+# #      bt = @peer_exception.backtrace.to_a
+# #      bt.push *super
+#       bt
+#     end
     
     attr_reader :peer_exception
   end
@@ -257,7 +263,7 @@ module DeepConnect
       end
 
       def inspect
-	sprintf "#<#{self.class}, session=#{@session}, seq=#{@seq},  result=#{@result.inspect}}>"
+	sprintf "#<#{self.class}, session=#{@session}, seq=#{@seq},  result=#{@result}}>"
       end
     end
 
@@ -269,6 +275,7 @@ module DeepConnect
       def initialize(local_id)
 	@local_id=local_id
       end
+
 
       attr_reader :local_id
 

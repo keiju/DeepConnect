@@ -192,11 +192,17 @@ module DeepConnect
     end
 
     def get_service_impl(name)
-      @organizer.service(name)
+      if sv = @organizer.service(name)
+	puts "INFO: get_service: #{name}, #{sv}"
+      else
+	puts "WARN: service Not Found: #{name}"
+      end
+      sv
     end
 
     def register_root_to_peer(id)
       send_peer_session(:register_root, id)
+      nil
     end
 
     def register_root_impl(id)
@@ -209,6 +215,7 @@ module DeepConnect
 
     def deregister_root_impl(id)
       @deep_space.delete_root(id)
+      nil
     end
   end
 end

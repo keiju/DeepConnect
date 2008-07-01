@@ -1,7 +1,17 @@
 2008-07-01  Keiju Ishitsuka  <keiju@emperor2.pendome>
 
+	* v0.2.01-008.fairy-003-fairy-v0.2.1-002 とのマージ
+	* fairy v0.2.1-002 対応
+	
 	* Session->ObjectSpace+Session分離
 	* DeepSpace#import/export
+	* WeakRef周りの不具合修正
+
+2008-06-30  Keiju Ishitsuka  <keiju@emperor2.pendome>
+
+	* Reference#id 追加
+	* DeepConnect#local_id 追加
+	* Accepterを不定ポート番号にできるようにした.
 
 2008-06-27  Keiju Ishitsuka  <keiju@emperor2.pendome>
 

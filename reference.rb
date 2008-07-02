@@ -40,15 +40,9 @@ module DeepConnect
 	  if uuid == :PEER_OBJECT
 	    deep_space.root(object_id)
 	  else
-<<<<<<< .working
-	    peer_session = session.organizer.session(uuid)
-	    peer_session.register_root_to_peer(object_id)
-	    type.new(peer_session, object_id)
-=======
 	    peer_deep_space = deep_space.organizer.deep_space(uuid)
 	    peer_deep_space.register_root_to_peer(object_id)
 	    type.new(peer_deep_space, object_id)
->>>>>>> .merge-right.r54
 	  end
 	else
 	    type.new(deep_space, object_id)

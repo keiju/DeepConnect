@@ -71,7 +71,12 @@ module DeepConnect
 
     def import_reference(id)
       if wr = @import_reference[id]
-	wr.__getobj__
+	begin
+	  wr.__getobj__
+	rescue
+	  @import_reference.delete(id)
+	  nil
+	end
       else
 	nil
       end

@@ -36,35 +36,32 @@ module DeepConnect
       begin
 	ret = event.receiver.send(event.method, *event.args)
 	unless event.kind_of?(Event::NoReply)
-	  session.accept event.reply_class.new(session, event.seq, event.receiver, ret)
+	  session.accept event.reply(ret)
 	end
       rescue Exception
 	unless event.kind_of?(Event::NoReply)
-	  session.accept event.reply_class.new(session, event.seq, event.receiver, ret, $!)
+	  session.accept event.reply( ret, $!)
 	end
       end
     end
 
     def evaluate_iterator_request(session, event)
       begin 
-	fin = event.receiver.send(event.method, *event.args){|ret|
+	fin = event.receiver.send(event.method, *event.args){|*ret|
 	  begin
-	    session.accept Event::IteratorReply.new(session, event.seq, event.receiver, ret)
+	    session.accept Event::IteratorReply.reply(session, event, ret)
 	    case evn = session.iterator_event_pop(event.seq)
 	    when Event::IteratorNextRequest
-#	    when Event::IteratorRetryRequest
-#	      retry
 	    when Event::IteratorExitRequest
-#	      puts "ITERATOR: EXIT"
 	      return
 	    end
 	  rescue
-	    session.accept Event::IteratorReply.new(session, event.seq, event.receiver, ret, $!)
+	    session.accept Event::IteratorReply.reply(session, event, ret, $!)
 	  end
 	}
-	session.accept Event::IteratorReplyFinish.new(session, event.seq, event.receiver, fin)
+	session.accept Event::IteratorReplyFinish.reply(session, event, fin)
       rescue Exception
-	session.accept Event::IteratorReplyFinish.new(session, event.seq, event.receiver, ret, $!)
+	session.accept Event::IteratorReplyFinish.reply(session, event, fin, $!)
       ensure
 	session.iterator_exit(event.seq)
       end

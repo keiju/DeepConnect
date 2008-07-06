@@ -101,7 +101,7 @@ puts "IMPORT: #{ev.inspect}"
 puts "EXPORT: #{ev.inspect}"
 #puts "SEL: #{ev.serialize.inspect}"
       id = event2packet_id(ev)
-      ev.serialize
+#      ev.serialize
       s = Marshal.dump(ev.serialize)
       packet = [id, s.size, s].pack("nNa#{s.size}")
       @io.write(packet)

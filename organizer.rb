@@ -110,6 +110,41 @@ module DeepConnect
       end
       raise "登録されていません.#{id}"
     end
+
+    @@DEFAULT_MUTAL_CLASSES = [
+      NilClass,
+      TrueClass,
+      FalseClass,
+      Numeric,
+      Symbol,
+      String
+    ]
+
+    def self.default_mutal_classes
+      @@DEFAULT_MUTAL_CLASSES
+    end
+
+    @@METHOD_SPECS = {}
+
+    def self.def_method_spec(klass, method_spec)
+      mspec = MethodSpec.create(klass, method_spec)
+      @@METHOD_SPECS[mspec.key] = mspec
+    end
+
+    def self.def_single_method_spec(obj, method_spec)
+      mspec = MethodSpec.create_single(klass, method_spec)
+      @@METHOD_SPECS[mspec.key] = mspec
+    end
+
+    def self.method_specs
+      @@METHOD_SPECS
+    end
+
+    def self.method_spec(obj, method)
+      key = MethodSpec.mkkey(obj, method)
+      @@METHOD_SPECS[key]
+    end
+
   end
 end
 

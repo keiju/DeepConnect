@@ -42,6 +42,15 @@ module DeepConnect
   def DeepConnect.start(service = nil)
     DConnect.start(service)
   end
+
+  def DeepConnect.def_method_spec(*opts)
+    Organizer.def_method_spec(*opts)
+  end
+
+  def DeepConnect.def_single_method_spec(*opts)
+    Organizer.def_single_method_spec(*opts)
+  end
+
 end
 
 

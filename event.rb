@@ -11,6 +11,7 @@
 #   
 #
 
+require "deep-connect/method-spec"
 require "deep-connect/reference"
 
 module DeepConnect
@@ -41,6 +42,7 @@ module DeepConnect
 	@receiver = receiver
       end
       
+      attr_reader :session
       attr :receiver
       attr :seq
     
@@ -66,11 +68,18 @@ module DeepConnect
 	rec
       end
     
-      def Request.materialize_sub(session, type, klass, seq, receiver, method, *args)
+      def Request.materialize_sub(session, type, klass, seq, receiver_id, method, *args)
+	receiver = session.deep_space.root(receiver_id)
+
 	type.receipt(session, seq,
-		     session.deep_space.root(receiver),
+		     receiver,
 		     method,
-		     *args.collect{|elm| Reference.materialize(session.deep_space, *elm)})
+		     *args.collect{|elm| 
+		       Reference.materialize(session.deep_space, *elm)})
+      end
+
+      def reply(ret, exp = nil)
+	reply_class.reply(self.session, self, ret, exp)
       end
 
       def reply_class
@@ -93,8 +102,19 @@ module DeepConnect
       end
     
       def serialize
-	args = @args.collect{|elm| Reference.serialize(@session.deep_space, elm)}
-	@receiver.peer_id
+puts "SS0: #{@receiver.class_name} #{@method}"
+	if mspec = @session.deep_space.method_spec(@receiver, @method)
+	  args = mspec.arg_zip(@args){|spec, arg|
+puts "SS*: #{arg.inspect}, #{spec.inspect}"
+	    Reference.serialize_with_spec(@session.deep_space, arg, spec)
+	  }
+	else
+puts "SS1"
+	  args = @args.collect{|elm| 
+	    Reference.serialize(@session.deep_space, elm)
+	  }
+	end
+#	@receiver.peer_id
 	[self.class, @seq, @receiver.peer_id, @method].concat(args)
       end
     
@@ -138,7 +158,7 @@ module DeepConnect
       def results(*ret, &block)
 	if ret.empty?
 	  while !(ret = @results.pop).kind_of?(IteratorReplyFinish)
-	    block.call ret.result
+	    block.call *ret.result
 #	    yield ret.result
 	  end
 	  ret.result
@@ -175,6 +195,13 @@ module DeepConnect
 	SessionReply
       end
     
+      def serialize
+	args = @args.collect{|elm| 
+	  Reference.serialize(@session.deep_space, elm)
+	}
+	[self.class, @seq, @receiver.peer_id, @method].concat(args)
+      end
+
       def inspect
 	sprintf "#<#{self.class}, session=#{@session}, seq=#{@seq}, method=#{@method.id2name}, args=#{@args.collect{|e| e.to_s}.join(', ')}>"
       end
@@ -185,36 +212,60 @@ module DeepConnect
     end
 
     class Reply < Event
-      def Reply.materialize_sub(session, type, klass, seq, receiver, ret, exp=nil)
+      def Reply.materialize_sub(session, type, klass, seq, receiver, method, ret, exp=nil)
 	if exp
 	  type.new(session, seq, 
 		   session.deep_space.root(receiver), 
+		   method,
 		   Reference.materialize(session.deep_space, *ret),
 		   Reference.materialize(session.deep_space, *exp))
 	else
+ puts "XXX:#{type}, #{ret.inspect}"
 	  type.new(session, seq, 
 		   session.deep_space.root(receiver), 
+		   method,
 		   Reference.materialize(session.deep_space, *ret))
+
 	end
       end
+
+      def self.reply(session, req, ret, exp=nil)
+	new(session, req.seq, req.receiver, req.method, ret, exp)
+      end
     
-      def initialize(session, seq, receiver, ret, exp=nil)
+      def initialize(session, seq, receiver, method, ret, exp=nil)
 	super(session, receiver)
 	@seq = seq
+	@method = method
 	@result = ret
 	@exp = exp
       end
     
       def serialize
+	if mspec = @session.deep_space.my_method_spec(@receiver, @method)
+	  if mspec.rets.kind_of?(Array)
+	    rets = mspec.rets_zip(@result){|spec, ret|
+	      Reference.serialize_with_spec(@session.deep_space, ret, spec)
+	    }
+	    sel_result = ["VAL", "Array", [Array, rets]]
+	  else
+	    sel_result = Reference.serialize(@session.deep_space, @result, mspec.rets)
+	  end
+	else
+	  sel_result = Reference.serialize(@session.deep_space, @result)
+	end
+	
 	if @exp
 	  [self.class, @seq, 
 	    Reference.serialize(@session.deep_space, @receiver),
-	    Reference.serialize(@session.deep_space, @result),
+	    @method,
+	    sel_result,
 	    Reference.serialize(@session.deep_space, @exp)]
 	else
 	  [self.class, @seq, 
 	    Reference.serialize(@session.deep_space, @receiver),
-	    Reference.serialize(@session.deep_space, @result)]
+	    @method,
+	    sel_result]
 	end
       end
 
@@ -230,11 +281,29 @@ module DeepConnect
       attr_reader :exp
 
       def inspect
-	sprintf "#<#{self.class}, session=#{@session}, seq=#{@seq}, receiver=#{@receiver}, result=#{@result}}>"
+	sprintf "#<#{self.class}, session=#{@session}, seq=#{@seq}, receiver=#{@receiver}, method=#{@method} result=#{@result}}>"
       end
     end
 
     class IteratorReply < Reply
+      def IteratorReply.materialize_sub(session, type, klass, seq, receiver, method, ret, exp=nil)
+
+	result = Reference.materialize(session.deep_space, *ret)
+puts "ZZZZ: #{result.inspect}"
+	if exp
+	  type.new(session, seq, 
+		   session.deep_space.root(receiver), 
+		   method,
+		   result,
+		   Reference.materialize(session.deep_space, *exp))
+	else
+ puts "XXX:#{type}, #{ret.inspect}"
+	  type.new(session, seq, 
+		   session.deep_space.root(receiver), 
+		   method,
+		   result)
+	end
+      end
       def iterator?
 	true
       end
@@ -242,9 +311,33 @@ module DeepConnect
       def finish?
 	false
       end
+
+      def serialize
+	if mspec = @session.deep_space.my_method_spec(@receiver, @method)
+	  rets = mspec.block_arg_zip(@result){|spec, ret|
+	    Reference.serialize_with_spec(@session.deep_space, ret, spec)
+	  }
+	  sel_result = ["VAL", "Array", [Array, rets]]
+	else
+	  sel_result = Reference.serialize(@session.deep_space, @result, "VAL")
+	end
+	
+	if @exp
+	  [self.class, @seq, 
+	    Reference.serialize(@session.deep_space, @receiver),
+	    @method,
+	    sel_result,
+	    Reference.serialize(@session.deep_space, @exp)]
+	else
+	  [self.class, @seq, 
+	    Reference.serialize(@session.deep_space, @receiver),
+	    @method,
+	    sel_result]
+	end
+      end
     end
 
-    class IteratorReplyFinish < IteratorReply
+    class IteratorReplyFinish < Reply
       def iterator?
 	true
       end
@@ -255,10 +348,11 @@ module DeepConnect
     end
 
     class SessionReply < Reply
-      def SessionReply.materialize_sub(session, type, klass, seq, receiver, ret)
+      def SessionReply.materialize_sub(session, type, klass, seq, receiver, method, ret)
 #	puts "SESSIONREPLY: #{type}, #{session}, #{ret.collect{|e| e.to_s}.join(',')}"	
 	type.new(session, seq, 
 		 session, 
+		 method,
 		 Reference.materialize(session.deep_space, *ret))
       end
 

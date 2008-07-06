@@ -48,6 +48,8 @@ module DeepConnect
     alias peer_id peer_uuid
 
     def start
+      send_prototype
+
       @import_thread = Thread.start {
 	loop do
 	  begin
@@ -140,10 +142,10 @@ module DeepConnect
 	  @waiting[ev.seq] = ev
 	end
 	@export_queue.push ev
-	ev.results do |elm|
+	ev.results do |*elm|
 	  begin
 	    exit = true
-	    yield elm
+	    yield *elm
 	    exit = false
 	  ensure
 	    if exit
@@ -216,6 +218,18 @@ module DeepConnect
     def deregister_root_impl(id)
       @deep_space.delete_root(id)
       nil
+    end
+
+    def send_prototype
+      specs_dump = Marshal.dump(Organizer::method_specs)
+      p specs_dump
+      send_peer_session_no_recv(:recv_prototype, specs_dump)
+    end
+
+    def recv_prototype_impl(specs_dump)
+      specs = Marshal.load(specs_dump)
+      p specs
+      @deep_space.set_method_specs(specs)
     end
   end
 end

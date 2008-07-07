@@ -42,17 +42,16 @@ when "3"
 
 when "4"
   r = session.get_service("TEST1")
-  r.each{|e| puts e}
-
+  r.each{|e| puts "TEST1: #{e}"}
 when "4.1"
   r = session.get_service("TEST1")
-  r.each{|e| puts e; next}
+  r.each{|e| puts "TEST1: #{e}"; next}
 
 when "4.2"
   r = session.get_service("TEST1")
   a = 0
   r.each do |e| 
-    puts e
+    puts "TEST1: #{e}"
     a += 1
     redo if a==3
   end

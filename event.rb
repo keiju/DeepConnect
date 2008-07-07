@@ -78,7 +78,8 @@ module DeepConnect
 		       Reference.materialize(session.deep_space, *elm)})
       end
 
-      def reply(ret, exp = nil)
+      def reply(ret, exp = nil, reply_class = reply_class)
+	  
 	reply_class.reply(self.session, self, ret, exp)
       end
 
@@ -102,7 +103,7 @@ module DeepConnect
       end
     
       def serialize
-puts "SS0: #{@receiver.class_name} #{@method}"
+puts "SS0: #{@receiver.class.name} #{@method}"
 	if mspec = @session.deep_space.method_spec(@receiver, @method)
 	  args = mspec.arg_zip(@args){|spec, arg|
 puts "SS*: #{arg.inspect}, #{spec.inspect}"
@@ -147,6 +148,11 @@ puts "SS1"
     end
 
     class IteratorRequest < Request
+      def initialize(*opts)
+	super
+	@call_back = Queue.new
+      end
+      
       def reply_class
 	IteratorReply
       end
@@ -155,18 +161,75 @@ puts "SS1"
 	TRUE
       end
     
-      def results(*ret, &block)
-	if ret.empty?
-	  while !(ret = @results.pop).kind_of?(IteratorReplyFinish)
-	    block.call *ret.result
-#	    yield ret.result
-	  end
-	  ret.result
-	else
-	  @results.push *ret
+#       def results(*ret, &block)
+# 	if ret.empty?
+# 	  while !(ret = @results.pop).kind_of?(IteratorReplyFinish)
+# 	    block.call *ret.result
+# #	    yield ret.result
+# 	  end
+# 	  ret.result
+# 	else
+# 	  @results.push *ret
+# 	end
+#       end
+
+      def call_back(&block)
+	while !(ret = @call_back.pop).kind_of?(IteratorCallBackRequestFinish)
+	  block.call ret
 	end
       end
+
+      def push_call_back(ev)
+	@call_back.push ev
+      end
     end
+
+    class IteratorCallBackRequest<Request
+
+      def IteratorCallBackRequest.materialize_sub(session, type, klass, seq, receiver_id, method, *args)
+	type.receipt(session, seq,
+		     Reference.materialize(session.deep_space, *receiver_id),
+		     method,
+		     *args.collect{|elm| 
+		       Reference.materialize(session.deep_space, *elm)})
+      end
+
+      def IteratorCallBackRequest.call_back_event(event, *args)
+	req = new(event.session, event.receiver, event.method, *args)
+	req.init_req
+	req.set_seq([req.seq, event.seq])
+	req
+      end
+
+      def reply_class
+	IteratorCallBackReply
+      end
+
+      def serialize
+	if mspec = @session.deep_space.method_spec(@receiver, @method)
+	  args = mspec.arg_zip(@args){|spec, arg|
+	    Reference.serialize_with_spec(@session.deep_space, arg, spec)
+	  }
+	else
+	  args = @args.collect{|elm| 
+	    Reference.serialize(@session.deep_space, elm)
+	  }
+	end
+#	@receiver.peer_id
+	[self.class, @seq,  
+	  Reference.serialize(@session.deep_space, @receiver),
+	  method].concat(args)
+      end
+
+
+      def iterator?
+	true
+      end
+    end
+    
+    class IteratorCallBackRequestFinish<IteratorCallBackRequest
+    end
+
 
     class IteratorSubRequest < Request
       def itr_id
@@ -286,24 +349,24 @@ puts "SS1"
     end
 
     class IteratorReply < Reply
-      def IteratorReply.materialize_sub(session, type, klass, seq, receiver, method, ret, exp=nil)
+#       def IteratorReply.materialize_sub(session, type, klass, seq, receiver, method, ret, exp=nil)
 
-	result = Reference.materialize(session.deep_space, *ret)
-puts "ZZZZ: #{result.inspect}"
-	if exp
-	  type.new(session, seq, 
-		   session.deep_space.root(receiver), 
-		   method,
-		   result,
-		   Reference.materialize(session.deep_space, *exp))
-	else
- puts "XXX:#{type}, #{ret.inspect}"
-	  type.new(session, seq, 
-		   session.deep_space.root(receiver), 
-		   method,
-		   result)
-	end
-      end
+# 	result = Reference.materialize(session.deep_space, *ret)
+# puts "ZZZZ: #{result.inspect}"
+# 	if exp
+# 	  type.new(session, seq, 
+# 		   session.deep_space.root(receiver), 
+# 		   method,
+# 		   result,
+# 		   Reference.materialize(session.deep_space, *exp))
+# 	else
+#  puts "XXX:#{type}, #{ret.inspect}"
+# 	  type.new(session, seq, 
+# 		   session.deep_space.root(receiver), 
+# 		   method,
+# 		   result)
+# 	end
+#       end
       def iterator?
 	true
       end
@@ -312,30 +375,43 @@ puts "ZZZZ: #{result.inspect}"
 	false
       end
 
-      def serialize
-	if mspec = @session.deep_space.my_method_spec(@receiver, @method)
-	  rets = mspec.block_arg_zip(@result){|spec, ret|
-	    Reference.serialize_with_spec(@session.deep_space, ret, spec)
-	  }
-	  sel_result = ["VAL", "Array", [Array, rets]]
-	else
-	  sel_result = Reference.serialize(@session.deep_space, @result, "VAL")
-	end
+#       def serialize
+# 	if mspec = @session.deep_space.my_method_spec(@receiver, @method)
+# 	  rets = mspec.block_arg_zip(@result){|spec, ret|
+# 	    Reference.serialize_with_spec(@session.deep_space, ret, spec)
+# 	  }
+# 	  sel_result = ["VAL", "Array", [Array, rets]]
+# 	else
+# 	  sel_result = Reference.serialize(@session.deep_space, @result, "VAL")
+# 	end
 	
-	if @exp
-	  [self.class, @seq, 
-	    Reference.serialize(@session.deep_space, @receiver),
-	    @method,
-	    sel_result,
-	    Reference.serialize(@session.deep_space, @exp)]
-	else
-	  [self.class, @seq, 
-	    Reference.serialize(@session.deep_space, @receiver),
-	    @method,
-	    sel_result]
-	end
+# 	if @exp
+# 	  [self.class, @seq, 
+# 	    Reference.serialize(@session.deep_space, @receiver),
+# 	    @method,
+# 	    sel_result,
+# 	    Reference.serialize(@session.deep_space, @exp)]
+# 	else
+# 	  [self.class, @seq, 
+# 	    Reference.serialize(@session.deep_space, @receiver),
+# 	    @method,
+# 	    sel_result]
+# 	end
+#       end
+    end
+
+    class IteratorCallBackReply<Reply
+      def iterator?
+	true
       end
     end
+
+    class IteratorCallBackReplyBreak<IteratorCallBackReply
+      def iterator?
+	true
+      end
+    end
+
 
     class IteratorReplyFinish < Reply
       def iterator?

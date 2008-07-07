@@ -45,23 +45,29 @@ module DeepConnect
       end
     end
 
+    class ItrBreak<Exception;end
+
     def evaluate_iterator_request(session, event)
       begin 
-	fin = event.receiver.send(event.method, *event.args){|*ret|
+	fin = event.receiver.send(event.method, *event.args){|*args|
 	  begin
-	    session.accept Event::IteratorReply.reply(session, event, ret)
-	    case evn = session.iterator_event_pop(event.seq)
-	    when Event::IteratorNextRequest
-	    when Event::IteratorExitRequest
-	      return
+	    session.accept Event::IteratorCallBackRequest.call_back_event(event, *args)
+	    callback_reply  = session.iterator_event_pop(event.seq)
+
+	    case callback_reply
+	    when Event::IteratorCallBackReplyBreak
+	      raise ItrBreak
+	    else
+	      callback_reply.result
 	    end
-	  rescue
-	    session.accept Event::IteratorReply.reply(session, event, ret, $!)
 	  end
 	}
-	session.accept Event::IteratorReplyFinish.reply(session, event, fin)
+	session.accept Event::IteratorCallBackRequestFinish.call_back_event(event)
+	session.accept event.reply(fin)
+      rescue ItrBreak
+	# do nothing
       rescue Exception
-	session.accept Event::IteratorReplyFinish.reply(session, event, fin, $!)
+	session.accept event.reply(fin, $!)
       ensure
 	session.iterator_exit(event.seq)
       end

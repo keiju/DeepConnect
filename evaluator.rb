@@ -64,7 +64,7 @@ module DeepConnect
 	}
 	session.accept Event::IteratorReplyFinish.new(session, event.seq, event.receiver, fin)
       rescue Exception
-	session.accept Event::IteratorReplyFinish.new(session, event.seq, event.receiver, ret, $!)
+	session.accept Event::IteratorReplyFinish.new(session, event.seq, event.receiver, fin, $!)
       ensure
 	session.iterator_exit(event.seq)
       end

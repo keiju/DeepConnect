@@ -17,6 +17,8 @@ require "deep-connect/organizer"
 module DeepConnect
   @RCS_ID='-$Id:  $-'
 
+  MESSAGE_DISPLAY = false
+
   class DConnect
     extend Forwarding
 

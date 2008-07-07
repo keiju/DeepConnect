@@ -22,7 +22,8 @@ module DeepConnect
     end
 
 #     def backtrace
-# #      bt = @peer_exception.backtrace.to_a
+#       bt = @peer_exception.backtrace.to_a
+# #p bt
 # #      bt.push *super
 #       bt
 #     end
@@ -110,7 +111,13 @@ module DeepConnect
 	if ret.size == 0
 	  ev = @results.pop
 	  if ev.exp
-	    raise PeerSideException.new(ev.exp)
+ 	    bt = ev.exp.backtrace.to_a
+ 	    bt.push "-- peer side --"
+ 	    bt.push *caller(0)
+ 	    bt = bt.select{|e| /deep-connect/ !~ e}
+	    
+ 	    raise PeerSideException, ev.exp, bt
+#	    raise PeerSideException.new(ev.exp)
 	  end
 	  ev.result
 	else

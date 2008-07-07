@@ -90,7 +90,7 @@ module DeepConnect
       a = Marshal.load(bin.first)
 #puts "DUMP: #{a.inspect}"
       ev = Event.materialize(@session, t, *a)
-puts "IMPORT: #{ev.inspect}"
+      puts "IMPORT: #{ev.inspect}" if DeepConnect::MESSAGE_DISPLAY
       ev
     end
 
@@ -98,7 +98,7 @@ puts "IMPORT: #{ev.inspect}"
 #       if ev.kind_of?(Event::Reply)
 # 	puts "EXPORT0: #{ev.class} seq=#{ev.seq} result=#{ev.result.instance_eval{self.class}}"
 #       end
-puts "EXPORT: #{ev.inspect}"
+puts "EXPORT: #{ev.inspect}" if DeepConnect::MESSAGE_DISPLAY
 #puts "SEL: #{ev.serialize.inspect}"
       id = event2packet_id(ev)
       ev.serialize

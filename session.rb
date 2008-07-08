@@ -243,13 +243,11 @@ module DeepConnect
 
     def send_prototype
       specs_dump = Marshal.dump(Organizer::method_specs)
-      p specs_dump
       send_peer_session_no_recv(:recv_prototype, specs_dump)
     end
 
     def recv_prototype_impl(specs_dump)
       specs = Marshal.load(specs_dump)
-      p specs
       @deep_space.set_method_specs(specs)
     end
   end

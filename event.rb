@@ -23,7 +23,8 @@ module DeepConnect
     end
 
 #     def backtrace
-# #      bt = @peer_exception.backtrace.to_a
+#       bt = @peer_exception.backtrace.to_a
+# #p bt
 # #      bt.push *super
 #       bt
 #     end
@@ -103,14 +104,11 @@ module DeepConnect
       end
     
       def serialize
-puts "SS0: #{@receiver.class.name} #{@method}"
 	if mspec = @session.deep_space.method_spec(@receiver, @method)
 	  args = mspec.arg_zip(@args){|spec, arg|
-puts "SS*: #{arg.inspect}, #{spec.inspect}"
 	    Reference.serialize_with_spec(@session.deep_space, arg, spec)
 	  }
 	else
-puts "SS1"
 	  args = @args.collect{|elm| 
 	    Reference.serialize(@session.deep_space, elm)
 	  }
@@ -131,7 +129,13 @@ puts "SS1"
 	if ret.size == 0
 	  ev = @results.pop
 	  if ev.exp
-	    raise PeerSideException.new(ev.exp)
+ 	    bt = ev.exp.backtrace.to_a
+ 	    bt.push "-- peer side --"
+ 	    bt.push *caller(0)
+ 	    bt = bt.select{|e| /deep-connect/ !~ e}
+	    
+ 	    raise PeerSideException, ev.exp, bt
+#	    raise PeerSideException.new(ev.exp)
 	  end
 	  ev.result
 	else
@@ -206,8 +210,8 @@ puts "SS1"
       end
 
       def serialize
-	if mspec = @session.deep_space.method_spec(@receiver, @method)
-	  args = mspec.arg_zip(@args){|spec, arg|
+	if mspec = @session.deep_space.my_method_spec(@receiver, @method)
+	  args = mspec.block_arg_zip(@args){|spec, arg|
 	    Reference.serialize_with_spec(@session.deep_space, arg, spec)
 	  }
 	else
@@ -215,7 +219,6 @@ puts "SS1"
 	    Reference.serialize(@session.deep_space, elm)
 	  }
 	end
-#	@receiver.peer_id
 	[self.class, @seq,  
 	  Reference.serialize(@session.deep_space, @receiver),
 	  method].concat(args)
@@ -283,7 +286,6 @@ puts "SS1"
 		   Reference.materialize(session.deep_space, *ret),
 		   Reference.materialize(session.deep_space, *exp))
 	else
- puts "XXX:#{type}, #{ret.inspect}"
 	  type.new(session, seq, 
 		   session.deep_space.root(receiver), 
 		   method,
@@ -310,7 +312,7 @@ puts "SS1"
 	    rets = mspec.rets_zip(@result){|spec, ret|
 	      Reference.serialize_with_spec(@session.deep_space, ret, spec)
 	    }
-	    sel_result = ["VAL", "Array", [Array, rets]]
+	    sel_result = [:VAL, "Array", [Array, rets]]
 	  else
 	    sel_result = Reference.serialize(@session.deep_space, @result, mspec.rets)
 	  end
@@ -349,24 +351,7 @@ puts "SS1"
     end
 
     class IteratorReply < Reply
-#       def IteratorReply.materialize_sub(session, type, klass, seq, receiver, method, ret, exp=nil)
 
-# 	result = Reference.materialize(session.deep_space, *ret)
-# puts "ZZZZ: #{result.inspect}"
-# 	if exp
-# 	  type.new(session, seq, 
-# 		   session.deep_space.root(receiver), 
-# 		   method,
-# 		   result,
-# 		   Reference.materialize(session.deep_space, *exp))
-# 	else
-#  puts "XXX:#{type}, #{ret.inspect}"
-# 	  type.new(session, seq, 
-# 		   session.deep_space.root(receiver), 
-# 		   method,
-# 		   result)
-# 	end
-#       end
       def iterator?
 	true
       end
@@ -374,33 +359,37 @@ puts "SS1"
       def finish?
 	false
       end
-
-#       def serialize
-# 	if mspec = @session.deep_space.my_method_spec(@receiver, @method)
-# 	  rets = mspec.block_arg_zip(@result){|spec, ret|
-# 	    Reference.serialize_with_spec(@session.deep_space, ret, spec)
-# 	  }
-# 	  sel_result = ["VAL", "Array", [Array, rets]]
-# 	else
-# 	  sel_result = Reference.serialize(@session.deep_space, @result, "VAL")
-# 	end
-	
-# 	if @exp
-# 	  [self.class, @seq, 
-# 	    Reference.serialize(@session.deep_space, @receiver),
-# 	    @method,
-# 	    sel_result,
-# 	    Reference.serialize(@session.deep_space, @exp)]
-# 	else
-# 	  [self.class, @seq, 
-# 	    Reference.serialize(@session.deep_space, @receiver),
-# 	    @method,
-# 	    sel_result]
-# 	end
-#       end
     end
 
     class IteratorCallBackReply<Reply
+      def serialize
+	if mspec = @session.deep_space.method_spec(@receiver, @method)
+	  if mspec.rets.kind_of?(Array)
+	    rets = mspec.rets_zip(@result){|spec, ret|
+	      Reference.serialize_with_spec(@session.deep_space, ret, spec)
+	    }
+	    sel_result = [:VAL, "Array", [Array, rets]]
+	  else
+	    sel_result = Reference.serialize(@session.deep_space, @result, mspec.rets)
+	  end
+	else
+	  sel_result = Reference.serialize(@session.deep_space, @result)
+	end
+	
+	if @exp
+	  [self.class, @seq, 
+	    Reference.serialize(@session.deep_space, @receiver),
+	    @method,
+	    sel_result,
+	    Reference.serialize(@session.deep_space, @exp)]
+	else
+	  [self.class, @seq, 
+	    Reference.serialize(@session.deep_space, @receiver),
+	    @method,
+	    sel_result]
+	end
+      end
+
       def iterator?
 	true
       end

@@ -147,5 +147,3 @@ module DeepConnect
 
   end
 end
-
-

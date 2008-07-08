@@ -1,3 +1,9 @@
+2008-07-08  Keiju Ishitsuka  <keiju@emperor2.pendome>
+
+	* protorype宣言 (Marshal指定機能)
+	  + ブロック呼び出しの戻り値
+	* mspec.typeがいまいち
+
 2008-07-07  Keiju Ishitsuka  <keiju@emperor2.pendome>
 
 	* IteratorCallBackRequest

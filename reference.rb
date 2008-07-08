@@ -17,7 +17,6 @@ module DeepConnect
     #	[クラス名, 値]
     #	[クラス名, ローカルSESSION, 値]
     def Reference.serialize(deep_space, value, spec = nil)
- puts "SS: #{value.inspect}, #{spec.inspect}"
       if spec
 	return Reference.serialize_with_spec(deep_space, value, spec)
       end
@@ -48,36 +47,35 @@ module DeepConnect
 	end
       else
 	case spec
-	when "DEFAULT"
+	when MethodSpec::DefaultParamSpec
 	  Reference.serialize(deep_space, value)
-	when "REF"
+	when MethodSpec::RefParamSpec
 	  object_id = deep_space.set_root(value)
 	  [Reference,  value.class.name, object_id]
-	when "VAL"
+	when MethodSpec::ValParamSpec
 	  serialize_val(deep_space, value, spec)
-	when "DVAL"
+	when MethodSpec::DValParamSpec
 	  [value.class, value.class.name, value]
 	else
 	  raise ArgumentError,
-	    "argument is only specified #{MethodSpec::ARG_SPEC.source}(#{spec})"
+	    "argument is only specified(#{MethodSpec::ARG_SPEC.join(', ')})(#{spec})"
 	end
       end
     end
 
     def Reference.serialize_val(deep_space, value, spec)
-puts "SS1: #{value.inspect}"
       case value
       when Array
-	["VAL", value.class.name, 
+	[:VAL, value.class.name, 
 	  [value.class, value.collect{|e| Reference.serialize(deep_space, e)}]]
       when Hash
-	["VAL", value.class.name, 
+	[:VAL, value.class.name, 
 	    [value.class,
 	    value.collect{|k, v| 
 	      [Reference.serialize(deep_space, k), 
 		Reference.serialize(deep_space, v)]}]]
       when Struct
-	["VAL", value.class.name, 
+	[:VAL, value.class.name, 
 	  [value.class,
 	    value.to_a.collect{|e| Reference.serialize(deep_space, e)}]]
       when *Organizer::default_mutal_classes
@@ -102,7 +100,7 @@ puts "SS1: #{value.inspect}"
 	    type.new(deep_space, class_name, object_id)
 	end
       else
-	if type == "VAL"
+	if type == :VAL
 	  materialize_val(deep_space, type, 
 			  class_name, object_id[0], object_id[1])
 	else
@@ -115,12 +113,10 @@ puts "SS1: #{value.inspect}"
     def Reference.materialize_val(deep_space, type, class_name, klass, value)
       case value
       when Array
-puts "VAL1: #{value.inspect}"
 	ary = klass.new
 	value.each{|e| ary.push Reference.materialize(deep_space, *e)}
 	ary
       when Hash
-puts "VAL2"
 	h = klass.new
 	value.each do |k, v| 
 	  key = Reference.materialize(*k)
@@ -129,7 +125,6 @@ puts "VAL2"
 	end
 	h
       when Struct
-puts "VAL3"
 	s = klass.new(*value.collect{|e| Reference.materialize(deep_space, *e)})
       end
     end

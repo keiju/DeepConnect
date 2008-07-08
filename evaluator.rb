@@ -40,7 +40,7 @@ module DeepConnect
 	end
       rescue Exception
 	unless event.kind_of?(Event::NoReply)
-	  session.accept event.reply( ret, $!)
+	  session.accept event.reply(ret, $!)
 	end
       end
     end

@@ -123,13 +123,31 @@ when "7.6"
       yield [1]
       yield [2]
     end
-    DeepConnect.def_method_spec(self, "VAL foo(VAL){|VAL|}")
+    DeepConnect.def_method_spec(self, "VAL foo(VAL){VAL}")
 
     def bar(a, &block)
       yield 1, 2
       yield 3, 4
     end
-#    DeepConnect.def_method_spec(self, "VAL bar(VAL){|VAL|}")
+#    DeepConnect.def_method_spec(self, "VAL bar(VAL){VAL}")
+  end
+
+
+  dc.export("TEST7", Foo.new)
+
+when "7.7"
+  class Foo
+    def foo(a, &block)
+      ret = yield [1]
+      puts "TEST7.7 ret: #{ret.inspect}"
+    end
+    DeepConnect.def_method_spec(self, "VAL foo(VAL) VAL{VAL}")
+
+    def bar(a, &block)
+      yield 1, 2
+      yield 3, 4
+    end
+#    DeepConnect.def_method_spec(self, "VAL bar(VAL){VAL}")
   end
 
 

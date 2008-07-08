@@ -141,10 +141,22 @@ when "7.6"
     puts "TEST7.6a ba1: #{ba1.inspect}"
   end
 
-  foo.bar(1) do |ba1, ba2|
-    puts "TEST7.6b ba1: #{ba1.inspect}"
-    puts "TEST7.6b ba2: #{ba2.inspect}"
+#   foo.bar(1) do |ba1, ba2|
+#     puts "TEST7.6b ba1: #{ba1.inspect}"
+#     puts "TEST7.6b ba2: #{ba2.inspect}"
+#   end
+
+when "7.7"
+  foo = session.get_service("TEST7")
+  foo.foo(1) do |ba1|
+    puts "TEST7.6a ba1: #{ba1.inspect}"
+    [1,2]
   end
+
+#   foo.bar(1) do |ba1, ba2|
+#     puts "TEST7.6b ba1: #{ba1.inspect}"
+#     puts "TEST7.6b ba2: #{ba2.inspect}"
+#   end
 
 
 end

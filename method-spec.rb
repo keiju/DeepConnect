@@ -1,14 +1,22 @@
 
+require "e2mmap"
+
 module DeepConnect
   class MethodSpec
+    extend Exception2MessageMapper
 
-    # ret_spec, ... method(arg_spec, ..., *arg_spec){|arg_spec, ...|}
-    # ret_spec method(arg_spec, ..., *arg_spec){|arg_spec, ...|}
-    # ret_spec method(arg_spec, ..., *arg_spec){|arg_spec, ...|}
+    def_exception :UnrecognizedError, "パーズできません(%s)"
 
-    ARG_SPEC = /^(DEFAULT|REF|VAL|DVAL)$/
+    # method(arg_spec, ..., *arg_spec)
+    # ret_spec, ... method()
+    # ret_spec, ... method(arg_spec, ..., *arg_spec)
+    # ret_spec, ... method() block_ret, ... {}
+    # ret_spec, ... method() {arg_spec, ...}
+    # ret_spec, ... method() block_ret, ... {arg_spec, ...}
+    # ret_spec, ... method(arg_spec, ..., *arg_spec) block_ret, ...  {arg_spec, ...}
+
+    ARG_SPEC = ["DEFAULT", "REF", "VAL", "DVAL"]
     # VALができるのは, Array, Hash のみ, Structは相手にも同一クラスがあれば可能
-
 
     def self.create(klass, spec)
       mspec = MethodSpec.new
@@ -33,6 +41,7 @@ module DeepConnect
       @singleton = nil
       @method = nil
       @args = nil
+      @block_rets = nil
       @block_args = nil
     end
 
@@ -42,9 +51,13 @@ module DeepConnect
     attr_accessor :singleton
     attr_accessor :method
     attr_accessor :args
+    attr_accessor :block_rets
     attr_accessor :block_args
 
-    alias has_block? block_args
+    def has_block? 
+      @block_rets || @block_args 
+    end
+
     alias singleton? singleton
 
     def key
@@ -59,146 +72,346 @@ module DeepConnect
 
       def each
 	while arg_spec = @arg_specs.shift
-	  if /^\*(.*)$/ =~ arg_spec 
+	  if arg_spec.mult?
 	    @arg_specs.unshift arg_spec
-	    arg_spec = $1
 	  end
 	  yield arg_spec
 	end
       end
 
       def succ
-	case ret = @arg_specs.shift
-	when /^\*(.*)$/
+	if (ret = @arg_specs.shift) && ret.mult?
 	  @arg_specs.unshift ret
-	  $1
-	else
-	  ret
 	end
+	ret
       end
 
     end
 
     def rets_zip(rets, &block)
       retspecs = ArgSpecs.new(@rets)
-      ary = []
-      rets.each do |arg|
-	spec = retspecs.succ
-	unless spec
-	  raise ArgumentError,
-	    "argument spec mismatch argument: #{@args}"
-	end
-	ary.push yield spec, arg
+      begin
+	param_zip(retspecs, rets, &block)
+      rescue ArgumentError
+	raise ArgumentError,
+	  "argument spec mismatch rets: #{@rets}"
       end
-      ary
     end
 
     def arg_zip(args, &block)
       argspecs = ArgSpecs.new(@args)
-      ary = []
-      args.each do |arg|
-	spec = argspecs.succ
-	unless spec
-	  raise ArgumentError,
-	    "argument spec mismatch argument: #{@args}"
-	end
-	ary.push yield spec, arg
+      begin
+	param_zip(argspecs, args, &block)
+      rescue ArgumentError
+	raise ArgumentError,
+	  "argument spec mismatch args: #{@args}"
       end
-      ary
     end
 
     def block_arg_zip(args, &block)
       argspecs = ArgSpecs.new(@block_args)
+      begin
+	param_zip(argspecs, args, &block)
+      rescue ArgumentError
+	raise ArgumentError,
+	  "argument spec mismatch block args: #{@block_args}"
+      end
+    end
 
+    def param_zip(arg_specs, args, &block)
       ary = []
       args.each do |arg|
-	spec = argspecs.succ
+	spec = arg_specs.succ
 	unless spec
-	  raise ArgumentError,
-	    "argument spec mismatch argument: #{@args}"
+	  raise ArgumentError
 	end
 	ary.push yield spec, arg
       end
       ary
     end
 
+    def to_s
+      spec = ""
+      if @rets
+	spec.concat(@rets.join(", "))
+	spec.concat(" ")
+      end
+      
+      if @klass
+	spec.concat(@klass)
+      else
+	spec.concat("(missing)")
+      end
+      if @singleton
+	spec.concat(".")
+      else
+	spec.concat("#")
+      end
+      if @method
+	spec.concat(@method)
+      else
+	spec.concat("(missing)")
+      end
+      if @args
+	spec.concat("("+@args.join(", ")+")")
+      end
+      if has_block?
+	if @block_rets
+	  spec.concat(@block_rets.join(", "))
+	end
+	if @block_args
+	  spec.concat("{"+@block_args.join(", ")+"}")
+	else
+	  spec.concat("{}")
+	end
+      end
+      "#<#{self.class} #{spec} >"
+    end
+
+    class ParamSpec
+      def self.identifier(token, *opts)
+	name = token.name
+	klass = Name2ParamSpec[name]
+	unless klass
+	  MethodSpec.Raise UnrecognizedError, name
+	end
+	pspec = klass.new(name)
+	if opts.include?(:mult)
+	  pspec.mult = true
+	end
+	pspec
+      end
+
+      def initialize(name)
+	@type = name
+
+	@mult = nil
+      end
+
+      attr_reader :type
+      attr_accessor :mult
+      alias mult? mult
+
+      def to_s
+	if mult
+	  "*"+@type
+	else
+	  @type
+	end
+      end
+    end
+    
+    class DefaultParamSpec<ParamSpec;end
+    class RefParamSpec<ParamSpec;end
+    class ValParamSpec<ParamSpec;end
+    class DValParamSpec<ParamSpec;end
+    
+    Name2ParamSpec = {
+      "DEFAULT"=>DefaultParamSpec,
+      "REF" => RefParamSpec,
+      "VAL" => ValParamSpec,
+      "DVAL" => DValParamSpec
+    }
+
     # private method
     def parse(spec)
-      rets = []
-      while spec.sub!(/^([\w]+)[,\s]\s*/, "")
-	ret = $1
-	unless ARG_SPEC =~ ret
-	  raise ArgumentError, 
-	    "returen is only specified #{ARG_SPEC.source}.(#{ret})" 
+      tokener = Tokener.new(spec)
+      
+      tk1, tk2 = tokener.next, tokener.peek
+      tokener.unget tk1
+      case tk1
+      when TkIdentifier
+	case tk2
+	when nil
+	when TkIdentifier, TkCOMMA, TkMULT
+	  parse_rets(tokener, spec)
+	when TkLPAREN, TkLBRACE
+	else
+	  MethodSpec.Raise UnrecognizedError, spec
 	end
-	rets.push ret
-      end
-      if spec.sub!(/^(\*[\w)]+)[\s\($]\s*/, "")
-	ret = $1
-	unless ARG_SPEC =~ ret[1..-1]
-	  raise ArgumentError, 
-	    "*argument is only specified *#{ARG_SPEC.source}(#{ret})" 
-	end
-	rets.push ret
-      end
-      if rets.size == 1
-	@rets = rets.first
+      when TkMULTI
+	parse_rets(tokener, spec)
       else
-	@rets = rets
-      end
-
-      if spec.sub!(/^([^({$\s]+)/, "")
-	@method = $1
+	MethodSpec.Raise UnrecognizedError, spec
       end
       
-      if spec.sub!(/\(/, "")
+      parse_method(tokener, spec)
+      parse_args(tokener, spec)
+      parse_block(tokener, spec)
+    end
+
+    def parse_rets(tokener, spec)
+      @rets = parse_params(tokener, spec)
+      if @rets.size == 1
+	@rets = @rets.first
+      end
       
-	args = []
-	while spec.sub!(/^([\w]+)[,\)$]\s*/, "")
-	  arg = $1
-	  unless ARG_SPEC =~ arg
-	    raise ArgumentError, 
-	      "argument is only specified #{ARG_SPEC.source}(#{arg})" 
-	  end
-	  args.push arg
+    end
+
+    def parse_method(tokener, spec)
+      tk = tokener.next
+      case tk
+      when TkIdentifier
+	@method = tk.name
+      else
+	MethodSpec.Raise UnrecognizedError, tk.to_s+ " in " +spec
+      end
+    end
+
+    def parse_args(tokener, spec)
+      tk = tokener.next
+      case tk
+      when TkLPAREN
+	@args = parse_params(tokener, spec)
+	tk2 = tokener.next
+	unless tk2 == TkRPAREN
+	  MethodSpec.Raise UnrecognizedError, tk2 + " in " +spec
 	end
-	if spec.sub!(/^(\*[\w]+)[,\)$]\s*/, "")
-	  arg = $1
-	  unless ARG_SPEC =~ arg[1..-1]
-	    raise ArgumentError, 
-	      "*argument is only specified *#{ARG_SPEC.source}(#{arg})" 
-	  end
-	  args.push arg
+      else
+	# パラメータなし
+      end
+    end
+
+    def parse_block(tokener, spec)
+      parse_block_rets(tokener, spec)
+      tk = tokener.peek
+      unless tk == TkLBRACE
+	if @block_rets
+	  MethodSpec.Raise UnrecognizedError, "ブロック定義では`{'が必要です(#{tk.to_s}, #{spec})"
+	else
+	  return
 	end
-	@args = args
+      end
+      parse_block_args(tokener, spec)
+    end
+
+    def parse_block_rets(tokner, spec)
+      @block_rets = parse_params(tokner, spec)
+      if @block_rets && @block_rets.size == 1
+	@block_rets = @block_rets.first
+      end
+    end
+
+    def parse_block_args(tokener, spec)
+      tk = tokener.next
+      case tk
+      when TkLBRACE
+	@block_args = parse_params(tokener, spec)
+	tk2 = tokener.next
+	unless tk2 == TkRBRACE
+	  MethodSpec.Raise UnrecognizedError, tk2 +" in " +spec
+	end
+      else
+	# パラメータなし
+      end
+    end
+
+    def parse_params(tokener, spec)
+      args = []
+      while token = tokener.next
+	case token
+	when TkIdentifier
+	  case tk2 = tokener.peek
+	  when nil
+	    args.push ArgSpec.identifier(token)
+	    return args
+	  when TkMULT
+	    MethodSpec.Raise UnrecognizedError, token
+	  when TkCOMMA
+	    tokener.next
+	    args.push ParamSpec.identifier(token)
+	  when TkIdentifier, TkRPAREN, TkRBRACE
+	    args.push  ParamSpec.identifier(token)
+	    return args
+	  when TkLPAREN, TkLBRACE
+	    args.push ParamSpec.identifier(token)
+	    return args
+	  else
+	    MethodSpec.Raise UnrecognizedError, "不正な文字#{tk2}が入っています"
+	  end
+	when TkMULT
+	  case token2 = tokener.next
+	  when nil
+	    MethodSpec.Raise UnrecognizedError, "*で終わっています"
+	  when TkIdentifier
+	    args.push  ParamSpec.identifier(token2, :mult)
+	    return args
+	  else
+	    MethodSpec.Raise UnrecognizedError, "*の後に#{token2}が入っています"
+	  end
+	else # TkRPAREN, TkRBRACE
+	  tokener.unget token
+	  return args
+	end
+      end
+    end
+
+    class Token; end
+    class TkIdentifier<Token
+      def initialize(name)
+	@name = name
+      end
+      attr_reader :name
+
+      def to_s
+	"#<#{self.class} #{@name}>"
+      end
+    end
+
+    TkMULT = "*"
+    TkLPAREN = "("
+    TkLBRACE = "{"
+    TkRPAREN = ")"
+    TkRBRACE = "}"
+    TkCOMMA = ","
+
+    class Tokener
+      def initialize(src)
+	@src = src.split(//)
+	@tokens = []
       end
 
-      if spec.sub!(/^\{\s*\|\s*/, "")
-	block_args = []
-	while  spec.sub!(/^([^,\|]+)[,\|]\s*/, "")
-	  arg = $1
-	  unless ARG_SPEC =~ arg
-	    raise ArgumentError, 
-	      "block argument is only specified #{ARG_SPEC.source}(#{arg})" 
+      def next
+	return @tokens.shift unless @tokens.empty?
+
+	while /\s/ =~ @src[0]; @src.shift; end
+
+	case @src[0]
+	when nil
+	  nil
+	when ",", "(", ")", "{", "}", "*"
+	  reading = @src.shift
+	when /\w/
+	  identify_identifier
+	else
+	  MethodSpec.Raise UnrecognizedError, @src.join("")
+	end
+      end
+
+      def peek
+	@tokens.first unless @tokens.empty?
+
+	token = self.next
+	@tokens.push(token) if token
+	token
+      end
+
+      def unget(token)
+	@tokens.unshift token
+      end
+
+      def identify_identifier
+	toks = []
+	while s = @src.shift
+	  if /[\w]/ =~ s
+	    toks.push s
+	  else
+	    @src.unshift s
+	    break
 	  end
-	  block_args.push arg
 	end
-	if spec.sub!(/^(\*[^,\|]+)[,\|]\s*/, "")
-	  arg = $1
-	  unless ARG_SPEC =~ arg[1,-1]
-	    raise ArgumentError, 
-	      "*argument is only specified *#{ARG_SPEC.source}(#{arg})" 
-	  end
-	  block_args.push arg
-	end
-	if /\|\s*\}\s*$/ =~ spec
-	  raise ArgumentError, "block spec must be finish \"|}\"(#{spec})"
-	end
-	@block_args = block_args
-      else
-	unless /^\s*$/ =~ spec
-	  raise ArgumentError, "unrecognized: #{spec.inspect}, #{self.inspect}"
-	end
+	reading = toks.join("")
+	TkIdentifier.new(reading)
       end
     end
 

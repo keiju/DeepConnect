@@ -25,12 +25,18 @@ module DeepConnect
       Event::Event, 
       Event::Request, 
       Event::IteratorRequest, 
+      Event::IteratorCallBackRequest,
+      Event::IteratorCallBackRequestFinish,
       Event::IteratorNextRequest, 
 #      Event::IteratorRetryRequest, 
       Event::IteratorExitRequest, 
       Event::SessionRequest,
       Event::SessionRequestNoReply,
-      Event::Reply, Event::IteratorReply, Event::IteratorReplyFinish, 
+      Event::Reply, 
+      Event::IteratorReply, 
+      Event::IteratorCallBackReply,
+      Event::IteratorCallBackReplyBreak,
+      Event::IteratorReplyFinish, 
       Event::SessionReply,
       Event::InitSessionEvent
     ]
@@ -101,7 +107,7 @@ module DeepConnect
 puts "EXPORT: #{ev.inspect}" if DeepConnect::MESSAGE_DISPLAY
 #puts "SEL: #{ev.serialize.inspect}"
       id = event2packet_id(ev)
-      ev.serialize
+#      ev.serialize
       s = Marshal.dump(ev.serialize)
       packet = [id, s.size, s].pack("nNa#{s.size}")
       @io.write(packet)

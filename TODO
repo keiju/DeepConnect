@@ -8,14 +8,18 @@
 * クライアント(異常)切断時の処理
 * Session->ObjectSpace+Session分離
 * DeepSpace#import/export
+* IteratorCallBackRequest
+* protorype宣言 (Marshal指定機能)
+  + ブロック呼び出しの戻り値
+* mspec.typeがいまいち
 -- スケジュール
+--- 識別
 * クライアントの切断時のsessionの処理
 * 簡易分散GCのパフォーマンスアップ(バッチ化)
-* protorype宣言 (Marshal指定機能)
---- 識別
-* リモートクラスメソッド
-* method_missingからの独立
+* shallow-connect
+* feature
 
+* リモートクラスメソッド
 * シンボルの取り扱い
 * メソッドスペック
   + instance_eval

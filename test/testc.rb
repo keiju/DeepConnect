@@ -42,17 +42,16 @@ when "3"
 
 when "4"
   r = session.get_service("TEST1")
-  r.each{|e| puts e}
-
+  r.each{|e| puts "TEST1: #{e}"}
 when "4.1"
   r = session.get_service("TEST1")
-  r.each{|e| puts e; next}
+  r.each{|e| puts "TEST1: #{e}"; next}
 
 when "4.2"
   r = session.get_service("TEST1")
   a = 0
   r.each do |e| 
-    puts e
+    puts "TEST1: #{e}"
     a += 1
     redo if a==3
   end
@@ -101,6 +100,64 @@ when "6.2"
 
   ObjectSpace.garbage_collect
   puts "Sleep IN"
+
+when "7"
+  foo = session.get_service("TEST7")
+  p foo.foo(["a", "b"])
+
+when "7.1"
+  foo = session.get_service("TEST7")
+  puts "TEST7.1a: #{foo.foo(["a", [["b"]]]).inspect}"
+  puts "TEST7.1b: #{foo.bar(["a", ["b"]]).inspect}"
+
+when "7.2"
+  foo = session.get_service("TEST7")
+  puts "TEST7.1a: #{foo.foo("aaaa").inspect}"
+  puts "TEST7.1b: #{foo.foo("aaaa").peer_inspect}"
+
+when "7.3"
+  foo = session.get_service("TEST7")
+  r1, r2 = foo.foo(["aaaa"], ["bbbb"])
+  puts "TEST7.1 ret1: #{r1.inspect}"
+  puts "TEST7.1 ret2: #{r2.inspect}"
+
+when "7.4"
+  foo = session.get_service("TEST7")
+  r1, r2 = foo.foo(["aaaa"], ["bbbb"])
+  puts "TEST7.1 ret1: #{r1.inspect}"
+  puts "TEST7.1 ret2: #{r2.inspect}"
+
+
+when "7.5"
+  foo = session.get_service("TEST7")
+  r1, r2, r3 = foo.foo(["aaaa"], ["bbbb"], ["cccc"])
+  puts "TEST7.1 ret1: #{r1.inspect}"
+  puts "TEST7.1 ret2: #{r2.inspect}"
+  puts "TEST7.1 ret3: #{r3.inspect}"
+
+when "7.6"
+  foo = session.get_service("TEST7")
+  foo.foo(1) do |ba1|
+    puts "TEST7.6a ba1: #{ba1.inspect}"
+  end
+
+   foo.bar(1) do |ba1, ba2|
+     puts "TEST7.6b ba1: #{ba1.inspect}"
+     puts "TEST7.6b ba2: #{ba2.inspect}"
+   end
+
+when "7.7"
+  foo = session.get_service("TEST7")
+  foo.foo(1) do |ba1|
+    puts "TEST7.6a ba1: #{ba1.inspect}"
+    [1,2]
+  end
+
+when "7.8"
+  foo = session.get_service("TEST7")
+  p foo.foo(["a", "b"])
+
+
 end
 
 sleep 1

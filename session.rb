@@ -48,6 +48,8 @@ module DeepConnect
     alias peer_id peer_uuid
 
     def start
+      send_prototype
+
       @import_thread = Thread.start {
 	loop do
 	  begin
@@ -88,34 +90,48 @@ module DeepConnect
       if ev.request?
 	Thread.start do
 	  case ev
+	  when Event::IteratorCallBackRequest
+	    req = nil
+	    @waiting_mutex.synchronize do
+	      req = @waiting[ev.seq[1]]
+	    end
+	    req.push_call_back ev
+	    
+
+# 	    @iterator_event_queues[ev.itr_id].push ev
+	    
 	    # when ItratorAbort
-	  when Event::IteratorNextRequest
-#             , Event::IteratorRetryRequest
-	    @iterator_event_queues[ev.itr_id].push ev
-	  when Event::IteratorExitRequest
-	    @iterator_event_queues[ev.itr_id].push ev
-	  when Event::IteratorRequest
-	    @iterator_event_queues[ev.seq] = Queue.new
-	    @organizer.evaluator.evaluate_iterator_request(self, ev)
+# さあどうするか?
+# 	  when Event::IteratorNextRequest
+# #             , Event::IteratorRetryRequest
+# 	    @iterator_event_queues[ev.itr_id].push ev
+# 	  when Event::IteratorExitRequest
+# 	    @iterator_event_queues[ev.itr_id].push ev
+ 	  when Event::IteratorRequest
+ 	    @iterator_event_queues[ev.seq] = Queue.new
+ 	    @organizer.evaluator.evaluate_iterator_request(self, ev)
 	  else
 	    @organizer.evaluator.evaluate_request(self, ev)
 	  end
 	end
       else
-	req = nil
-	@waiting_mutex.synchronize do
-	  if ev.iterator?
-	    if ev.finish?
-	      req = @waiting.delete(ev.seq)
-	    else
-	      req = @waiting[ev.seq]
-	    end
-	  else
-#puts "WAITING: #{@waiting.inspect}"
+	case ev
+	when Event::IteratorCallBackReply
+	  req = nil
+	  @waiting_mutex.synchronize do
+	    req = @waiting[ev.seq]
+	  end
+	  @iterator_event_queues[ev.seq[1]].push ev
+	else
+	  req = nil
+	  @waiting_mutex.synchronize do
 	    req = @waiting.delete(ev.seq)
 	  end
+	  unless req
+	    raise "対応する request eventがありません(#{ev.inspect})"
+	  end
+	  req.result ev
 	end
-	req.result ev
       end
     end
 
@@ -140,22 +156,29 @@ module DeepConnect
 	  @waiting[ev.seq] = ev
 	end
 	@export_queue.push ev
-	ev.results do |elm|
+	ev.call_back do |callback_ev|
+	  call_back_reply = nil
+	  exit = true
 	  begin
-	    exit = true
-	    yield elm
+	    ret = yield *callback_ev.args
 	    exit = false
+	    reply = callback_ev.reply(ret)
+	  rescue
+	    reply = callback_ev.reply(ret, $!)
 	  ensure
+	    # break処理
+	    # このメソッドから抜け出てしまう.
 	    if exit
-	      next_ev = Event::IteratorExitRequest.request(self, ref, method, ev.seq)
-	      next_ev.set_seq(ev.seq)
-	      @export_queue.push next_ev
+	      reply = callback_ev.reply(ret, nil, 
+					Event::IteratorCallBackReplyBreak)
+	      @waiting.delete(ev.seq)
+	    else
+	      reply = callback_ev.reply(ret)
 	    end
 	  end
-	  next_ev = Event::IteratorNextRequest.request(self, ref, method, ev.seq)
-	  next_ev.set_seq(ev.seq)
-	  @export_queue.push next_ev
+	  @export_queue.push reply
 	end
+	ev.result
       else
 	ev = Event::Request.request(self, ref, method, *args)
 	@waiting_mutex.synchronize do
@@ -217,6 +240,16 @@ module DeepConnect
       @deep_space.delete_root(id)
       nil
       nil
+    end
+
+    def send_prototype
+      specs_dump = Marshal.dump(Organizer::method_specs)
+      send_peer_session_no_recv(:recv_prototype, specs_dump)
+    end
+
+    def recv_prototype_impl(specs_dump)
+      specs = Marshal.load(specs_dump)
+      @deep_space.set_method_specs(specs)
     end
   end
 end

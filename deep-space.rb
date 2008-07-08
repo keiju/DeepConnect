@@ -34,6 +34,11 @@ module DeepConnect
       ipaddr = ipaddr.ipv4_mapped if ipaddr.ipv4?
       @peer_uuid = [ipaddr.to_s, local_id]
 
+      # method spec
+      @method_specs = nil
+      @method_specs_mutex = Mutex.new
+      @method_specs_cv = ConditionVariable.new
+
       # exportしているオブジェクト
       @export_roots = {}
 
@@ -50,6 +55,38 @@ module DeepConnect
       @session.start
     end
 
+    #
+    # proto type 関連メソッド
+    #
+    def method_specs
+      @method_specs
+    end
+
+    def set_method_specs(specs)
+      @method_specs_mutex.synchronize do
+	@method_specs = specs
+	@method_specs_cv.broadcast
+      end
+    end
+
+    def method_spec(obj, method)
+      key = MethodSpec.mkkey(obj, method)
+p key
+      @method_specs_mutex.synchronize do
+	while !@method_specs
+	  @method_specs_cv.wait(@method_specs_mutex)
+	end
+	@method_specs[key]
+      end
+    end
+
+    def my_method_spec(obj, method)
+      Organizer::method_spec(obj, method)
+    end
+
+    #
+    # export root 関連メソッド
+    #
     def set_root(root)
       @export_roots[root.object_id] = root
       root.object_id
@@ -69,6 +106,9 @@ module DeepConnect
       @export_roots.delete(id)
     end
 
+    #
+    # import 関連メソッド
+    #
     def import_reference(id)
       if wr = @import_reference[id]
 	begin

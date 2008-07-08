@@ -153,6 +153,16 @@ when "7.7"
 
   dc.export("TEST7", Foo.new)
 
+when "7.8"
+  class Foo
+    def foo(arg1)
+      p arg1
+      [1, 2]
+    end
+    DeepConnect.def_method_spec(self, "foo()")
+  end
+
+  dc.export("TEST7", Foo.new)
 
 end
 

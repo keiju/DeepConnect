@@ -104,7 +104,8 @@ module DeepConnect
       end
     
       def serialize
-	if mspec = @session.deep_space.method_spec(@receiver, @method)
+	mspec = @session.deep_space.method_spec(@receiver, @method)
+	if mspec && mspec.args
 	  args = mspec.arg_zip(@args){|spec, arg|
 	    Reference.serialize_with_spec(@session.deep_space, arg, spec)
 	  }
@@ -210,7 +211,8 @@ module DeepConnect
       end
 
       def serialize
-	if mspec = @session.deep_space.my_method_spec(@receiver, @method)
+	mspec = @session.deep_space.my_method_spec(@receiver, @method)
+	if mspec && mspec.block_args
 	  args = mspec.block_arg_zip(@args){|spec, arg|
 	    Reference.serialize_with_spec(@session.deep_space, arg, spec)
 	  }
@@ -307,7 +309,8 @@ module DeepConnect
       end
     
       def serialize
-	if mspec = @session.deep_space.my_method_spec(@receiver, @method)
+	mspec = @session.deep_space.my_method_spec(@receiver, @method)
+	if mspec && mspec.rets
 	  if mspec.rets.kind_of?(Array)
 	    rets = mspec.rets_zip(@result){|spec, ret|
 	      Reference.serialize_with_spec(@session.deep_space, ret, spec)
@@ -363,7 +366,8 @@ module DeepConnect
 
     class IteratorCallBackReply<Reply
       def serialize
-	if mspec = @session.deep_space.method_spec(@receiver, @method)
+	mspec = @session.deep_space.method_spec(@receiver, @method)
+	if mspec && mspec.rets
 	  if mspec.rets.kind_of?(Array)
 	    rets = mspec.rets_zip(@result){|spec, ret|
 	      Reference.serialize_with_spec(@session.deep_space, ret, spec)

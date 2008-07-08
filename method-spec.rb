@@ -242,7 +242,7 @@ module DeepConnect
 
     def parse_rets(tokener, spec)
       @rets = parse_params(tokener, spec)
-      if @rets.size == 1
+      if @rets && @rets.size == 1
 	@rets = @rets.first
       end
       
@@ -287,8 +287,10 @@ module DeepConnect
 
     def parse_block_rets(tokner, spec)
       @block_rets = parse_params(tokner, spec)
-      if @block_rets && @block_rets.size == 1
-	@block_rets = @block_rets.first
+      if @block_rets
+	if @block_rets && @block_rets.size == 1
+	  @block_rets = @block_rets.first
+	end
       end
     end
 
@@ -297,6 +299,7 @@ module DeepConnect
       case tk
       when TkLBRACE
 	@block_args = parse_params(tokener, spec)
+	@args = parse_params(tokener, spec)
 	tk2 = tokener.next
 	unless tk2 == TkRBRACE
 	  MethodSpec.Raise UnrecognizedError, tk2 +" in " +spec
@@ -314,7 +317,7 @@ module DeepConnect
 	  case tk2 = tokener.peek
 	  when nil
 	    args.push ArgSpec.identifier(token)
-	    return args
+	    break
 	  when TkMULT
 	    MethodSpec.Raise UnrecognizedError, token
 	  when TkCOMMA
@@ -322,10 +325,10 @@ module DeepConnect
 	    args.push ParamSpec.identifier(token)
 	  when TkIdentifier, TkRPAREN, TkRBRACE
 	    args.push  ParamSpec.identifier(token)
-	    return args
+	    break
 	  when TkLPAREN, TkLBRACE
 	    args.push ParamSpec.identifier(token)
-	    return args
+	    break
 	  else
 	    MethodSpec.Raise UnrecognizedError, "不正な文字#{tk2}が入っています"
 	  end
@@ -335,13 +338,18 @@ module DeepConnect
 	    MethodSpec.Raise UnrecognizedError, "*で終わっています"
 	  when TkIdentifier
 	    args.push  ParamSpec.identifier(token2, :mult)
-	    return args
+	    break
 	  else
 	    MethodSpec.Raise UnrecognizedError, "*の後に#{token2}が入っています"
 	  end
 	else # TkRPAREN, TkRBRACE
 	  tokener.unget token
-	  return args
+	  break
+	end
+	if args.empty?
+	  nil
+	else
+	  args
 	end
       end
     end

@@ -12,13 +12,16 @@
 
 require "thread"
 require "weakref"
+require "forwardable"
 
 require "ipaddr"
 
 require "deep-connect/session"
+require "deep-connect/class-spec-space"
 
 module DeepConnect
   class DeepSpace
+    extend Forwardable
 
     def initialize(org, port, local_id = nil)
       @organizer = org
@@ -34,10 +37,8 @@ module DeepConnect
       ipaddr = ipaddr.ipv4_mapped if ipaddr.ipv4?
       @peer_uuid = [ipaddr.to_s, local_id]
 
-      # method spec
-      @method_specs = nil
-      @method_specs_mutex = Mutex.new
-      @method_specs_cv = ConditionVariable.new
+      # class spec
+      @class_spec_space = ClassSpecSpace.new(:remote)
 
       # exportしているオブジェクト
       @export_roots = {}
@@ -55,34 +56,33 @@ module DeepConnect
       @session.start
     end
 
-    #
-    # proto type 関連メソッド
-    #
-    def method_specs
-      @method_specs
-    end
-
-    def set_method_specs(specs)
-      @method_specs_mutex.synchronize do
-	@method_specs = specs
-	@method_specs_cv.broadcast
-      end
-    end
-
-    def method_spec(obj, method)
-      key = MethodSpec.mkkey(obj, method)
-p key
-      @method_specs_mutex.synchronize do
-	while !@method_specs
-	  @method_specs_cv.wait(@method_specs_mutex)
-	end
-	@method_specs[key]
-      end
-    end
-
+    #  接続時に転送する
+    def_delegator :@class_spec_space, :class_specs=
+    def_delegator :@class_spec_space, :method_spec
+    def_delegator :@class_spec_space, :class_spec_id_of
+    alias csid_of class_spec_id_of
+    
     def my_method_spec(obj, method)
       Organizer::method_spec(obj, method)
     end
+
+    def my_csid_of(obj)
+      Organizer::class_spec_id_of(obj)
+    end
+
+    def recv_class_spec(cspecs)
+      cspecs.each{|cspec| add_class_spec(cspec)}
+      make_class_spec_cache(cspecs.first)
+    end
+
+    def make_class_spec_cache(cspec)
+      cache = ClassSpec.new
+      
+    end
+
+#     def recv_my_class_specs(csid)
+#     end
+
 
     #
     # export root 関連メソッド

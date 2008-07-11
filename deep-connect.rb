@@ -10,7 +10,7 @@
 #   
 #
 
-require "forwarding"
+require "forwardable"
 
 require "deep-connect/organizer"
 
@@ -20,7 +20,7 @@ module DeepConnect
   MESSAGE_DISPLAY = false
 
   class DConnect
-    extend Forwarding
+    extend Forwardable
 
     def self.start(service=0)
       dc = new

@@ -48,7 +48,7 @@ module DeepConnect
     alias peer_id peer_uuid
 
     def start
-      send_prototype
+      send_class_specs
 
       @import_thread = Thread.start {
 	loop do
@@ -69,6 +69,8 @@ module DeepConnect
 	loop do
 	  ev = @export_queue.pop
 	  begin
+	    # export中にexportが発生するとデッドロックになる
+	    # threadが欲しいか?
 	    @port.export(ev)
 	  rescue Errno::EPIPE, Port::DisconnectClient
 	    # EPIPE: クライアントが終了している
@@ -241,15 +243,25 @@ module DeepConnect
       nil
     end
 
-    def send_prototype
-      specs_dump = Marshal.dump(Organizer::method_specs)
-      send_peer_session_no_recv(:recv_prototype, specs_dump)
+    def send_class_specs
+      specs_dump = Marshal.dump(Organizer::class_specs)
+      send_peer_session_no_recv(:recv_class_specs, specs_dump)
     end
 
-    def recv_prototype_impl(specs_dump)
+    def recv_class_specs_impl(specs_dump)
       specs = Marshal.load(specs_dump)
-      @deep_space.set_method_specs(specs)
+      @deep_space.class_specs = specs
     end
+
+#     def send_class_specs(cspecs)
+#       specs_dump = Marshal.dump(cspecs)
+#       ret = send_peer_session(:send_class_specs_impl, cspecs)
+#     end
+
+#     def send_class_specs_impl(spec_dump)
+#       specs = Marshal.load(spec_dump)
+#       @object_space.recv_class_specs(specs)
+#     end
   end
 end
 

@@ -12,12 +12,16 @@
 * protorype宣言 (Marshal指定機能)
   + ブロック呼び出しの戻り値
 * mspec.typeがいまいち
+* method-specの継承の問題
+  => class-spec-space
 -- スケジュール
 --- 識別
 * クライアントの切断時のsessionの処理
 * 簡易分散GCのパフォーマンスアップ(バッチ化)
 * shallow-connect
 * feature
+* 疑似Mutalクラス
+  + 変更時にコールバックする
 
 * リモートクラスメソッド
 * シンボルの取り扱い

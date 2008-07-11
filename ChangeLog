@@ -1,3 +1,8 @@
+2008-07-11  Keiju Ishitsuka  <keiju@emperor2.pendome>
+
+	* method-specの継承の問題
+	  => class-spec-space
+
 2008-07-08  Keiju Ishitsuka  <keiju@emperor2.pendome>
 
 	* protorype宣言 (Marshal指定機能)

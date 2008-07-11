@@ -103,7 +103,9 @@ when "6.2"
 
 when "7"
   foo = session.get_service("TEST7")
-  p foo.foo(["a", "b"])
+  puts "TEST7: foo: #{foo.inspect}"
+  ret = foo.foo(["a", "b"])
+  puts "TEST7: #{ret.inspect}"
 
 when "7.1"
   foo = session.get_service("TEST7")
@@ -157,7 +159,9 @@ when "7.8"
   foo = session.get_service("TEST7")
   p foo.foo(["a", "b"])
 
-
+when "8"
+  foo = session.import("TEST8")
+  p foo.foo(0)
 end
 
 sleep 1

@@ -39,10 +39,11 @@ when "S2"
 when "7"
   class Foo
     def foo(arg1)
-      p arg1
+      puts "TEST7: #{arg1.inspect}"
       [1, 2]
     end
     DeepConnect.def_method_spec(self, "VAL foo(VAL)")
+    puts DeepConnect::Organizer.class_specs.inspect
   end
 
 
@@ -163,6 +164,23 @@ when "7.8"
   end
 
   dc.export("TEST7", Foo.new)
+
+
+when "8"
+
+  DeepConnect::MESSAGE_DISPLAY = true
+  
+  class Foo
+    def foo(i)
+      i+=1
+      if i == 1000
+	raise "バックトレーステスト"
+      end
+      foo(i)
+    end
+  end
+
+  dc.export("TEST8", Foo.new)
 
 end
 

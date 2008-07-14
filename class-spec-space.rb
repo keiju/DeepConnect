@@ -161,7 +161,7 @@ module DeepConnect
       mspec = MethodSpec.new
       case spec
       when String
-	mspec.parse(spec.first)
+	mspec.parse(spec)
       when Hash
 	mspec.direct_setting(spec)
       else

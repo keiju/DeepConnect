@@ -1,4 +1,5 @@
 2008-07-14  Keiju Ishitsuka  <keiju@emperor2.pendome>
+	* MethodSpec.specのバグ修正
 
 	* materialize_valのバグ修正
 	* VAL == Hashのバグ修正

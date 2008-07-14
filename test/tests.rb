@@ -12,8 +12,6 @@
 
 @RCS_ID='-$Id:  $-'
 
-$DEBUG = 1
-
 require "tracer"
 
 require "deep-connect/deep-connect"
@@ -39,10 +37,11 @@ when "S2"
 when "7"
   class Foo
     def foo(arg1)
-      p arg1
+      puts "TEST7: #{arg1.inspect}"
       [1, 2]
     end
     DeepConnect.def_method_spec(self, "VAL foo(VAL)")
+    puts DeepConnect::Organizer.class_specs.inspect
   end
 
 
@@ -163,6 +162,60 @@ when "7.8"
   end
 
   dc.export("TEST7", Foo.new)
+
+
+when "8"
+
+  DeepConnect::MESSAGE_DISPLAY = true
+  
+  class Foo
+    def foo(i)
+      i+=1
+      if i == 1000
+	raise "バックトレーステスト"
+      end
+      foo(i)
+    end
+  end
+
+  dc.export("TEST8", Foo.new)
+
+when "9"
+
+  DeepConnect.def_method_spec(Array, :method=> :-, :args=> "VAL")
+  DeepConnect.def_method_spec(Array, :method=> :&, :args=> "VAL")
+  DeepConnect.def_method_spec(Array, :method=> :|, :args=> "VAL")
+  DeepConnect.def_method_spec(Array, :method=> :<=>, :args=> "VAL")
+  DeepConnect.def_method_spec(Array, :method=> :==, :args=> "VAL")
+  dc.export("Array", [1, 2])
+
+when "9.1"
+  
+  DeepConnect::MESSAGE_DISPLAY = true
+  dc.export("regexp", /foo/)
+
+when "9.2"
+
+#  DeepConnect::MESSAGE_DISPLAY = true
+  DeepConnect.def_single_method_spec(Regexp, :method=> :union, :args=> "*DVAL")
+  dc.export("Regexp", Regexp)
+
+when "9.3"
+  
+  dc.export("range", 1..2)
+
+when "9.4"
+#  DeepConnect::MESSAGE_DISPLAY = true
+
+  DeepConnect.def_method_spec(Hash, "merge(VAL)")
+  DeepConnect.def_method_spec(Hash, :method=> :merge!, :args=> "VAL")
+  DeepConnect.def_method_spec(Hash, "replace(VAL)")
+  DeepConnect.def_method_spec(Hash, "update(VAL)")
+  
+  dc.export("hash", {1=>2, 2=>3})
+
+
+  
 
 end
 

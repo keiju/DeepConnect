@@ -11,7 +11,7 @@
 #   
 #
 
-require "deep-connect/method-spec"
+require "deep-connect/class-spec-space"
 require "deep-connect/reference"
 
 module DeepConnect
@@ -22,13 +22,6 @@ module DeepConnect
       @peer_exception = exp
     end
 
-#     def backtrace
-#       bt = @peer_exception.backtrace.to_a
-# #p bt
-# #      bt.push *super
-#       bt
-#     end
-    
     attr_reader :peer_exception
   end
 
@@ -130,10 +123,10 @@ module DeepConnect
 	if ret.size == 0
 	  ev = @results.pop
 	  if ev.exp
- 	    bt = ev.exp.backtrace.to_a
+ 	    bt = ev.exp.backtrace
  	    bt.push "-- peer side --"
  	    bt.push *caller(0)
- 	    bt = bt.select{|e| /deep-connect/ !~ e}
+ 	    bt = bt.select{|e| /deep-connect/ !~ e} unless DeepConnect::DEBUG
 	    
  	    raise PeerSideException, ev.exp, bt
 #	    raise PeerSideException.new(ev.exp)
@@ -271,7 +264,8 @@ module DeepConnect
       end
 
       def inspect
-	sprintf "#<#{self.class}, session=#{@session}, seq=#{@seq}, method=#{@method.id2name}, args=#{@args.collect{|e| e.to_s}.join(', ')}>"
+#	sprintf "#<#{self.class}, session=#{@session}, seq=#{@seq}, method=#{@method.id2name}, args=#{@args.collect{|e| e.to_s}.join(', ')}>"
+	sprintf "#<#{self.class}, session=#{@session}, seq=#{@seq}, method=#{@method.id2name}, args=...>"
       end
     end
 

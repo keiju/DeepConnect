@@ -9,6 +9,7 @@
 #
 #   
 #
+require "forwardable"
 
 require "deep-connect/accepter"
 require "deep-connect/evaluator"
@@ -16,10 +17,13 @@ require "deep-connect/deep-space"
 require "deep-connect/port"
 require "deep-connect/event"
 
+require "deep-connect/class-spec-space"
+
 trap("SIGPIPE", "IGNORE")
 
 module DeepConnect
   class Organizer
+
     def initialize
       @accepter = Accepter.new(self)
       @deep_spaces = {}
@@ -30,6 +34,7 @@ module DeepConnect
       @local_id_mutex = Mutex.new
       @local_id_cv = ConditionVariable.new
       @local_id = nil
+
     end
 
     attr_reader :accepter
@@ -117,33 +122,26 @@ module DeepConnect
       FalseClass,
       Numeric,
       Symbol,
-      String
+      String,
+      Range
     ]
 
     def self.default_mutal_classes
       @@DEFAULT_MUTAL_CLASSES
     end
 
-    @@METHOD_SPECS = {}
+    @CLASS_SPEC_SPACE = ClassSpecSpace.new(:local)
+    
+    extend SingleForwardable
 
-    def self.def_method_spec(klass, method_spec)
-      mspec = MethodSpec.create(klass, method_spec)
-      @@METHOD_SPECS[mspec.key] = mspec
-    end
+    def_delegator :@CLASS_SPEC_SPACE, :class_specs
+    def_delegator :@CLASS_SPEC_SPACE, :def_method_spec
+    def_delegator :@CLASS_SPEC_SPACE, :def_single_method_spec
+    def_delegator :@CLASS_SPEC_SPACE, :method_spec
+    def_delegator :@CLASS_SPEC_SPACE, :class_spec_id_of
 
-    def self.def_single_method_spec(obj, method_spec)
-      mspec = MethodSpec.create_single(klass, method_spec)
-      @@METHOD_SPECS[mspec.key] = mspec
-    end
-
-    def self.method_specs
-      @@METHOD_SPECS
-    end
-
-    def self.method_spec(obj, method)
-      key = MethodSpec.mkkey(obj, method)
-      @@METHOD_SPECS[key]
-    end
+    def_method_spec(Exception, "VAL backtrace()")
+    def_method_spec(Exception, "REF set_backtrace(VAL)")
 
   end
 end

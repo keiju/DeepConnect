@@ -2,6 +2,143 @@
 require "e2mmap"
 
 module DeepConnect
+
+  class ClassSpecSpace
+    NULL = :NULL
+
+    def initialize(remote = :remote)
+      case remote
+      when :remote
+	@class_specs = nil
+      when :local
+	@class_specs = {}
+      end
+
+      @class_specs_mutex = Mutex.new
+      @class_specs_cv = ConditionVariable.new
+
+      @method_spec_cache = {}
+    end
+
+    def class_spec_id_of(obj)
+      ancestors = obj.class.ancestors
+      begin
+	single = (class<<obj;self;end)
+	ancestors.unshift single
+      rescue
+      end
+#p ancestors
+#      p ancestors.collect{|e| e.object_id}
+      klass = ancestors.find{|kls|
+	@class_specs[kls.object_id]
+      }
+      if klass
+	klass.object_id
+      else
+	nil
+      end
+    end
+
+    def method_spec(ref_or_obj, method)
+      case ref_or_obj
+      when Reference
+	csid = ref_or_obj.csid
+      else
+	csid = class_spec_id_of(ref_or_obj)
+      end
+      return nil unless csid
+
+      mid = [csid, method]
+      case mspec = @method_spec_cache[mid]
+      when nil
+	# pass
+      when NULL
+	return nil
+      else
+	return mspec
+      end
+
+      class_spec_ancestors(csid) do |cspec|
+	if mspec = cspec.method_spec(method)
+	  return mspec
+	end
+      end
+      @method_spec_cache[mid] = NULL
+      return nil
+    end
+
+    def def_method_spec(klass, *method_spec)
+      csid = klass.object_id
+      unless cspec = @class_specs[csid]
+	cspec = ClassSpec.new(klass)
+	@class_specs[csid] = cspec
+      end
+
+      mspec = MethodSpec.spec(*method_spec)
+      cspec.add_method_spec(mspec)
+    end
+
+    def def_single_method_spec(obj, method_spec)
+      klass = class<<obj;self;end
+      def_method_spec(klass, method_spec)
+    end
+
+    def class_specs=(cspecs)
+      @class_specs_mutex.synchronize do
+	@class_specs = cspecs
+	@class_specs_cv.broadcast
+      end
+    end
+
+    def class_specs
+      @class_specs_mutex.synchronize do
+	while !@class_specs
+	  @class_specs_cv.wait(@class_specs_mutex)
+	end
+	@class_specs
+      end
+    end
+
+    def class_spec_ancestors(csid, &block)
+      @class_specs_mutex.synchronize do
+	while !@class_specs
+	  @class_specs_cv.wait(@class_specs_mutex)
+	end
+      end
+
+      class_spec = @class_specs[csid]
+      
+      class_spec.ancestors.select{|anc| @class_specs[anc]}.each{|anc|
+	yield @class_specs[anc]
+      }
+    end
+
+  end
+
+  class ClassSpec
+    def initialize(klass)
+      @name = klass.name
+      @csid = klass.object_id
+      ancestors = klass.ancestors
+      ancestors.unshift klass
+      @ancestors = ancestors.collect{|k| k.object_id}
+      @method_specs = {}
+    end
+
+    attr_reader :name
+    attr_reader :csid
+    attr_reader :ancestors
+
+    def add_method_spec(mspec)
+      @method_specs[mspec.method] = mspec
+    end
+
+    def method_spec(method)
+      @method_specs[method]
+    end
+
+  end
+
   class MethodSpec
     extend Exception2MessageMapper
 
@@ -15,30 +152,26 @@ module DeepConnect
     # ret_spec, ... method() block_ret, ... {arg_spec, ...}
     # ret_spec, ... method(arg_spec, ..., *arg_spec) block_ret, ...  {arg_spec, ...}
 
+    # *****method が記号の時できてない
+
     ARG_SPEC = ["DEFAULT", "REF", "VAL", "DVAL"]
     # VALができるのは, Array, Hash のみ, Structは相手にも同一クラスがあれば可能
 
-    def self.create(klass, spec)
+    def self.spec(spec)
       mspec = MethodSpec.new
-      if klass.kind_of?(String)
-	mspec.klass = klass
+      case spec
+      when String
+	mspec.parse(spec.first)
+      when Hash
+	mspec.direct_setting(spec)
       else
-	mspec.klass = klass.name
+	raise "スペック指定は文字列もしくはHashです"
       end
-      mspec.parse(spec)
       mspec
     end
 
-    def self.create_single(klass, spec)
-      mspec = create(klass, spec)
-      mspec.sinlgeton = true
-      mspec
-    end 
-
     def initialize
       @rets = nil
-      @klass = nil
-      @singleton = nil
       @method = nil
       @args = nil
       @block_rets = nil
@@ -46,9 +179,6 @@ module DeepConnect
     end
 
     attr_accessor :rets
-    attr_accessor :klass
-    attr_accessor :obj
-    attr_accessor :singleton
     attr_accessor :method
     attr_accessor :args
     attr_accessor :block_rets
@@ -56,12 +186,6 @@ module DeepConnect
 
     def has_block? 
       @block_rets || @block_args 
-    end
-
-    alias singleton? singleton
-
-    def key
-      @klass+(singleton? ? "." : "#")+@method
     end
 
     class ArgSpecs
@@ -132,23 +256,18 @@ module DeepConnect
 
     def to_s
       spec = ""
-      if @rets
+      case @rets
+      when nil
+      when Array
 	spec.concat(@rets.join(", "))
+	spec.concat(" ")
+      when
+	spec.concat(@rets.to_s)
 	spec.concat(" ")
       end
       
-      if @klass
-	spec.concat(@klass)
-      else
-	spec.concat("(missing)")
-      end
-      if @singleton
-	spec.concat(".")
-      else
-	spec.concat("#")
-      end
       if @method
-	spec.concat(@method)
+	spec.concat(@method.to_s)
       else
 	spec.concat("(missing)")
       end
@@ -170,7 +289,17 @@ module DeepConnect
 
     class ParamSpec
       def self.identifier(token, *opts)
-	name = token.name
+	case token
+	when String
+	  name = token
+	  if /^\*(.*)/ =~ token
+	    name = $1
+	    opts.push :mult
+	  end
+	when Token
+	  name = token.name
+	end
+
 	klass = Name2ParamSpec[name]
 	unless klass
 	  MethodSpec.Raise UnrecognizedError, name
@@ -180,6 +309,17 @@ module DeepConnect
 	  pspec.mult = true
 	end
 	pspec
+      end
+
+      def self.param_specs(string_ary)
+	case string_ary
+	when nil
+	  nil
+	when Array
+	  string_ary.collect{|e| PramSpec.identifier(e)}
+	else
+	  [ParamSpec.identifier(string_ary)]
+	end
       end
 
       def initialize(name)
@@ -213,6 +353,32 @@ module DeepConnect
       "DVAL" => DValParamSpec
     }
 
+    def direct_setting(opts)
+      if opts[:rets]
+	@rets = ParamSpec.param_specs(opts[:rets])
+	if @rets.size == 1
+	  @rets = @rets.first
+	end
+      end
+
+      @method = opts[:method]
+      @method = @method.intern unless @method.kind_of?(Symbol)
+
+      if opts[:args]
+	@args = ParamSpec.param_specs(opts[:args])
+      end
+
+      if opts[:block_rets]
+	@block_rets = ParamSpec.param_specs(opts[:block_rets])
+	if @block_rets.size == 1
+	  @block_rets = @block_rets.first
+	end
+      end
+      if opts[:block_args]
+	@block_args = ParamSpec.param_specs(opts[:block_args])
+      end
+    end
+
     # private method
     def parse(spec)
       tokener = Tokener.new(spec)
@@ -245,14 +411,13 @@ module DeepConnect
       if @rets && @rets.size == 1
 	@rets = @rets.first
       end
-      
     end
 
     def parse_method(tokener, spec)
       tk = tokener.next
       case tk
       when TkIdentifier
-	@method = tk.name
+	@method = tk.name.intern
       else
 	MethodSpec.Raise UnrecognizedError, tk.to_s+ " in " +spec
       end
@@ -346,11 +511,11 @@ module DeepConnect
 	  tokener.unget token
 	  break
 	end
-	if args.empty?
-	  nil
-	else
-	  args
-	end
+      end
+      if args.empty?
+	nil
+      else
+	args
       end
     end
 

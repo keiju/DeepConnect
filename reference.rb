@@ -10,6 +10,8 @@
 #   
 #
 
+require "deep-connect/class-spec-space"
+
 module DeepConnect
   class Reference
 
@@ -23,9 +25,9 @@ module DeepConnect
 
       if value.kind_of? Reference
 	if deep_space == value.deep_space
-	  [value.class, value.class.name, value.peer_id, :PEER_OBJECT]
+	  [value.class, value.csid, value.peer_id, :PEER_OBJECT]
 	else
-	  [value.class, value.class.name, value.peer_id, value.deep_space.peer_uuid]
+	  [value.class, value.csid, value.peer_id, value.deep_space.peer_uuid]
 	end
       else
 	case value
@@ -33,7 +35,8 @@ module DeepConnect
 	  [value.class, value.class.name, value]
 	else
 	  object_id = deep_space.set_root(value)
-	  [Reference,  value.class.name, object_id]
+	  csid = deep_space.my_csid_of(value)
+	  [Reference,  csid, object_id]
 	end
       end
     end
@@ -41,9 +44,9 @@ module DeepConnect
     def Reference.serialize_with_spec(deep_space, value, spec)
       if value.kind_of? Reference
 	if deep_space == value.deep_space
-	  [value.class, value.class.name, value.peer_id, :PEER_OBJECT]
+	  [value.class, value.csid, value.peer_id, :PEER_OBJECT]
 	else
-	  [value.class, value.class.name, value.peer_id, value.deep_space.peer_uuid]
+	  [value.class, value.csid, value.peer_id, value.deep_space.peer_uuid]
 	end
       else
 	case spec
@@ -51,10 +54,12 @@ module DeepConnect
 	  Reference.serialize(deep_space, value)
 	when MethodSpec::RefParamSpec
 	  object_id = deep_space.set_root(value)
-	  [Reference,  value.class.name, object_id]
+	  csid = deep_space.my_csid_of(value)
+	  [Reference,  csid, object_id]
 	when MethodSpec::ValParamSpec
 	  serialize_val(deep_space, value, spec)
 	when MethodSpec::DValParamSpec
+	  # 第2引数意味なし
 	  [value.class, value.class.name, value]
 	else
 	  raise ArgumentError,
@@ -86,7 +91,7 @@ module DeepConnect
       end
     end
     
-    def Reference.materialize(deep_space, type, class_name, object_id, uuid=nil)
+    def Reference.materialize(deep_space, type, csid, object_id, uuid=nil)
       if type == Reference
 	if uuid
 	  if uuid == :PEER_OBJECT
@@ -94,15 +99,15 @@ module DeepConnect
 	  else
 	    peer_deep_space = deep_space.organizer.deep_space(uuid)
 	    peer_deep_space.register_root_to_peer(object_id)
-	    type.new(peer_deep_space, class_name, object_id)
+	    type.new(peer_deep_space, csid, object_id)
 	  end
 	else
-	    type.new(deep_space, class_name, object_id)
+	    type.new(deep_space, csid, object_id)
 	end
       else
 	if type == :VAL
 	  materialize_val(deep_space, type, 
-			  class_name, object_id[0], object_id[1])
+			  csid, object_id[0], object_id[1])
 	else
 	  # 即値
 	  object_id
@@ -110,21 +115,20 @@ module DeepConnect
       end
     end
 
-    def Reference.materialize_val(deep_space, type, class_name, klass, value)
-      case value
-      when Array
+    def Reference.materialize_val(deep_space, type, csid, klass, value)
+      if klass == Array
 	ary = klass.new
 	value.each{|e| ary.push Reference.materialize(deep_space, *e)}
 	ary
-      when Hash
+      elsif klass == Hash
 	h = klass.new
 	value.each do |k, v| 
-	  key = Reference.materialize(*k)
-	  value = Reference.materialize(*v)
-	  h[k] = v
+	  key = Reference.materialize(deep_space, *k)
+	  value = Reference.materialize(deep_space, *v)
+	  h[key] = value
 	end
 	h
-      when Struct
+      elsif klass = Struct
 	s = klass.new(*value.collect{|e| Reference.materialize(deep_space, *e)})
       end
     end
@@ -134,7 +138,7 @@ module DeepConnect
 #       Reference.new(session, o.id)
 #     end
 
-    def Reference.new(deep_space, class_name, peer_id)
+    def Reference.new(deep_space, csid, peer_id)
       if r = deep_space.import_reference(peer_id)
 	return r
       end
@@ -143,14 +147,14 @@ module DeepConnect
       r
     end
     
-    def initialize(deep_space, class_name, peer_id)
+    def initialize(deep_space, csid, peer_id)
       @deep_space = deep_space
-      @class_name = class_name
+      @csid = csid
       @peer_id = peer_id
     end
     
     attr_reader :deep_space
-    attr_reader :class_name
+    attr_reader :csid
     attr_reader :peer_id
     
     def peer
@@ -158,7 +162,7 @@ module DeepConnect
     end
     
     def method_missing(method, *args, &block)
-#puts "METHOD_MISSING: #{method.id2name} "
+puts "METHOD_MISSING: #{self} #{method.id2name} "
       if iterator?
 	@deep_space.session.send_to(self, method, *args, &block)
       else
@@ -182,10 +186,18 @@ module DeepConnect
 #       @deep_space.session.send_to(self, :to_s)
 #     end
 
-    def to_a
-      a = []
-      @deep_space.session.send_to(self, :to_a).each{|e| a.push e}
-      a
+#     def to_a
+#       a = []
+#       @deep_space.session.send_to(self, :to_a).each{|e| a.push e}
+#       a
+#     end
+
+    def =~(other)
+      @deep_space.session.send_to(self, :=~, other)
+    end
+
+    def ===(other)
+      @deep_space.session.send_to(self, :===, other)
     end
 
     def id
@@ -197,9 +209,9 @@ module DeepConnect
     end
     
     def inspect
-      sprintf("<Reference: deep_space=%s class=%s id=%x>", 
+      sprintf("<Reference: deep_space=%s csid=%s id=%x>", 
 	      @deep_space.to_s, 
-	      @class_name, 
+	      @csid, 
 	      @peer_id) 
     end
 

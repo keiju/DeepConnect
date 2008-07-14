@@ -1,5 +1,5 @@
 
-require "method-spec"
+require "class-spec-space"
 
 Specs = [
   "method1_1()",
@@ -50,6 +50,7 @@ for spec in Specs
     mspec = DeepConnect::MethodSpec.new
     mspec.parse(spec)
     puts "MethodSpec: #{mspec.to_s}"
+#    puts "MethodSpec: #{mspec.inspect}"
     puts
   rescue
     puts "MethodSpec: #{mspec.to_s}"

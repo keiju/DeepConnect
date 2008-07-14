@@ -21,7 +21,15 @@ module DeepConnect
     end
 
     def class_spec_id_of(obj)
-      klass = obj.class.ancestors.find{|kls|
+      ancestors = obj.class.ancestors
+      begin
+	single = (class<<obj;self;end)
+	ancestors.unshift single
+      rescue
+      end
+#p ancestors
+#      p ancestors.collect{|e| e.object_id}
+      klass = ancestors.find{|kls|
 	@class_specs[kls.object_id]
       }
       if klass
@@ -59,14 +67,14 @@ module DeepConnect
       return nil
     end
 
-    def def_method_spec(klass, method_spec)
+    def def_method_spec(klass, *method_spec)
       csid = klass.object_id
       unless cspec = @class_specs[csid]
 	cspec = ClassSpec.new(klass)
 	@class_specs[csid] = cspec
       end
 
-      mspec = MethodSpec.spec(method_spec)
+      mspec = MethodSpec.spec(*method_spec)
       cspec.add_method_spec(mspec)
     end
 
@@ -111,7 +119,9 @@ module DeepConnect
     def initialize(klass)
       @name = klass.name
       @csid = klass.object_id
-      @ancestors = klass.ancestors.collect{|k| k.object_id}
+      ancestors = klass.ancestors
+      ancestors.unshift klass
+      @ancestors = ancestors.collect{|k| k.object_id}
       @method_specs = {}
     end
 
@@ -149,7 +159,14 @@ module DeepConnect
 
     def self.spec(spec)
       mspec = MethodSpec.new
-      mspec.parse(spec)
+      case spec
+      when String
+	mspec.parse(spec.first)
+      when Hash
+	mspec.direct_setting(spec)
+      else
+	raise "スペック指定は文字列もしくはHashです"
+      end
       mspec
     end
 
@@ -272,7 +289,17 @@ module DeepConnect
 
     class ParamSpec
       def self.identifier(token, *opts)
-	name = token.name
+	case token
+	when String
+	  name = token
+	  if /^\*(.*)/ =~ token
+	    name = $1
+	    opts.push :mult
+	  end
+	when Token
+	  name = token.name
+	end
+
 	klass = Name2ParamSpec[name]
 	unless klass
 	  MethodSpec.Raise UnrecognizedError, name
@@ -282,6 +309,17 @@ module DeepConnect
 	  pspec.mult = true
 	end
 	pspec
+      end
+
+      def self.param_specs(string_ary)
+	case string_ary
+	when nil
+	  nil
+	when Array
+	  string_ary.collect{|e| PramSpec.identifier(e)}
+	else
+	  [ParamSpec.identifier(string_ary)]
+	end
       end
 
       def initialize(name)
@@ -314,6 +352,32 @@ module DeepConnect
       "VAL" => ValParamSpec,
       "DVAL" => DValParamSpec
     }
+
+    def direct_setting(opts)
+      if opts[:rets]
+	@rets = ParamSpec.param_specs(opts[:rets])
+	if @rets.size == 1
+	  @rets = @rets.first
+	end
+      end
+
+      @method = opts[:method]
+      @method = @method.intern unless @method.kind_of?(Symbol)
+
+      if opts[:args]
+	@args = ParamSpec.param_specs(opts[:args])
+      end
+
+      if opts[:block_rets]
+	@block_rets = ParamSpec.param_specs(opts[:block_rets])
+	if @block_rets.size == 1
+	  @block_rets = @block_rets.first
+	end
+      end
+      if opts[:block_args]
+	@block_args = ParamSpec.param_specs(opts[:block_args])
+      end
+    end
 
     # private method
     def parse(spec)

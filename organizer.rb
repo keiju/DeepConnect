@@ -122,7 +122,8 @@ module DeepConnect
       FalseClass,
       Numeric,
       Symbol,
-      String
+      String,
+      Range
     ]
 
     def self.default_mutal_classes
@@ -140,6 +141,7 @@ module DeepConnect
     def_delegator :@CLASS_SPEC_SPACE, :class_spec_id_of
 
     def_method_spec(Exception, "VAL backtrace()")
+    def_method_spec(Exception, "REF set_backtrace(VAL)")
 
   end
 end

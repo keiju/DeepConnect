@@ -18,6 +18,7 @@ module DeepConnect
   @RCS_ID='-$Id:  $-'
 
   MESSAGE_DISPLAY = false
+  DEBUG = false
 
   class DConnect
     extend Forwardable

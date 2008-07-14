@@ -162,6 +162,48 @@ when "7.8"
 when "8"
   foo = session.import("TEST8")
   p foo.foo(0)
+
+when "9"
+
+  a = session.import("Array")
+  b = a - [1,2]
+  p b.peer_inspect
+
+when "9.1"
+
+  DeepConnect::MESSAGE_DISPLAY = true
+
+  r = session.import("regexp")
+  p r.peer_inspect
+  p r.methods
+  p r =~ "foo"
+  p "foo" =~ r
+  p r === "foo"
+#  p "foo" === r
+
+when "9.2"
+
+  DeepConnect::MESSAGE_DISPLAY = true
+  r = session.import("Regexp")
+  p r
+  p  r.union(/foo/, /bar/)
+
+when "9.3"
+
+  r = session.import("range")
+  p r
+
+when "9.4"
+#  DeepConnect::MESSAGE_DISPLAY = true
+
+  r = session.import("hash")
+  p r.peer_inspect
+
+  s = {3=>4}
+  r2 = r.merge(s)
+  p r.peer_inspect
+  p r2.peer_inspect
+
 end
 
 sleep 1

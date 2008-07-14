@@ -22,6 +22,8 @@
 * feature
 * 疑似Mutalクラス
   + 変更時にコールバックする
+* VALクラスの拡張
+* Reference#local_copy
 
 * リモートクラスメソッド
 * シンボルの取り扱い

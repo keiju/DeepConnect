@@ -116,20 +116,19 @@ module DeepConnect
     end
 
     def Reference.materialize_val(deep_space, type, csid, klass, value)
-      case value
-      when Array
+      if klass == Array
 	ary = klass.new
 	value.each{|e| ary.push Reference.materialize(deep_space, *e)}
 	ary
-      when Hash
+      elsif klass == Hash
 	h = klass.new
 	value.each do |k, v| 
-	  key = Reference.materialize(*k)
-	  value = Reference.materialize(*v)
-	  h[k] = v
+	  key = Reference.materialize(deep_space, *k)
+	  value = Reference.materialize(deep_space, *v)
+	  h[key] = value
 	end
 	h
-      when Struct
+      elsif klass = Struct
 	s = klass.new(*value.collect{|e| Reference.materialize(deep_space, *e)})
       end
     end
@@ -187,10 +186,18 @@ puts "METHOD_MISSING: #{self} #{method.id2name} "
 #       @deep_space.session.send_to(self, :to_s)
 #     end
     
-    def to_a
-      a = []
-      @deep_space.session.send_to(self, :to_a).each{|e| a.push e}
-      a
+#     def to_a
+#       a = []
+#       @deep_space.session.send_to(self, :to_a).each{|e| a.push e}
+#       a
+#     end
+
+    def =~(other)
+      @deep_space.session.send_to(self, :=~, other)
+    end
+
+    def ===(other)
+      @deep_space.session.send_to(self, :===, other)
     end
 
     def id

@@ -12,8 +12,6 @@
 
 @RCS_ID='-$Id:  $-'
 
-$DEBUG = 1
-
 require "tracer"
 
 require "deep-connect/deep-connect"
@@ -181,6 +179,43 @@ when "8"
   end
 
   dc.export("TEST8", Foo.new)
+
+when "9"
+
+  DeepConnect.def_method_spec(Array, :method=> :-, :args=> "VAL")
+  DeepConnect.def_method_spec(Array, :method=> :&, :args=> "VAL")
+  DeepConnect.def_method_spec(Array, :method=> :|, :args=> "VAL")
+  DeepConnect.def_method_spec(Array, :method=> :<=>, :args=> "VAL")
+  DeepConnect.def_method_spec(Array, :method=> :==, :args=> "VAL")
+  dc.export("Array", [1, 2])
+
+when "9.1"
+  
+  DeepConnect::MESSAGE_DISPLAY = true
+  dc.export("regexp", /foo/)
+
+when "9.2"
+
+#  DeepConnect::MESSAGE_DISPLAY = true
+  DeepConnect.def_single_method_spec(Regexp, :method=> :union, :args=> "*DVAL")
+  dc.export("Regexp", Regexp)
+
+when "9.3"
+  
+  dc.export("range", 1..2)
+
+when "9.4"
+#  DeepConnect::MESSAGE_DISPLAY = true
+
+  DeepConnect.def_method_spec(Hash, "merge(VAL)")
+  DeepConnect.def_method_spec(Hash, :method=> :merge!, :args=> "VAL")
+  DeepConnect.def_method_spec(Hash, "replace(VAL)")
+  DeepConnect.def_method_spec(Hash, "update(VAL)")
+  
+  dc.export("hash", {1=>2, 2=>3})
+
+
+  
 
 end
 

@@ -123,10 +123,10 @@ module DeepConnect
 	if ret.size == 0
 	  ev = @results.pop
 	  if ev.exp
- 	    bt = ev.exp.backtrace.to_a
+ 	    bt = ev.exp.backtrace
  	    bt.push "-- peer side --"
  	    bt.push *caller(0)
- 	    bt = bt.select{|e| /deep-connect/ !~ e}
+ 	    bt = bt.select{|e| /deep-connect/ !~ e} unless DeepConnect::DEBUG
 	    
  	    raise PeerSideException, ev.exp, bt
 #	    raise PeerSideException.new(ev.exp)

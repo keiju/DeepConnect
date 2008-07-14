@@ -1,3 +1,15 @@
+2008-07-14  Keiju Ishitsuka  <keiju@emperor2.pendome>
+
+	* materialize_valのバグ修正
+	* VAL == Hashのバグ修正
+
+2008-07-13  Keiju Ishitsuka  <keiju@emperor2.pendome>
+
+	* Reference#=~
+	* Reference#===
+	* def_single_method_spec周りのバグ修正
+	* DEFAULT_MUTAL_CLASSに Range を追加
+
 2008-07-11  Keiju Ishitsuka  <keiju@emperor2.pendome>
 
 	* method-specの継承の問題

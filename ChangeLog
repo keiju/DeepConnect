@@ -1,5 +1,9 @@
 2008-07-15  Keiju Ishitsuka  <keiju@emperor2.pendome>
 
+	* Object#deep_connect_dup
+	* Object#deep_connect_deep_copy
+	* Object#deep_connect_serialize_val のバグ修正
+	
 	* Object を VAL 可能にした.
 	* DEFAULT_MUTAL_CLASSES を DEFAULT_IMMUTABLE_CLASSES に改名
 	* DEFAULT_MUTAL_CLASSESに MatchData を追加

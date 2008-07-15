@@ -11,7 +11,6 @@
 #
 
 require "deep-connect/class-spec-space"
-require "deep-connect/serialize"
 
 module DeepConnect
   class Reference
@@ -188,6 +187,16 @@ puts "METHOD_MISSING: #{self} #{method.id2name} "
 	      @csid, 
 	      @peer_id) 
     end
+
+    def deep_connect_dup
+      @deep_space.session.send_to(self, :deep_connect_dup)
+    end
+    alias dc_dup deep_connect_dup
+
+    def deep_connect_deep_copy
+      @deep_space.session.send_to(self, :deep_connect_deep_copy)
+    end
+    alias dc_deep_copy deep_connect_deep_copy
 
   end
 

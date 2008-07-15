@@ -40,6 +40,7 @@ module DeepConnect
     end
 
     def method_spec(ref_or_obj, method)
+puts "method_spec(#{ref_or_obj}, #{method})"
       case ref_or_obj
       when Reference
 	csid = ref_or_obj.csid

@@ -14,9 +14,10 @@
 * mspec.typeがいまいち
 * method-specの継承の問題
   => class-spec-space
--- スケジュール
 * VALクラスの拡張
-  * Reference#local_copy
+* Object#deep_connect_dup
+* Object#deep_connect_deep_copy
+-- スケジュール
 * ブロック引数の問題 arity を使えばどうにかなる?
 --- 識別
 * クライアントの切断時のsessionの処理

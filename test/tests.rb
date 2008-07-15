@@ -255,6 +255,17 @@ when "10.1"
   
   DeepConnect.def_single_method_spec(File, "VAL open()")
   dc.export("File", File)
+
+when "10.2"
+
+  class Foo
+    def initialize
+      @foo = "foo"
+      @bar = [1, [2, 3]]
+    end
+  end
+  dc.export("Foo", Foo)
+  
   
   
 

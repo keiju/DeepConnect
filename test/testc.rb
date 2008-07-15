@@ -232,6 +232,18 @@ when "10.1"
   p foo = RFile.open("/etc/passwd")
   foo.gets
 
+
+when "10.2"
+
+  class Foo
+  end
+
+  RFoo = session.import("Foo")
+  p foo = RFoo.new
+  p foo.dc_dup
+
+  p foo.dc_deep_copy
+
 end
 
 sleep 1

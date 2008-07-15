@@ -56,5 +56,9 @@ module DeepConnect
 
 end
 
+require "deep-connect/serialize"
+
+
+
 
 

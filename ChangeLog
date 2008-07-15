@@ -1,8 +1,12 @@
 2008-07-15  Keiju Ishitsuka  <keiju@emperor2.pendome>
 
+	* Object を VAL 可能にした.
+	* DEFAULT_MUTAL_CLASSES を DEFAULT_IMMUTABLE_CLASSES に改名
+	* DEFAULT_MUTAL_CLASSESに MatchData を追加
+	
 	* 組み込みクラスの methd spec 設定
 	* materialize_valのバグ修正
-	* DEFAULT_MUTAL_CLASSに Regexp, Time を追加
+	* DEFAULT_MUTAL_CLASSESに Regexp, Time を追加
 
 2008-07-14  Keiju Ishitsuka  <keiju@emperor2.pendome>
 	* MethodSpec.specのバグ修正
@@ -15,7 +19,7 @@
 	* Reference#=~
 	* Reference#===
 	* def_single_method_spec周りのバグ修正
-	* DEFAULT_MUTAL_CLASSに Range を追加
+	* DEFAULT_MUTAL_CLASSESに Range を追加
 
 2008-07-11  Keiju Ishitsuka  <keiju@emperor2.pendome>
 

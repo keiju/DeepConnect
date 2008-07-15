@@ -217,6 +217,21 @@ when "9.5"
   p foo.foo
   p foo.baz
 
+when "10"
+
+  class Foo
+  end
+
+  RFoo = session.import("Foo")
+  p foo = RFoo.new
+  p foo.foo
+
+when "10.1"
+
+  RFile = session.import("File")
+  p foo = RFile.open("/etc/passwd")
+  foo.gets
+
 end
 
 sleep 1

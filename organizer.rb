@@ -116,7 +116,7 @@ module DeepConnect
       raise "登録されていません.#{id}"
     end
 
-    @@DEFAULT_MUTAL_CLASSES = [
+    @@DEFAULT_IMMUTABLE_CLASSES = [
       NilClass,
       TrueClass,
       FalseClass,
@@ -124,12 +124,14 @@ module DeepConnect
       Numeric,
       String,
       Regexp,
+      MatchData,
       Range,
       Time,
+      File::Stat,
     ]
 
-    def self.default_mutal_classes
-      @@DEFAULT_MUTAL_CLASSES
+    def self.default_immutable_classes
+      @@DEFAULT_IMMUTABLE_CLASSES
     end
 
     @CLASS_SPEC_SPACE = ClassSpecSpace.new(:local)

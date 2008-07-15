@@ -11,6 +11,7 @@
 #
 
 require "deep-connect/class-spec-space"
+require "deep-connect/serialize"
 
 module DeepConnect
   class Reference
@@ -31,7 +32,7 @@ module DeepConnect
 	end
       else
 	case value
-	when *Organizer::default_mutal_classes
+	when *Organizer::default_immutable_classes
 	  [value.class, value.class.name, value]
 	else
 	  object_id = deep_space.set_root(value)
@@ -70,24 +71,11 @@ module DeepConnect
 
     def Reference.serialize_val(deep_space, value, spec)
       case value
-      when Array
-	[:VAL, value.class.name, 
-	  [value.class, value.collect{|e| Reference.serialize(deep_space, e)}]]
-      when Hash
-	[:VAL, value.class.name, 
-	    [value.class,
-	    value.collect{|k, v| 
-	      [Reference.serialize(deep_space, k), 
-		Reference.serialize(deep_space, v)]}]]
-      when Struct
-	[:VAL, value.class.name, 
-	  [value.class,
-	    value.to_a.collect{|e| Reference.serialize(deep_space, e)}]]
-      when *Organizer::default_mutal_classes
+      when *Organizer::default_immutable_classes
 	[value.class, value.class.name, value]
-      else
-	raise ArgumentError,
-	  "method spec VAL is support only Array, Hash, Struct(#{value.inspect})"
+      else 
+	[:VAL, value.class.name, 
+	  [value.class, value.deep_connect_serialize_val(deep_space)]]
       end
     end
     
@@ -116,21 +104,7 @@ module DeepConnect
     end
 
     def Reference.materialize_val(deep_space, type, csid, klass, value)
-      if klass <= Array
-	ary = klass.new
-	value.each{|e| ary.push Reference.materialize(deep_space, *e)}
-	ary
-      elsif klass <= Hash
-	h = klass.new
-	value.each do |k, v| 
-	  key = Reference.materialize(deep_space, *k)
-	  value = Reference.materialize(deep_space, *v)
-	  h[key] = value
-	end
-	h
-      elsif klass <= Struct
-	s = klass.new(*value.collect{|e| Reference.materialize(deep_space, *e)})
-      end
+      klass.deep_connect_materialize_val(deep_space, value)
     end
 
 #     def Reference.register(deep_space, o)

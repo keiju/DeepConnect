@@ -93,8 +93,8 @@ module DeepConnect
       pid, sz = read(PACK_n_SIZE + PACK_N_SIZE).unpack("nN")
       t = PacketId2Class[pid]
       bin = read(sz).unpack("a#{sz}")
+#puts "DUMP: #{bin.first.inspect}"
       a = Marshal.load(bin.first)
-#puts "DUMP: #{a.inspect}"
       ev = Event.materialize(@session, t, *a)
       puts "IMPORT: #{ev.inspect}" if DeepConnect::MESSAGE_DISPLAY
       ev

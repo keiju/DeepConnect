@@ -120,10 +120,12 @@ module DeepConnect
       NilClass,
       TrueClass,
       FalseClass,
-      Numeric,
       Symbol,
+      Numeric,
       String,
-      Range
+      Regexp,
+      Range,
+      Time,
     ]
 
     def self.default_mutal_classes
@@ -142,6 +144,19 @@ module DeepConnect
 
     def_method_spec(Exception, "VAL backtrace()")
     def_method_spec(Exception, "REF set_backtrace(VAL)")
+
+    def_method_spec(Array, :method=> :-, :args=> "VAL")
+    def_method_spec(Array, :method=> :&, :args=> "VAL")
+    def_method_spec(Array, :method=> :|, :args=> "VAL")
+    def_method_spec(Array, :method=> :<=>, :args=> "VAL")
+    def_method_spec(Array, :method=> :==, :args=> "VAL")
+
+    #def_single_method_spec(Regexp, :method=> :union, :args=> "*DVAL")
+
+    def_method_spec(Hash, "merge(VAL)")
+    def_method_spec(Hash, :method=> :merge!, :args=> "VAL")
+    def_method_spec(Hash, "replace(VAL)")
+    def_method_spec(Hash, "update(VAL)")
 
   end
 end

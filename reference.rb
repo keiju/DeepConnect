@@ -116,11 +116,11 @@ module DeepConnect
     end
 
     def Reference.materialize_val(deep_space, type, csid, klass, value)
-      if klass == Array
+      if klass <= Array
 	ary = klass.new
 	value.each{|e| ary.push Reference.materialize(deep_space, *e)}
 	ary
-      elsif klass == Hash
+      elsif klass <= Hash
 	h = klass.new
 	value.each do |k, v| 
 	  key = Reference.materialize(deep_space, *k)
@@ -128,7 +128,7 @@ module DeepConnect
 	  h[key] = value
 	end
 	h
-      elsif klass = Struct
+      elsif klass <= Struct
 	s = klass.new(*value.collect{|e| Reference.materialize(deep_space, *e)})
       end
     end

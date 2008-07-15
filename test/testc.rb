@@ -204,6 +204,19 @@ when "9.4"
   p r.peer_inspect
   p r2.peer_inspect
 
+when "9.5"
+
+  s = session.import("st")
+  p s
+  p s.peer_inspect
+
+  St = Struct.new("Foo", :foo, :bar)
+
+  Foo = session.import("Foo")
+  p foo = Foo.new
+  p foo.foo
+  p foo.baz
+
 end
 
 sleep 1

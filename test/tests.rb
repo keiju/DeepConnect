@@ -214,8 +214,26 @@ when "9.4"
   
   dc.export("hash", {1=>2, 2=>3})
 
+when "9.5"
 
+  St = Struct.new("Foo", :foo, :bar)
+  dc.export("St", St)
+  dc.export("st", St.new([1,2], "baz"))
+
+  class Foo
+    def foo
+      St.new([3,4], "boo")
+    end
+    DeepConnect.def_method_spec(self, "VAL foo()")
+
+    def baz
+      St.new([3,4], "boo")
+    end
+    DeepConnect.def_method_spec(self, "DVAL baz()")
+    
+  end
   
+  dc.export("Foo", Foo)
 
 end
 

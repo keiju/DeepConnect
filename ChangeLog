@@ -1,3 +1,9 @@
+2008-07-15  Keiju Ishitsuka  <keiju@emperor2.pendome>
+
+	* 組み込みクラスの methd spec 設定
+	* materialize_valのバグ修正
+	* DEFAULT_MUTAL_CLASSに Regexp, Time を追加
+
 2008-07-14  Keiju Ishitsuka  <keiju@emperor2.pendome>
 	* MethodSpec.specのバグ修正
 

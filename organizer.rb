@@ -116,18 +116,22 @@ module DeepConnect
       raise "登録されていません.#{id}"
     end
 
-    @@DEFAULT_MUTAL_CLASSES = [
+    @@DEFAULT_IMMUTABLE_CLASSES = [
       NilClass,
       TrueClass,
       FalseClass,
-      Numeric,
       Symbol,
+      Numeric,
       String,
-      Range
+      Regexp,
+      MatchData,
+      Range,
+      Time,
+      File::Stat,
     ]
 
-    def self.default_mutal_classes
-      @@DEFAULT_MUTAL_CLASSES
+    def self.default_immutable_classes
+      @@DEFAULT_IMMUTABLE_CLASSES
     end
 
     @CLASS_SPEC_SPACE = ClassSpecSpace.new(:local)
@@ -142,6 +146,19 @@ module DeepConnect
 
     def_method_spec(Exception, "VAL backtrace()")
     def_method_spec(Exception, "REF set_backtrace(VAL)")
+
+    def_method_spec(Array, :method=> :-, :args=> "VAL")
+    def_method_spec(Array, :method=> :&, :args=> "VAL")
+    def_method_spec(Array, :method=> :|, :args=> "VAL")
+    def_method_spec(Array, :method=> :<=>, :args=> "VAL")
+    def_method_spec(Array, :method=> :==, :args=> "VAL")
+
+    #def_single_method_spec(Regexp, :method=> :union, :args=> "*DVAL")
+
+    def_method_spec(Hash, "merge(VAL)")
+    def_method_spec(Hash, :method=> :merge!, :args=> "VAL")
+    def_method_spec(Hash, "replace(VAL)")
+    def_method_spec(Hash, "update(VAL)")
 
   end
 end

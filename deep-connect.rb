@@ -17,8 +17,10 @@ require "deep-connect/organizer"
 module DeepConnect
   @RCS_ID='-$Id:  $-'
 
+  DISPLAY_METHOD_MISSING = false
   MESSAGE_DISPLAY = false
   DEBUG = false
+  DISPLAY_METHOD_SPEC = false
 
   class DConnect
     extend Forwardable
@@ -56,6 +58,10 @@ module DeepConnect
   end
 
 end
+
+require "deep-connect/serialize"
+
+
 
 
 

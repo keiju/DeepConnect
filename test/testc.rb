@@ -204,6 +204,46 @@ when "9.4"
   p r.peer_inspect
   p r2.peer_inspect
 
+when "9.5"
+
+  s = session.import("st")
+  p s
+  p s.peer_inspect
+
+  St = Struct.new("Foo", :foo, :bar)
+
+  Foo = session.import("Foo")
+  p foo = Foo.new
+  p foo.foo
+  p foo.baz
+
+when "10"
+
+  class Foo
+  end
+
+  RFoo = session.import("Foo")
+  p foo = RFoo.new
+  p foo.foo
+
+when "10.1"
+
+  RFile = session.import("File")
+  p foo = RFile.open("/etc/passwd")
+  foo.gets
+
+
+when "10.2"
+
+  class Foo
+  end
+
+  RFoo = session.import("Foo")
+  p foo = RFoo.new
+  p foo.dc_dup
+
+  p foo.dc_deep_copy
+
 end
 
 sleep 1

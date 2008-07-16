@@ -27,11 +27,16 @@ module DeepConnect
 	if deep_space == value.deep_space
 	  [value.class, value.csid, value.peer_id, :PEER_OBJECT]
 	else
-	  [value.class, value.csid, value.peer_id, value.deep_space.peer_uuid]
+	  uuid = value.deep_space.peer_uuid.dup
+	  if uuid[0] == "::ffff:127.0.0.1"
+	    uuid[0] = :SAME_UUIDADDR
+	  end
+	    
+	  [value.class, value.csid, value.peer_id, uuid]
 	end
       else
 	case value
-	when *Organizer::default_mutal_classes
+	when *Organizer::default_immutable_classes
 	  [value.class, value.class.name, value]
 	else
 	  object_id = deep_space.set_root(value)
@@ -46,7 +51,12 @@ module DeepConnect
 	if deep_space == value.deep_space
 	  [value.class, value.csid, value.peer_id, :PEER_OBJECT]
 	else
-	  [value.class, value.csid, value.peer_id, value.deep_space.peer_uuid]
+	  uuid = value.deep_space.peer_uuid.dup
+	  if uuid[0] == "::ffff:127.0.0.1"
+	    uuid[0] = :SAME_UUIDADDR
+	  end
+	    
+	  [value.class, value.csid, value.peer_id, uuid]
 	end
       else
 	case spec
@@ -70,24 +80,11 @@ module DeepConnect
 
     def Reference.serialize_val(deep_space, value, spec)
       case value
-      when Array
-	[:VAL, value.class.name, 
-	  [value.class, value.collect{|e| Reference.serialize(deep_space, e)}]]
-      when Hash
-	[:VAL, value.class.name, 
-	    [value.class,
-	    value.collect{|k, v| 
-	      [Reference.serialize(deep_space, k), 
-		Reference.serialize(deep_space, v)]}]]
-      when Struct
-	[:VAL, value.class.name, 
-	  [value.class,
-	    value.to_a.collect{|e| Reference.serialize(deep_space, e)}]]
-      when *Organizer::default_mutal_classes
+      when *Organizer::default_immutable_classes
 	[value.class, value.class.name, value]
-      else
-	raise ArgumentError,
-	  "method spec VAL is support only Array, Hash, Struct(#{value.inspect})"
+      else 
+	[:VAL, value.class.name, 
+	  [value.class, value.deep_connect_serialize_val(deep_space)]]
       end
     end
     
@@ -97,6 +94,9 @@ module DeepConnect
 	  if uuid == :PEER_OBJECT
 	    deep_space.root(object_id)
 	  else
+	    if uuid[0] == :SAME_UUIDADDR
+	      uuid[0] = deep_space.peer_uuid[0]
+	    end
 	    peer_deep_space = deep_space.organizer.deep_space(uuid)
 	    peer_deep_space.register_root_to_peer(object_id)
 	    type.new(peer_deep_space, csid, object_id)
@@ -116,21 +116,7 @@ module DeepConnect
     end
 
     def Reference.materialize_val(deep_space, type, csid, klass, value)
-      if klass == Array
-	ary = klass.new
-	value.each{|e| ary.push Reference.materialize(deep_space, *e)}
-	ary
-      elsif klass == Hash
-	h = klass.new
-	value.each do |k, v| 
-	  key = Reference.materialize(deep_space, *k)
-	  value = Reference.materialize(deep_space, *v)
-	  h[key] = value
-	end
-	h
-      elsif klass = Struct
-	s = klass.new(*value.collect{|e| Reference.materialize(deep_space, *e)})
-      end
+      klass.deep_connect_materialize_val(deep_space, value)
     end
 
 #     def Reference.register(deep_space, o)
@@ -162,7 +148,7 @@ module DeepConnect
     end
     
     def method_missing(method, *args, &block)
-puts "METHOD_MISSING: #{self} #{method.id2name} "
+      puts "METHOD_MISSING: #{self} #{method.id2name}" if DISPLAY_METHOD_MISSING
       if iterator?
 	@deep_space.session.send_to(self, method, *args, &block)
       else
@@ -185,7 +171,7 @@ puts "METHOD_MISSING: #{self} #{method.id2name} "
 #     def to_s
 #       @deep_space.session.send_to(self, :to_s)
 #     end
-
+    
 #     def to_a
 #       a = []
 #       @deep_space.session.send_to(self, :to_a).each{|e| a.push e}
@@ -214,6 +200,16 @@ puts "METHOD_MISSING: #{self} #{method.id2name} "
 	      @csid, 
 	      @peer_id) 
     end
+
+    def deep_connect_dup
+      @deep_space.session.send_to(self, :deep_connect_dup)
+    end
+    alias dc_dup deep_connect_dup
+
+    def deep_connect_deep_copy
+      @deep_space.session.send_to(self, :deep_connect_deep_copy)
+    end
+    alias dc_deep_copy deep_connect_deep_copy
 
   end
 

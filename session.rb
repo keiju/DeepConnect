@@ -163,7 +163,7 @@ module DeepConnect
 	  exit = true
 	  begin
 #puts "SEND_TO: #{callback_ev.args.inspect}"
-	    if block.arity == 1
+	    if block.arity == 1 && callback_ev.args.size > 1
 	      ret = yield callback_ev.args	      
 	    else
 	      ret = yield *callback_ev.args

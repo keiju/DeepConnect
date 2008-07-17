@@ -250,7 +250,7 @@ module DeepConnect
 	unless spec
 	  raise ArgumentError
 	end
-	ary.push yield spec, arg
+	ary.push yield(spec, arg)
       end
       ary
     end

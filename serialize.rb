@@ -25,12 +25,15 @@ module DeepConnect
     File,
     IO,
     ThreadGroup,
-    Continuation,
     Thread,
     Data,
     Class,
     Module,
   ]
+  if defined?(Continuation)
+    UNSERIALIZABLE_CLASSES.push Continuation
+  end
+
   UNSERIALIZABLE_CLASS_SET = {}
   UNSERIALIZABLE_CLASSES.each do|k|
     UNSERIALIZABLE_CLASS_SET[k] = k

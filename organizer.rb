@@ -116,11 +116,15 @@ module DeepConnect
       raise "登録されていません.#{id}"
     end
 
-    @@DEFAULT_IMMUTABLE_CLASSES = [
+    @@ABSOLUTE_IMMUTABLE_CLASSES = [
       NilClass,
       TrueClass,
       FalseClass,
       Symbol,
+      Fixnum,
+    ]
+
+    @@DEFAULT_IMMUTABLE_CLASSES = [
       Numeric,
       String,
       Regexp,
@@ -129,9 +133,18 @@ module DeepConnect
       Time,
       File::Stat,
     ]
+    
+    @@IMMUTABLE_CLASSES = @@ABSOLUTE_IMMUTABLE_CLASSES + 
+      @@DEFAULT_IMMUTABLE_CLASSES
 
+    def self.absolute_immutable_classes
+      @@ABSOLUTE_IMMUTABLE_CLASSES
+    end
     def self.default_immutable_classes
       @@DEFAULT_IMMUTABLE_CLASSES
+    end
+    def self.immutable_classes
+      @@IMMUTABLE_CLASSES
     end
 
     @CLASS_SPEC_SPACE = ClassSpecSpace.new(:local)

@@ -17,9 +17,11 @@
 * VALクラスの拡張
 * Object#deep_connect_dup
 * Object#deep_connect_deep_copy
--- スケジュール
 * ブロック引数の問題 arity を使えばどうにかなる?
+-- スケジュール
 --- 識別
+* iteratorの終了処理
+  + 内部で例外が発生したときの処理がイマイチ
 * クライアントの切断時のsessionの処理
 * 簡易分散GCのパフォーマンスアップ(バッチ化)
 * shallow-connect

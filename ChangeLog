@@ -1,3 +1,8 @@
+2008-07-17  Keiju Ishitsuka  <keiju@emperor2.pendome>
+
+	* block引数周りのバグ(いや問題点?)の修正
+	* 間接参照時のpeerが127.0.0.1の場合の再接続処理のバグ修正
+
 2008-07-15  Keiju Ishitsuka  <keiju@emperor2.pendome>
 
 	* Object#deep_connect_dup

@@ -151,7 +151,7 @@ module DeepConnect
     end
 
     # イベントの生成/送信
-    def send_to(ref, method, *args)
+    def send_to(ref, method, *args, &block)
       if iterator?
 	ev = Event::IteratorRequest.request(self, ref, method, *args)
 	@waiting_mutex.synchronize do
@@ -162,7 +162,12 @@ module DeepConnect
 	  call_back_reply = nil
 	  exit = true
 	  begin
-	    ret = yield *callback_ev.args
+#puts "SEND_TO: #{callback_ev.args.inspect}"
+	    if block.arity == 1
+	      ret = yield callback_ev.args	      
+	    else
+	      ret = yield *callback_ev.args
+	    end
 	    exit = false
 	    reply = callback_ev.reply(ret)
 	  rescue

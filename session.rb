@@ -246,7 +246,6 @@ module DeepConnect
     def deregister_root_impl(id)
       @deep_space.delete_root(id)
       nil
-      nil
     end
 
     def send_class_specs

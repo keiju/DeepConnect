@@ -42,7 +42,6 @@ module DeepConnect
     def_delegator :@organizer, :open_deep_space
     def_delegator :@organizer, :open_deepspace
     def_delegator :@organizer, :local_id
-    def_delegator :@organizer, :local_id
   end
 
   def DeepConnect.start(service = nil)

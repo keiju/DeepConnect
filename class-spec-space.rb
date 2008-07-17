@@ -166,7 +166,7 @@ module DeepConnect
       when Hash
 	mspec.direct_setting(spec)
       else
-	raise "スペック指定は文字列もしくはHashです"
+	raise "スペック指定は文字列もしくはキーワード指定です"
       end
       mspec
     end

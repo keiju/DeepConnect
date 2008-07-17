@@ -66,6 +66,16 @@ when "4.3"
     break if a==2
   end
 
+when "4.4"
+  r = session.get_service("TEST1")
+  a = 0
+  r.each do |e| 
+    puts e
+    a += 1
+    raise "foo" if a==2
+  end
+
+
 # ruby1.9ではサポートされなくなった.
 # when "4.4"
 #   r = session.get_service("TEST1")

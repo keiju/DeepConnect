@@ -159,7 +159,7 @@ module DeepConnect
 	end
 	@export_queue.push ev
 	ev.call_back do |callback_ev|
-	  call_back_reply = nil
+	  reply = nil
 	  exit = true
 	  begin
 #puts "SEND_TO: #{callback_ev.args.inspect}"
@@ -171,19 +171,23 @@ module DeepConnect
 	    exit = false
 	    reply = callback_ev.reply(ret)
 	  rescue
-	    reply = callback_ev.reply(ret, $!)
+	    reply = callback_ev.reply(ret, $!, Event::IteratorCallBackReplyBreak)
+	    raise
 	  ensure
 	    # break処理
 	    # このメソッドから抜け出てしまう.
 	    if exit
-	      reply = callback_ev.reply(ret, nil, 
-					Event::IteratorCallBackReplyBreak)
+	      unless reply
+		reply = callback_ev.reply(ret, nil, 
+					  Event::IteratorCallBackReplyBreak)
+	      end
 	      @waiting.delete(ev.seq)
 	    else
 	      reply = callback_ev.reply(ret)
 	    end
+	    # 例外して即exit時の例外の伝搬が行われない
+	    @export_queue.push reply
 	  end
-	  @export_queue.push reply
 	end
 	ev.result
       else

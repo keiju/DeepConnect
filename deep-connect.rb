@@ -18,7 +18,7 @@ module DeepConnect
   @RCS_ID='-$Id:  $-'
 
   DISPLAY_METHOD_MISSING = false
-  MESSAGE_DISPLAY = false
+  MESSAGE_DISPLAY = true
   DEBUG = false
   DISPLAY_METHOD_SPEC = false
 

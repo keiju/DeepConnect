@@ -21,6 +21,7 @@ STDOUT.sync
 #Tracer.on
 dc = DeepConnect.start(65534)
 session = dc.open_deep_space("localhost", 65535)
+#session = dc.open_deep_space("gentoo", 65535)
 
 case ARGV[0]
 when "1"
@@ -138,15 +139,65 @@ when "7.5"
   puts "TEST7.1 ret3: #{r3.inspect}"
 
 when "7.6"
-  foo = session.get_service("TEST7")
-  foo.foo(1) do |ba1|
+
+  puts "LOCAL:"
+  class Foo
+    def foo(a, &block)
+      yield [1, [1]]
+      yield [2, [1]]
+    end
+    
+    def foo2(a, &block)
+      yield [1, [1]]
+      yield [2, [1]]
+    end
+    
+    def bar(a, &block)
+      yield 1, 2
+      yield 3, 4
+    end
+  end
+  foo = Foo.new
+  foo.foo(1) do |ba1, ba2|
     puts "TEST7.6a ba1: #{ba1.inspect}"
+    puts "TEST7.6a ba2: #{ba2.inspect}"
   end
 
-   foo.bar(1) do |ba1, ba2|
-     puts "TEST7.6b ba1: #{ba1.inspect}"
-     puts "TEST7.6b ba2: #{ba2.inspect}"
-   end
+  foo.foo2(1) do |ba1|
+    puts "TEST7.6c ba1: #{ba1.inspect}"
+  end
+
+  foo.bar(1) do |ba1, ba2|
+    puts "TEST7.6b ba1: #{ba1.inspect}"
+    puts "TEST7.6b ba2: #{ba2.inspect}"
+  end
+
+
+  puts "REMOTE:"
+  foo = session.get_service("TEST7")
+
+  foo.foo0(1) do |ba1, ba2|
+    puts "TEST7.60 ba1: #{ba1.inspect}"
+    puts "TEST7.60 ba2: #{ba2.inspect}"
+  end
+
+  foo.foo0(1) do |ba1|
+    puts "TEST7.61 ba1: #{ba1.inspect}"
+  end
+
+  foo.foo(1) do |ba1, ba2|
+    puts "TEST7.6a ba1: #{ba1.inspect}"
+    puts "TEST7.6a ba2: #{ba2.inspect}"
+  end
+
+  foo.foo2(1) do |ba1|
+    puts "TEST7.6c ba1: #{ba1.inspect}"
+  end
+
+  foo.bar(1) do |ba1, ba2|
+    puts "TEST7.6b ba1: #{ba1.inspect}"
+    puts "TEST7.6b ba2: #{ba2.inspect}"
+  end
 
 when "7.7"
   foo = session.get_service("TEST7")
@@ -244,6 +295,73 @@ when "10.2"
 
   p foo.dc_deep_copy
 
+when "11"
+  
+  ary = session.import("ary")
+  ary.each{|x1, y1| puts "x1=#{x1.inspect} y1=#{y1.inspect}"}
+
+
+when "11.1"
+  
+  RFoo = session.import("Foo")
+  p foo = RFoo.new
+  foo.foo{|x1, y1| puts "x1=#{x1.inspect} y1=#{y1.inspect}"}
+
+when "11.1.1"
+
+  puts "LOCAL:"
+  ary = [[1,2], [3,4]]
+  ary.each{|*x1| puts "x1=#{x1.inspect}"}
+
+  
+  puts "REMOTE:"
+  RFoo = session.import("Foo")
+  p foo = RFoo.new
+  foo.foo{|*x1| puts "x1=#{x1.inspect}"}
+
+
+when "11.1.2"
+  
+  puts "LOCAL:"
+  ary = [[1,2], [3,4]]
+  ary.each{|x1| puts "x1=#{x1.inspect}"}
+
+  puts "REMOTE:"
+  RFoo = session.import("Foo")
+  p foo = RFoo.new
+  foo.foo{|x1| puts "x1=#{x1.inspect}"}
+
+when "11.1.3"
+  
+  puts "LOCAL:"
+  ary = [[1,2], [3,4]]
+  ary.each{|x1, x2, x3| puts "x1=#{x1.inspect} x2=#{x2.inspect} x3=#{x3.inspect}"}
+
+  puts "REMOTE:"
+  RFoo = session.import("Foo")
+  p foo = RFoo.new
+  foo.foo{|x1, x2, x3| puts "x1=#{x1.inspect} x2=#{x2.inspect} x3=#{x3.inspect}"}
+
+when "11.2"
+  puts "LOCAL"
+  foo = {1=>2, 2=>3}
+  for k, v in foo
+    p k
+    p v
+  end
+
+  puts "REMOTE: 1 variable"
+  foo = session.import("foo")
+  for k in foo
+    p k
+    p k[0], k[1]
+  end
+
+  puts "REMOTE: 2 variable"
+  foo = session.import("foo")
+  for k,v in foo
+    p k, v
+  end
 end
 
 sleep 1

@@ -27,11 +27,16 @@ module DeepConnect
 	if deep_space == value.deep_space
 	  [value.class, value.csid, value.peer_id, :PEER_OBJECT]
 	else
-	  [value.class, value.csid, value.peer_id, value.deep_space.peer_uuid]
+	  uuid = value.deep_space.peer_uuid.dup
+	  if uuid[0] == "::ffff:127.0.0.1"
+	    uuid[0] = :SAME_UUIDADDR
+	  end
+	    
+	  [value.class, value.csid, value.peer_id, uuid]
 	end
       else
 	case value
-	when *Organizer::default_immutable_classes
+	when *Organizer::immutable_classes
 	  [value.class, value.class.name, value]
 	else
 	  object_id = deep_space.set_root(value)
@@ -42,13 +47,21 @@ module DeepConnect
     end
 
     def Reference.serialize_with_spec(deep_space, value, spec)
-      if value.kind_of? Reference
+      case value
+      when Reference
 	if deep_space == value.deep_space
 	  [value.class, value.csid, value.peer_id, :PEER_OBJECT]
 	else
-	  [value.class, value.csid, value.peer_id, value.deep_space.peer_uuid]
+	  uuid = value.deep_space.peer_uuid.dup
+	  if uuid[0] == "::ffff:127.0.0.1"
+	    uuid[0] = :SAME_UUIDADDR
+	  end
+	    
+	  [value.class, value.csid, value.peer_id, uuid]
 	end
-      else
+      when *Organizer::absolute_immutable_classes
+	[value.class, value.class.name, value]
+      else 
 	case spec
 	when MethodSpec::DefaultParamSpec
 	  Reference.serialize(deep_space, value)
@@ -70,7 +83,7 @@ module DeepConnect
 
     def Reference.serialize_val(deep_space, value, spec)
       case value
-      when *Organizer::default_immutable_classes
+      when *Organizer::immutable_classes
 	[value.class, value.class.name, value]
       else 
 	[:VAL, value.class.name, 
@@ -84,6 +97,9 @@ module DeepConnect
 	  if uuid == :PEER_OBJECT
 	    deep_space.root(object_id)
 	  else
+	    if uuid[0] == :SAME_UUIDADDR
+	      uuid[0] = deep_space.peer_uuid[0].dup
+	    end
 	    peer_deep_space = deep_space.organizer.deep_space(uuid)
 	    peer_deep_space.register_root_to_peer(object_id)
 	    type.new(peer_deep_space, csid, object_id)
@@ -135,7 +151,7 @@ module DeepConnect
     end
     
     def method_missing(method, *args, &block)
-puts "METHOD_MISSING: #{self} #{method.id2name} "
+      puts "METHOD_MISSING: #{self} #{method.id2name}" if DISPLAY_METHOD_MISSING
       if iterator?
 	@deep_space.session.send_to(self, method, *args, &block)
       else

@@ -100,6 +100,8 @@ module DeepConnect
 	mspec = @session.deep_space.method_spec(@receiver, @method)
 	if mspec && mspec.args
 	  args = mspec.arg_zip(@args){|spec, arg|
+p sepc
+p arg
 	    Reference.serialize_with_spec(@session.deep_space, arg, spec)
 	  }
 	else
@@ -150,7 +152,7 @@ module DeepConnect
 	super
 	@call_back = Queue.new
       end
-      
+
       def reply_class
 	IteratorReply
       end
@@ -159,18 +161,6 @@ module DeepConnect
 	TRUE
       end
     
-#       def results(*ret, &block)
-# 	if ret.empty?
-# 	  while !(ret = @results.pop).kind_of?(IteratorReplyFinish)
-# 	    block.call *ret.result
-# #	    yield ret.result
-# 	  end
-# 	  ret.result
-# 	else
-# 	  @results.push *ret
-# 	end
-#       end
-
       def call_back(&block)
 	while !(ret = @call_back.pop).kind_of?(IteratorCallBackRequestFinish)
 	  block.call ret

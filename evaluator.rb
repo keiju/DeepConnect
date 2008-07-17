@@ -50,6 +50,11 @@ module DeepConnect
     def evaluate_iterator_request(session, event)
       begin 
 	fin = event.receiver.send(event.method, *event.args){|*args|
+#puts "evaluate_iterator_request: #{args.inspect}"
+	  if args.size == 1 && args.first.kind_of?(Array)
+	    args = args.first
+	  end
+#puts "evaluate_iterator_request 2: #{args.inspect}"
 	  begin
 	    session.accept Event::IteratorCallBackRequest.call_back_event(event, *args)
 	    callback_reply  = session.iterator_event_pop(event.seq)

@@ -362,6 +362,14 @@ when "11.2"
   for k,v in foo
     p k, v
   end
+
+when "12"
+  
+  RBH = session.import("BH")
+  foo = RBH.new
+  foo.each{|e| p e}
+
+
 end
 
 sleep 1

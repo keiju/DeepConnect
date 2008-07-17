@@ -100,8 +100,6 @@ module DeepConnect
 	mspec = @session.deep_space.method_spec(@receiver, @method)
 	if mspec && mspec.args
 	  args = mspec.arg_zip(@args){|spec, arg|
-p sepc
-p arg
 	    Reference.serialize_with_spec(@session.deep_space, arg, spec)
 	  }
 	else

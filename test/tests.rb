@@ -303,7 +303,25 @@ when "11.2"
   foo = {1=>2, 2=>3}
 
   dc.export("foo", foo)
-  
+
+when "12"
+  require "thread"
+
+  class BH
+    def initialize
+      @a = ["foo", "bar"]
+    end
+
+    def each(&block)
+      while e = @a.pop
+#	block.call e
+	yield e
+      end
+    end
+
+  end
+
+  dc.export("BH", BH)
 
 end
 

@@ -1,3 +1,11 @@
+2008-07-19  Keiju Ishitsuka  <keiju@emperor2.pendome>
+
+	* セッション切断の処理追加
+	* クライアントの切断時のsessionの処理追加
+	* SessionReplyの例外発生時のバグ修正
+	* 例外メッセージの統合
+	* monitor機能の追加
+
 2008-07-17  Keiju Ishitsuka  <keiju@emperor2.pendome>
 
 	* iteratorの終了処理

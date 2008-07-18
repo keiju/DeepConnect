@@ -207,7 +207,6 @@ module DeepConnect
 	  method].concat(args)
       end
 
-
       def iterator?
 	true
       end
@@ -215,7 +214,6 @@ module DeepConnect
     
     class IteratorCallBackRequestFinish<IteratorCallBackRequest
     end
-
 
     class IteratorSubRequest < Request
       def itr_id
@@ -399,12 +397,20 @@ module DeepConnect
     end
 
     class SessionReply < Reply
-      def SessionReply.materialize_sub(session, type, klass, seq, receiver, method, ret)
+      def SessionReply.materialize_sub(session, type, klass, seq, receiver, method, ret, exp = nil)
 #	puts "SESSIONREPLY: #{type}, #{session}, #{ret.collect{|e| e.to_s}.join(',')}"	
-	type.new(session, seq, 
-		 session, 
-		 method,
-		 Reference.materialize(session.deep_space, *ret))
+	if exp
+	  type.new(session, seq,
+		   session,
+		   method,
+		   Reference.materialize(session.deep_space, *ret),
+		   Reference.materialize(session.deep_space, *exp))
+	else
+	  type.new(session, seq,
+		   session,
+		   method,
+		   Reference.materialize(session.deep_space, *ret))
+	end
       end
 
       def inspect
@@ -412,6 +418,7 @@ module DeepConnect
       end
     end
 
+    # session 確立時の特殊なイベント
     class InitSessionEvent<Event
       def self.materialize_sub(session, type, klass, local_id)
 	new(local_id)

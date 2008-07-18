@@ -1,5 +1,5 @@
 #
-#   session.rb - 
+#   deep-space.rb - 
 #   	$Release Version: $
 #   	$Revision: 1.1 $
 #   	$Date: 1997/08/08 00:57:08 $
@@ -24,8 +24,9 @@ module DeepConnect
     extend Forwardable
 
     def initialize(org, port, local_id = nil)
-      @organizer = org
+      @status = :INITIALIZE
 
+      @organizer = org
       @session = Session.new(self, port, local_id)
 
       unless local_id
@@ -47,13 +48,32 @@ module DeepConnect
       @import_reference = {}
     end
 
+    attr_reader :status
     attr_reader :organizer
     attr_reader :session
     attr_reader :peer_uuid
     alias peer_id peer_uuid
 
+    def close
+      @organizer.close_deepspace(self)
+    end
+
     def connect
       @session.start
+      @status = :SERVICING
+    end
+
+    def disconnect(*opts)
+      @status = :SERVICE_STOP
+      
+      @session.stop_service(*opts)
+      if !opts.include?(:SESSION_CLOSED) && !opts.include?(:REQUEST_FROM_PEER)
+	@session.send_disconnect
+	@session.stop
+      end
+
+      @import_reference = nil
+      @export_roots = nil
     end
 
     #  接続時に転送する
@@ -79,10 +99,6 @@ module DeepConnect
       cache = ClassSpec.new
       
     end
-
-#     def recv_my_class_specs(csid)
-#     end
-
 
     #
     # export root 関連メソッド
@@ -129,8 +145,10 @@ module DeepConnect
 
     def deregister_import_reference_proc
       proc do |id|
-	@import_reference.delete(id)
-	deregister_root_to_peer(id)
+	if @status == :SERVICING
+	  @import_reference.delete(id)
+	  deregister_root_to_peer(id)
+	end
       end
     end
 

@@ -18,9 +18,10 @@ module DeepConnect
   @RCS_ID='-$Id:  $-'
 
   DISPLAY_METHOD_MISSING = false
-  MESSAGE_DISPLAY = true
+  MESSAGE_DISPLAY = false
   DEBUG = false
   DISPLAY_METHOD_SPEC = false
+  DISPLAY_MONITOR_MESSAGE = true
 
   class DConnect
     extend Forwardable
@@ -41,6 +42,9 @@ module DeepConnect
     def_delegator :@organizer, :register_service
     def_delegator :@organizer, :open_deep_space
     def_delegator :@organizer, :open_deepspace
+    def_delegator :@organizer, :close_deep_space
+    def_delegator :@organizer, :close_deepspace
+
     def_delegator :@organizer, :local_id
   end
 

@@ -12,10 +12,11 @@
 
 require "thread"
 #require "mutex_m"
-require "monitor"
 require "weakref"
 
 require "ipaddr"
+
+require "deep-connect/exceptions"
 
 module DeepConnect
   class Session
@@ -23,6 +24,8 @@ module DeepConnect
 #    SESSION_SERVICE_NAME = "DeepConnect::SESSION"
 
     def initialize(deep_space, port, local_id = nil)
+      @status = :INITIALIZE
+
       @organizer = deep_space.organizer
       @deep_space = deep_space
       @port = port
@@ -48,43 +51,71 @@ module DeepConnect
     alias peer_id peer_uuid
 
     def start
+      @status = :SERVICING
       send_class_specs
 
       @import_thread = Thread.start {
 	loop do
 	  begin
 	    ev = @port.import
-	  rescue EOFError, Port::DisconnectClient
+	  rescue EOFError, DeepConnect::DisconnectClient
 	    # EOFError: クライアントが閉じていた場合
 	    # DisconnectClient: 通信中にクライアント接続が切れた
-	    stop
+	    @deep_space.disconnect(:SESSION_CLOSED)
 	  rescue Port::ProtocolError
 	    # 何らかの障害のためにプロトコルが正常じゃなくなった
 	  end
-	  receive(ev)
+	  if @status == :SERVICING
+	    receive(ev)
+	  else
+	    puts "INFO: service is stoped, imported event abandoned(#{ev.inspect})" 
+	  end
 	end
       }
 
       @export_thread = Thread.start {
 	loop do
 	  ev = @export_queue.pop
-	  begin
-	    # export中にexportが発生するとデッドロックになる
-	    # threadが欲しいか?
-	    @port.export(ev)
-	  rescue Errno::EPIPE, Port::DisconnectClient
-	    # EPIPE: クライアントが終了している
-	    # DisconnectClient: 通信中にクライアント接続が切れた
-	    stop
+	  if @status == :SERVICING
+	    begin
+	      # export中にexportが発生するとデッドロックになる
+	      # threadが欲しいか?
+	      @port.export(ev)
+	    rescue Errno::EPIPE, Port::DisconnectClient
+	      # EPIPE: クライアントが終了している
+	      # DisconnectClient: 通信中にクライアント接続が切れた
+	      @deep_space.disconnect(:SESSION_CLOSED)
+	    end
+	  else
+	    puts "INFO: service is stoped, exiport event abandoned(#{ev.inspect})" 
 	  end
 	end
       }
       self
     end
 
-    def stop
+    def stop_service(*opts)
+      @status = :SERVICE_STOP
+      
+      if opts.include?(:SESSION_CLOSED)
+	@port.shutdown_reading
+      end
       @import_thread.exit
       @export_thread.exit
+      
+      waiting_events = @waiting.sort{|s1, s2| s1[0] <=> s2[0]}
+      for seq, ev in waiting_events
+	begin
+	  DeepConnect.Raise SessionServiceStopped
+	rescue
+	  ev.result ev.reply(nil, $!)
+	end
+      end
+      @waiting = nil
+    end
+
+    def stop(*opts)
+      @port.close
     end
 
     # peerからの受取り
@@ -130,7 +161,7 @@ module DeepConnect
 	    req = @waiting.delete(ev.seq)
 	  end
 	  unless req
-	    raise "対応する request eventがありません(#{ev.inspect})"
+	    DeepConnect.InternalError "対応する request eventがありません(#{ev.inspect})"
 	  end
 	  req.result ev
 	end
@@ -152,6 +183,9 @@ module DeepConnect
 
     # イベントの生成/送信
     def send_to(ref, method, *args, &block)
+      unless @status == :SERVICING
+	DeepConnect.Raise SessionServiceStopped
+      end
       if iterator?
 	ev = Event::IteratorRequest.request(self, ref, method, *args)
 	@waiting_mutex.synchronize do
@@ -221,17 +255,25 @@ module DeepConnect
       @export_queue.push ev
     end
 
+    def send_disconnect
+      ev = Event::SessionRequestNoReply.request(self, :recv_disconnect)
+      @port.export(ev)
+    end
+
+    def recv_disconnect
+      @organizer.disconnect_deep_space(@deep_space, :REQUEST_FROM_PEER)
+    end
+
+
     def get_service(name)
-      send_peer_session(:get_service, name)
+      if (sv = send_peer_session(:get_service, name)) == :DEEPCONNECT_NO_SUCH_SERVICE
+	DeepConnect.Raise NoServiceError, name
+      end
+      sv
     end
 
     def get_service_impl(name)
-      if sv = @organizer.service(name)
-	puts "INFO: get_service: #{name}, #{sv}"
-      else
-	puts "WARN: service Not Found: #{name}"
-      end
-      sv
+      @organizer.service(name)
     end
 
     def register_root_to_peer(id)

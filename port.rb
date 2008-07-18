@@ -10,16 +10,10 @@
 #   
 #
 
-require "e2mmap"
-
 require "deep-connect/event"
 
 module DeepConnect
   class Port
-    extend Exception2MessageMapper
-
-    def_exception :ProtocolError, "Protocol error!!"
-    def_exception :DisconnectClient, "%sの接続が切れました"
 
     PacketId2Class = [
       Event::Event, 
@@ -54,6 +48,14 @@ module DeepConnect
       @peeraddr = @io.peeraddr
     end
 
+    def close
+      @io.close
+    end
+
+    def shutdown_reading
+      @io.shutdown(Socket::SHUT_RD)
+    end
+
     def addr
       @io.addr
     end
@@ -84,7 +86,7 @@ module DeepConnect
 
     def event2packet_id(ev)
       unless id = Class2PacketId[ev.class]
-	raise "#{ev.class}がPort::Class2PacketIdに登録されていません"
+	DeepConnect.InternalError "#{ev.class}がPort::Class2PacketIdに登録されていません"
       end
       id
     end
@@ -104,10 +106,9 @@ module DeepConnect
 #       if ev.kind_of?(Event::Reply)
 # 	puts "EXPORT0: #{ev.class} seq=#{ev.seq} result=#{ev.result.instance_eval{self.class}}"
 #       end
-puts "EXPORT: #{ev.inspect}" if DeepConnect::MESSAGE_DISPLAY
+      puts "EXPORT: #{ev.inspect}" if DeepConnect::MESSAGE_DISPLAY
 #puts "SEL: #{ev.serialize.inspect}"
       id = event2packet_id(ev)
-#      ev.serialize
       s = Marshal.dump(ev.serialize)
       packet = [id, s.size, s].pack("nNa#{s.size}")
       @io.write(packet)
@@ -117,11 +118,11 @@ puts "EXPORT: #{ev.inspect}" if DeepConnect::MESSAGE_DISPLAY
       begin
 	packet = @io.read(n)
 	fail EOFError, "socket closed" unless packet
-	Fail ProtocolError unless packet.size == n
+	DeepConnect.Raise ProtocolError unless packet.size == n
 	packet
       rescue Errno::ECONNRESET
 	puts "WARN: read中に[#{peeraddr.join(', ')}]の接続が切れました"
-	raise DisconnectClient, peeraddr
+	DeepConnext.Raise DisconnectClient, peeraddr
       end
     end
     
@@ -130,7 +131,7 @@ puts "EXPORT: #{ev.inspect}" if DeepConnect::MESSAGE_DISPLAY
 	@io.write(packet)
       rescue Errno::ECONNRESET
 	puts "WARN: write中に[#{peeraddr.join(', ')}]の接続が切れました"
-	raise DisconnectClient, peeraddr
+	DeepConnect.Raise DisconnectClient, peeraddr
       end
     end
   end

@@ -323,6 +323,19 @@ when "12"
 
   dc.export("BH", BH)
 
+when "13"
+
+  class Foo
+    def foo
+      1
+    end
+    def slp(time)
+      sleep time
+    end
+  end
+
+  dc.export("foo", Foo.new)
+
 end
 
 sleep 1000

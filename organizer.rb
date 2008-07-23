@@ -16,7 +16,7 @@ require "deep-connect/evaluator"
 require "deep-connect/deep-space"
 require "deep-connect/port"
 require "deep-connect/event"
-require "deep-connect/monitor"
+require "deep-connect/cron"
 require "deep-connect/exceptions"
 
 require "deep-connect/class-spec-space"
@@ -24,8 +24,8 @@ require "deep-connect/class-spec-space"
 trap("SIGPIPE", "IGNORE")
 
 module DeepConnect
-  class Organizer
 
+  class Organizer
     def initialize
       @accepter = Accepter.new(self)
       @evaluator = Evaluator.new(self)
@@ -33,7 +33,7 @@ module DeepConnect
       @services = {}
       @deep_spaces = {}
 
-      @monitor = Monitor.new(self)
+      @cron = Cron.new(self)
 
       @local_id_mutex = Mutex.new
       @local_id_cv = ConditionVariable.new
@@ -42,6 +42,7 @@ module DeepConnect
 
     attr_reader :accepter
     attr_reader :evaluator
+    attr_reader :cron
 
     def deep_spaces
       @deep_spaces
@@ -62,7 +63,7 @@ module DeepConnect
       @local_id_cv.broadcast
 
       @accepter.start
-      @monitor.start
+      @cron.start
     end
 
     def stop
@@ -121,6 +122,15 @@ module DeepConnect
     def disconnect_deep_space(deep_space, *opts)
       @deep_spaces.delete(deep_space.peer_uuid)
       deep_space.disconnect(*opts)
+    end
+
+    def keep_alive
+      puts "KEEP ALIVE: Start" if DISPLAY_KEEP_ALIVE
+      for uuid, deep_space in @deep_spaces.dup
+	unless deep_space.session.keep_alive
+	  disconnect_deep_space(deep_space, :SESSION_CLOSED)
+	end
+      end
     end
 
     # services

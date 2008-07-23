@@ -18,7 +18,8 @@
 * Object#deep_connect_dup
 * Object#deep_connect_deep_copy
 * ブロック引数の問題 arity を使えばどうにかなる?
-* クライアントの切断時のsessionの処理
+* 相手の切断時のsessionの処理
+* KeepAlive: 相手が生きているかを定期的に確認
 -- スケジュール
 --- 識別
 * 簡易分散GCのパフォーマンスアップ(バッチ化)

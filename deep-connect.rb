@@ -22,6 +22,9 @@ module DeepConnect
   DEBUG = false
   DISPLAY_METHOD_SPEC = false
   DISPLAY_MONITOR_MESSAGE = true
+  DISPLAY_KEEP_ALIVE = true
+
+  KEEP_ALIVE_INTERVAL = 60
 
   class DConnect
     extend Forwardable

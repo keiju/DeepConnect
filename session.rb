@@ -22,7 +22,7 @@ module DeepConnect
   class Session
 
 #    SESSION_SERVICE_NAME = "DeepConnect::SESSION"
-
+    
     def initialize(deep_space, port, local_id = nil)
       @status = :INITIALIZE
 
@@ -40,6 +40,8 @@ module DeepConnect
       
       @next_request_event_id = 0
       @next_request_event_id_mutex = Mutex.new
+
+      @last_keep_alive = 0
     end
 
     attr_reader :organizer
@@ -61,7 +63,7 @@ module DeepConnect
 	  rescue EOFError, DeepConnect::DisconnectClient
 	    # EOFError: クライアントが閉じていた場合
 	    # DisconnectClient: 通信中にクライアント接続が切れた
-	    @deep_space.disconnect(:SESSION_CLOSED)
+	    @organizer.disconnect_deep_space(@deep_space, :SESSION_CLOSED)
 	  rescue Port::ProtocolError
 	    # 何らかの障害のためにプロトコルが正常じゃなくなった
 	  end
@@ -84,10 +86,10 @@ module DeepConnect
 	    rescue Errno::EPIPE, Port::DisconnectClient
 	      # EPIPE: クライアントが終了している
 	      # DisconnectClient: 通信中にクライアント接続が切れた
-	      @deep_space.disconnect(:SESSION_CLOSED)
+	      @organizer.disconnect_deep_space(@deep_space, :SESSION_CLOSED)
 	    end
 	  else
-	    puts "INFO: service is stoped, exiport event abandoned(#{ev.inspect})" 
+	    puts "INFO: service is stoped, export event abandoned(#{ev.inspect})" 
 	  end
 	end
       }
@@ -95,6 +97,7 @@ module DeepConnect
     end
 
     def stop_service(*opts)
+      puts "INFO: STOP_SERVICE: Session: #{self.peer_uuid} #{opts.join(' ')} "
       @status = :SERVICE_STOP
       
       if opts.include?(:SESSION_CLOSED)
@@ -313,6 +316,23 @@ module DeepConnect
 #       specs = Marshal.load(spec_dump)
 #       @object_space.recv_class_specs(specs)
 #     end
+
+    def keep_alive
+      now = @organizer.cron.timer
+      if now > @last_keep_alive + KEEP_ALIVE_INTERVAL*2
+	puts "KEEP ALIVE: session #{self} is dead." if DISPLAY_KEEP_ALIVE
+
+	false
+      else
+	puts "KEEP ALIVE: send #{self} to keep alive." if DISPLAY_KEEP_ALIVE
+	send_peer_session_no_recv(:recv_keep_alive)
+	true
+      end
+    end
+
+    def recv_keep_alive_impl
+      @last_keep_alive = @orgnizer.cron.timer
+    end
   end
 end
 

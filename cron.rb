@@ -1,5 +1,5 @@
 #
-#   monitor.rb - 
+#   cron.rb - 
 #   	$Release Version: $
 #   	$Revision: 1.1 $
 #   	$Date: 1997/08/08 00:57:08 $
@@ -12,23 +12,35 @@
 
 @RCS_ID='-$Id:  $-'
 
+require "deep-connect/deep-connect"
+
 module DeepConnect
-  class Monitor
+
+  KEEP_ALIVE_INTERVAL = 2
+
+  class Cron
+
+    TAB = [
+      [10, proc{|org, cron, t| cron.mon_10sec}],
+      [60, proc{|org, cron, t| cron.mon_min}],
+      [3060, proc{|org, cron, t| cron.mon_hour}],
+      [KEEP_ALIVE_INTERVAL, proc{|org, cron, t| org.keep_alive}],
+    ]
+
+    MON_INTERVAL = 1
 
     def initialize(organizer)
       @organizer = organizer
 
       @timer = 0
-      @counter10s = 0
-      @counter1m = 0
-      @counter1h = 0
-      
+      @last_exec_times = {}
+
       @mon_mutex = Mutex.new
 
       @prev_message10s = nil
     end
 
-    MON_INTERVAL = 1
+    attr_reader :timer
 
     def start
       Thread.start do 
@@ -38,21 +50,13 @@ module DeepConnect
 	  
 	  Thread.start do
 	    @mon_mutex.synchronize do
-	      @counter10s += MON_INTERVAL
-	      @counter1m += MON_INTERVAL
-	      @counter1h += MON_INTERVAL
-
-	      if @counter10s >= 1
-		@counter10s = 0
-		mon_10sec 
-	      end
-	      if @counter1m >= 60
-		@counter1m = 0
-		mon_min
-	      end
-	      if @counter1h >= 3600
-		@counter1h = 0
-		mon_hour
+	      for tab in TAB
+		last_time = @last_exec_times[tab]
+		last_time = 0 unless last_time
+		if @timer >= last_time + tab[0] 
+		  @last_exec_times[tab] = @timer
+		  tab[1].call @organizer, self, @timer
+		end
 	      end
 	    end
 	  end

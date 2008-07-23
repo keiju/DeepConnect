@@ -46,6 +46,7 @@ module DeepConnect
     def initialize(sock)
       @io = sock
       @peeraddr = @io.peeraddr
+      @session = nil
     end
 
     def close

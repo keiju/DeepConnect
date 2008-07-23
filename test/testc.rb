@@ -89,6 +89,7 @@ when "4.4"
 
 when "5"
   r = deepspace.get_service("TEST.S2")
+  sleep 5
   p r[0]
 
 when "6"
@@ -407,6 +408,10 @@ when "13.3"
   # スリープ中にサーバーを切断するテスト
   foo = deepspace.import("foo")
   sleep 100
+  foo.foo
+
+when "14"
+  foo = deepspace.import("foo")
   foo.foo
 
 end

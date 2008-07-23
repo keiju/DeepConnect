@@ -403,6 +403,11 @@ when "13.2"
   deepspace.close
   sleep 1
 
+when "13.3"
+  # スリープ中にサーバーを切断するテスト
+  foo = deepspace.import("foo")
+  sleep 100
+  foo.foo
 
 end
 

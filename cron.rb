@@ -41,6 +41,7 @@ module DeepConnect
     end
 
     attr_reader :timer
+    alias tick timer
 
     def start
       Thread.start do 

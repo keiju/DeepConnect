@@ -42,7 +42,10 @@ module DeepConnect
 
     attr_reader :accepter
     attr_reader :evaluator
-    attr_reader :cron
+
+    def tick
+      @cron.tick
+    end
 
     def deep_spaces
       @deep_spaces

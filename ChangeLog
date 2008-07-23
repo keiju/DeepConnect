@@ -1,5 +1,7 @@
 2008-07-23  Keiju Ishitsuka  <keiju@emperor2.pendome>
 
+	* KeepAlive のバグフィックス
+
 	* KeepAlive: 相手が生きているかを定期的に確認
 	* cron.rb: 定期的実行サービス(monitorからの改名/機能追加)
 

@@ -41,7 +41,7 @@ module DeepConnect
       @next_request_event_id = 0
       @next_request_event_id_mutex = Mutex.new
 
-      @last_keep_alive = 0
+      @last_keep_alive = nil
     end
 
     attr_reader :organizer
@@ -53,6 +53,8 @@ module DeepConnect
     alias peer_id peer_uuid
 
     def start
+      @last_keep_alive = @organizer.tick
+
       @status = :SERVICING
       send_class_specs
 
@@ -318,10 +320,9 @@ module DeepConnect
 #     end
 
     def keep_alive
-      now = @organizer.cron.timer
+      now = @organizer.tick
       if now > @last_keep_alive + KEEP_ALIVE_INTERVAL*2
 	puts "KEEP ALIVE: session #{self} is dead." if DISPLAY_KEEP_ALIVE
-
 	false
       else
 	puts "KEEP ALIVE: send #{self} to keep alive." if DISPLAY_KEEP_ALIVE
@@ -331,7 +332,8 @@ module DeepConnect
     end
 
     def recv_keep_alive_impl
-      @last_keep_alive = @orgnizer.cron.timer
+      puts "RECV_KEEP_ALIVE"  if DISPLAY_KEEP_ALIVE
+      @last_keep_alive = @organizer.tick
     end
   end
 end

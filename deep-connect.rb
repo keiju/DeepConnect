@@ -17,12 +17,12 @@ require "deep-connect/organizer"
 module DeepConnect
   @RCS_ID='-$Id:  $-'
 
-  DISPLAY_METHOD_MISSING = false
+  DISPLAY_MESSAGE_TRACE = false
   MESSAGE_DISPLAY = false
   DEBUG = false
   DISPLAY_METHOD_SPEC = false
-  DISPLAY_MONITOR_MESSAGE = true
-  DISPLAY_KEEP_ALIVE = true
+  DISPLAY_MONITOR_MESSAGE = false
+  DISPLAY_KEEP_ALIVE = false
 
   KEEP_ALIVE_INTERVAL = 60
 

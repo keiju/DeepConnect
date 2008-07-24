@@ -46,6 +46,7 @@ module DeepConnect
 
       # importしているオブジェクト
       @import_reference = {}
+      @deregister_reference_queue = Queue.new
     end
 
     attr_reader :status
@@ -60,6 +61,9 @@ module DeepConnect
 
     def connect
       @session.start
+
+      @deregister_reference_thread = start_deregister_reference
+
       @status = :SERVICING
     end
 
@@ -72,6 +76,7 @@ module DeepConnect
 	@session.stop
       end
 
+      @deregister_reference_thread.stop
       @import_reference = nil
       @export_roots = nil
     end
@@ -118,8 +123,11 @@ module DeepConnect
       @export_roots[id] = @organizer.id2obj(id)
     end
 
-    def delete_root(id)
-      @export_roots.delete(id)
+    def delete_roots(ids)
+      puts "GC: delete root: #{ids.join(' ')}" if DISPLAY_GC
+      for id in ids
+	@export_roots.delete(id)
+      end
     end
 
     #
@@ -146,8 +154,22 @@ module DeepConnect
     def deregister_import_reference_proc
       proc do |id|
 	if @status == :SERVICING
+	  puts "GC: gced id: #{id}" if DISPLAY_GC
 	  @import_reference.delete(id)
-	  deregister_root_to_peer(id)
+	  @deregister_reference_queue.push id
+	end
+      end
+    end
+
+    def start_deregister_reference
+      Thread.start do
+	ids = []
+	while ids.push @deregister_reference_queue.pop
+	  begin
+	    while ids.push @deregister_reference_queue.pop(true); end
+	  rescue ThreadError
+	    deregister_roots_to_peer(ids) if @status == :SERVICING
+	  end
 	end
       end
     end
@@ -161,8 +183,9 @@ module DeepConnect
       @session.register_root_to_peer(id)
     end
 
-    def deregister_root_to_peer(id)
-      @session.deregister_root_to_peer(id)
+    def deregister_roots_to_peer(ids)
+      puts "GC: send deregister id: #{ids.join(' ')}" if DISPLAY_GC
+      @session.deregister_root_to_peer(ids)
     end
     
   end

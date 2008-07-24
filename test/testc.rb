@@ -94,13 +94,13 @@ when "5"
 
 when "6"
   a = deepspace.get_service("TEST3")
-  10.times do
+  1000.times do
     a.new(10)
   end
 
   ObjectSpace.garbage_collect
   puts "Sleep IN"
-#  sleep 10
+  sleep 10
 #  require "tracer"
 #  Tracer.on
 #  sleep 

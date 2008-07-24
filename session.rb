@@ -290,12 +290,14 @@ module DeepConnect
       @deep_space.register_root_from_other_session(id)
     end
 
-    def deregister_root_to_peer(id)
-      send_peer_session_no_recv(:deregister_root, id)
+    def deregister_root_to_peer(ids)
+      idsdump = Marshal.dump(ids)
+      send_peer_session_no_recv(:deregister_root, idsdump)
     end
 
-    def deregister_root_impl(id)
-      @deep_space.delete_root(id)
+    def deregister_root_impl(idsdump)
+      ids = Marshal.load(idsdump)
+      @deep_space.delete_roots(ids)
       nil
     end
 

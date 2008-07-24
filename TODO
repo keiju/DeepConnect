@@ -21,12 +21,12 @@
 * 相手の切断時のsessionの処理
 * KeepAlive: 相手が生きているかを定期的に確認
 * 簡易分散GCのパフォーマンスアップ(バッチ化)
+* future type
 -- スケジュール
 * 例外が消えることがある...
   + 再現待ち
 --- 識別
 * shallow-connect
-* feature type
 * 疑似Mutalクラス
   + 変更時にコールバックする
 

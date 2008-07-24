@@ -1,5 +1,6 @@
 2008-07-24  Keiju Ishitsuka  <keiju@emperor2.pendome>
 
+	* future class
 	* 簡易分散GCのパフォーマンスアップ(バッチ化)
 
 2008-07-23  Keiju Ishitsuka  <keiju@emperor2.pendome>

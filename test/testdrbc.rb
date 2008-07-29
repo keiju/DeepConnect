@@ -11,6 +11,9 @@ DRb.start_service(nil, nil)
 ro = DRbObject.new(nil, there)
 #p ro.size
 
+10000.times{ ro.baz }
+exit
+
 ro.bar
 ro.foo
 ro.gg

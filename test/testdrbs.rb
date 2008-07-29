@@ -15,6 +15,10 @@ class Foo
     raise "aaa"
   end
 
+  def baz
+    1
+  end
+
 end
 
 here = ARGV.shift

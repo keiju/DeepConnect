@@ -33,7 +33,7 @@ when "2"
   #p ref
   p ref[0]
   p ref.push 3
-  p ref.peer_inspect
+  puts ref.peer_inspect
 
 when "3"
   r1 = deepspace.get_service("TEST1")

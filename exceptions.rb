@@ -4,6 +4,8 @@ require "e2mmap"
 module DeepConnect
   extend Exception2MessageMapper
 
+  def_exception :NoInterfaceMethod, "No interface method(%s.%s)"
+
   def_exception :NoServiceError, "No such service(%s)"
   def_exception :CantSerializable, "%sはシリアライズできません"
   def_exception :CantDup, "%sはdupできません"
@@ -16,7 +18,7 @@ module DeepConnect
   def_exception :ProtocolError, "Protocol error!!"
 
   def self.InternalError(message)
-    DeepConnect.Raise InternalError, message
+    DC.Raise InternalError, message
   end
 end
 

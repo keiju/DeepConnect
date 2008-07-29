@@ -378,8 +378,28 @@ when "14.1"
   
   s2Array = deepspace.import("S2ARRAY")
   $dc.export("TEST.S2ARRAY", s2Array)
-  
 
+when "15"
+  
+  DeepConnect.def_interface(Array, :[])
+  DeepConnect.def_interface(Array, :push)
+  DeepConnect.def_interface(Array, :inspect)
+
+when "16"
+  class Foo
+    def foo
+      raise Boo
+    end
+    def bar
+      raise "aaa"
+    end
+
+    def baz
+      1
+    end
+  end
+  
+  dc.export("foo", Foo.new)
   
 end
 

@@ -76,7 +76,7 @@ module DeepConnect
 	@session.stop
       end
 
-      @deregister_reference_thread.stop
+      @deregister_reference_thread.exit
       @import_reference = nil
       @export_roots = nil
     end
@@ -102,7 +102,6 @@ module DeepConnect
 
     def make_class_spec_cache(cspec)
       cache = ClassSpec.new
-      
     end
 
     #

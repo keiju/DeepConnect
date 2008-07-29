@@ -87,7 +87,7 @@ module DeepConnect
 
     def event2packet_id(ev)
       unless id = Class2PacketId[ev.class]
-	DeepConnect.InternalError "#{ev.class}がPort::Class2PacketIdに登録されていません"
+	DC.InternalError "#{ev.class}がPort::Class2PacketIdに登録されていません"
       end
       id
     end
@@ -99,7 +99,7 @@ module DeepConnect
 #puts "DUMP: #{bin.first.inspect}"
       a = Marshal.load(bin.first)
       ev = Event.materialize(@session, t, *a)
-      puts "IMPORT: #{ev.inspect}" if DeepConnect::MESSAGE_DISPLAY
+      puts "IMPORT: #{ev.inspect}" if DC::MESSAGE_DISPLAY
       ev
     end
 
@@ -107,7 +107,7 @@ module DeepConnect
 #       if ev.kind_of?(Event::Reply)
 # 	puts "EXPORT0: #{ev.class} seq=#{ev.seq} result=#{ev.result.instance_eval{self.class}}"
 #       end
-      puts "EXPORT: #{ev.inspect}" if DeepConnect::MESSAGE_DISPLAY
+      puts "EXPORT: #{ev.inspect}" if DC::MESSAGE_DISPLAY
 #puts "SEL: #{ev.serialize.inspect}"
       id = event2packet_id(ev)
       s = Marshal.dump(ev.serialize)
@@ -119,11 +119,11 @@ module DeepConnect
       begin
 	packet = @io.read(n)
 	fail EOFError, "socket closed" unless packet
-	DeepConnect.Raise ProtocolError unless packet.size == n
+	DC::Raise ProtocolError unless packet.size == n
 	packet
       rescue Errno::ECONNRESET
 	puts "WARN: read中に[#{peeraddr.join(', ')}]の接続が切れました"
-	DeepConnext.Raise DisconnectClient, peeraddr
+	DC::Raise DisconnectClient, peeraddr
       end
     end
     
@@ -132,7 +132,7 @@ module DeepConnect
 	@io.write(packet)
       rescue Errno::ECONNRESET
 	puts "WARN: write中に[#{peeraddr.join(', ')}]の接続が切れました"
-	DeepConnect.Raise DisconnectClient, peeraddr
+	DC::Raise DisconnectClient, peeraddr
       end
     end
   end

@@ -1,3 +1,9 @@
+2008-07-29  Keiju Ishitsuka  <keiju@emperor2.pendome>
+
+	* shallow connect 機能
+	* keep alive の 問題解消
+	* DeepConnect::DConnect を DeepConnect::DeepConnect に改名
+
 2008-07-24  Keiju Ishitsuka  <keiju@emperor2.pendome>
 
 	* future class

@@ -126,7 +126,7 @@ module DeepConnect
  	    bt = ev.exp.backtrace
  	    bt.push "-- peer side --"
  	    bt.push *caller(0)
- 	    bt = bt.select{|e| /deep-connect/ !~ e} unless DeepConnect::DEBUG
+ 	    bt = bt.select{|e| /deep-connect/ !~ e} unless DC::DEBUG
 	    
  	    raise PeerSideException, ev.exp, bt
 #	    raise PeerSideException.new(ev.exp)

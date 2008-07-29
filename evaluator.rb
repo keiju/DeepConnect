@@ -20,21 +20,15 @@ module DeepConnect
       @organizer = org
     end
 
-#     def evaluate(session, event)
-#       begin
-# 	case event
-# 	when IteratorNextRequest
-# 	when IteratorRequest
-# 	  evaluate_iterator_request(session, event)
-# 	else
-# 	  evaluate_request(session, event)
-# 	end
-#       rescue
-#       end
-#     end
-
     def evaluate_request(session, event)
       begin
+	if @organizer.shallow_connect?
+#p mspec = Organizer::method_spec(event.receiver, event.method)
+	  if !(mspec = Organizer::method_spec(event.receiver, event.method)) or
+	      !mspec.interface?
+	    DC.Raise NoInterfaceMethod, event.receiver.class, event.method
+	  end
+	end
 	ret = event.receiver.send(event.method, *event.args)
 	unless event.kind_of?(Event::NoReply)
 	  session.accept event.reply(ret)
@@ -67,7 +61,7 @@ module DeepConnect
 	      callback_reply.result
 	    end
 	  rescue
-	    DeepConnect.Raise InternalError, $!
+	    DC.Raise InternalError, $!
 	  end
 	}
 	session.accept Event::IteratorCallBackRequestFinish.call_back_event(event)

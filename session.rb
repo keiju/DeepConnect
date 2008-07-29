@@ -21,7 +21,7 @@ require "deep-connect/exceptions"
 module DeepConnect
   class Session
 
-#    SESSION_SERVICE_NAME = "DeepConnect::SESSION"
+#    SESSION_SERVICE_NAME = "DC::SESSION"
     
     def initialize(deep_space, port, local_id = nil)
       @status = :INITIALIZE
@@ -62,11 +62,12 @@ module DeepConnect
 	loop do
 	  begin
 	    ev = @port.import
-	  rescue EOFError, DeepConnect::DisconnectClient
+	    @last_keep_alive = @organizer.tick
+	  rescue EOFError, DC::DisconnectClient
 	    # EOFError: クライアントが閉じていた場合
 	    # DisconnectClient: 通信中にクライアント接続が切れた
 	    @organizer.disconnect_deep_space(@deep_space, :SESSION_CLOSED)
-	  rescue Port::ProtocolError
+	  rescue DC::ProtocolError
 	    # 何らかの障害のためにプロトコルが正常じゃなくなった
 	  end
 	  if @status == :SERVICING
@@ -85,7 +86,7 @@ module DeepConnect
 	      # export中にexportが発生するとデッドロックになる
 	      # threadが欲しいか?
 	      @port.export(ev)
-	    rescue Errno::EPIPE, Port::DisconnectClient
+	    rescue Errno::EPIPE, DC::DisconnectClient
 	      # EPIPE: クライアントが終了している
 	      # DisconnectClient: 通信中にクライアント接続が切れた
 	      @organizer.disconnect_deep_space(@deep_space, :SESSION_CLOSED)
@@ -102,7 +103,7 @@ module DeepConnect
       puts "INFO: STOP_SERVICE: Session: #{self.peer_uuid} #{opts.join(' ')} "
       @status = :SERVICE_STOP
       
-      if opts.include?(:SESSION_CLOSED)
+      if !opts.include?(:SESSION_CLOSED)
 	@port.shutdown_reading
       end
       @import_thread.exit
@@ -111,7 +112,7 @@ module DeepConnect
       waiting_events = @waiting.sort{|s1, s2| s1[0] <=> s2[0]}
       for seq, ev in waiting_events
 	begin
-	  DeepConnect.Raise SessionServiceStopped
+	  DC.Raise SessionServiceStopped
 	rescue
 	  ev.result ev.reply(nil, $!)
 	end
@@ -134,17 +135,6 @@ module DeepConnect
 	      req = @waiting[ev.seq[1]]
 	    end
 	    req.push_call_back ev
-	    
-
-# 	    @iterator_event_queues[ev.itr_id].push ev
-	    
-	    # when ItratorAbort
-# さあどうするか?
-# 	  when Event::IteratorNextRequest
-# #             , Event::IteratorRetryRequest
-# 	    @iterator_event_queues[ev.itr_id].push ev
-# 	  when Event::IteratorExitRequest
-# 	    @iterator_event_queues[ev.itr_id].push ev
  	  when Event::IteratorRequest
  	    @iterator_event_queues[ev.seq] = Queue.new
  	    @organizer.evaluator.evaluate_iterator_request(self, ev)
@@ -166,7 +156,7 @@ module DeepConnect
 	    req = @waiting.delete(ev.seq)
 	  end
 	  unless req
-	    DeepConnect.InternalError "対応する request eventがありません(#{ev.inspect})"
+	    DC.InternalError "対応する request eventがありません(#{ev.inspect})"
 	  end
 	  req.result ev
 	end
@@ -189,7 +179,7 @@ module DeepConnect
     # イベントの生成/送信
     def send_to(ref, method, *args, &block)
       unless @status == :SERVICING
-	DeepConnect.Raise SessionServiceStopped
+	DC.Raise SessionServiceStopped
       end
       if iterator?
 	ev = Event::IteratorRequest.request(self, ref, method, *args)
@@ -268,11 +258,12 @@ module DeepConnect
     def recv_disconnect
       @organizer.disconnect_deep_space(@deep_space, :REQUEST_FROM_PEER)
     end
+    Organizer.def_interface(self, :recv_disconnect)
 
 
     def get_service(name)
       if (sv = send_peer_session(:get_service, name)) == :DEEPCONNECT_NO_SUCH_SERVICE
-	DeepConnect.Raise NoServiceError, name
+	DC.Raise NoServiceError, name
       end
       sv
     end
@@ -280,6 +271,7 @@ module DeepConnect
     def get_service_impl(name)
       @organizer.service(name)
     end
+    Organizer.def_interface(self, :get_service_impl)
 
     def register_root_to_peer(id)
       send_peer_session(:register_root, id)
@@ -289,6 +281,7 @@ module DeepConnect
     def register_root_impl(id)
       @deep_space.register_root_from_other_session(id)
     end
+    Organizer.def_interface(self, :register_root_impl)
 
     def deregister_root_to_peer(ids)
       idsdump = Marshal.dump(ids)
@@ -300,6 +293,7 @@ module DeepConnect
       @deep_space.delete_roots(ids)
       nil
     end
+    Organizer.def_interface(self, :deregister_root_impl)
 
     def send_class_specs
       specs_dump = Marshal.dump(Organizer::class_specs)
@@ -309,7 +303,10 @@ module DeepConnect
     def recv_class_specs_impl(specs_dump)
       specs = Marshal.load(specs_dump)
       @deep_space.class_specs = specs
+#p specs
     end
+    Organizer.def_interface(self, :recv_class_specs_impl)
+
 
 #     def send_class_specs(cspecs)
 #       specs_dump = Marshal.dump(cspecs)
@@ -337,6 +334,7 @@ module DeepConnect
       puts "RECV_KEEP_ALIVE"  if DISPLAY_KEEP_ALIVE
       @last_keep_alive = @organizer.tick
     end
+    Organizer.def_interface(self, :recv_keep_alive_impl)
   end
 end
 

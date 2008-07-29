@@ -11,6 +11,24 @@
 #
 require "forwardable"
 
+require "deep-connect/class-spec-space"
+
+module DeepConnect
+  class Organizer
+    @CLASS_SPEC_SPACE = ClassSpecSpace.new(:local)
+    
+    extend SingleForwardable
+
+    def_delegator :@CLASS_SPEC_SPACE, :class_specs
+    def_delegator :@CLASS_SPEC_SPACE, :def_method_spec
+    def_delegator :@CLASS_SPEC_SPACE, :def_single_method_spec
+    def_delegator :@CLASS_SPEC_SPACE, :def_interface
+    def_delegator :@CLASS_SPEC_SPACE, :def_single_interface
+    def_delegator :@CLASS_SPEC_SPACE, :method_spec
+    def_delegator :@CLASS_SPEC_SPACE, :class_spec_id_of
+  end
+end
+
 require "deep-connect/accepter"
 require "deep-connect/evaluator"
 require "deep-connect/deep-space"
@@ -19,7 +37,6 @@ require "deep-connect/event"
 require "deep-connect/cron"
 require "deep-connect/exceptions"
 
-require "deep-connect/class-spec-space"
 
 trap("SIGPIPE", "IGNORE")
 
@@ -27,6 +44,8 @@ module DeepConnect
 
   class Organizer
     def initialize
+      @shallow_connect = false
+
       @accepter = Accepter.new(self)
       @evaluator = Evaluator.new(self)
 
@@ -39,6 +58,9 @@ module DeepConnect
       @local_id_cv = ConditionVariable.new
       @local_id = nil
     end
+
+    attr_accessor :shallow_connect
+    alias shallow_connect? shallow_connect
 
     attr_reader :accepter
     attr_reader :evaluator
@@ -156,7 +178,7 @@ module DeepConnect
 	  return o
 	end
       end
-      DeepConnect.InternalError "deep_spaceにid(=#{id})をobject_idとするオブジェクトが登録されていません.)"
+      DC::InternalError "deep_spaceにid(=#{id})をobject_idとするオブジェクトが登録されていません.)"
     end
 
     @@ABSOLUTE_IMMUTABLE_CLASSES = [
@@ -190,17 +212,11 @@ module DeepConnect
       @@IMMUTABLE_CLASSES
     end
 
-    @CLASS_SPEC_SPACE = ClassSpecSpace.new(:local)
-    
-    extend SingleForwardable
-
-    def_delegator :@CLASS_SPEC_SPACE, :class_specs
-    def_delegator :@CLASS_SPEC_SPACE, :def_method_spec
-    def_delegator :@CLASS_SPEC_SPACE, :def_single_method_spec
-    def_delegator :@CLASS_SPEC_SPACE, :method_spec
-    def_delegator :@CLASS_SPEC_SPACE, :class_spec_id_of
+    def_interface(Exception, :message)
 
     def_method_spec(Exception, "VAL backtrace()")
+    def_interface(Exception, :backtrace)
+
     def_method_spec(Exception, "REF set_backtrace(VAL)")
 
     def_method_spec(Array, :method=> :-, :args=> "VAL")

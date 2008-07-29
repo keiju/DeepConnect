@@ -23,6 +23,12 @@
 * 簡易分散GCのパフォーマンスアップ(バッチ化)
 * future type
 * shallow-connect
+* パフォーマンスアップ
+  + プロトコル変更(PaketIdを使用しなくした)
+  + Event#results の仕様変更/QueueからConditionVariableへ
+  + Port#readでエラーチェックを少なくした.
+  + ClassSpecSpace#mspecのキャッシュのキーを変更
+
 -- スケジュール
 * 例外が消えることがある...
   + 再現待ち
@@ -32,9 +38,11 @@
   + class一括指定
   + session個別指定(connect時コールバック)
 
-* DISPLAY_* 関連をまとめる
-
 * パフォーマンスアップ
+  + ClassSpecの実クラス化
+  + eventのargs周りの*argsの変更
+
+* DISPLAY_* 関連をまとめる
 
 * 疑似immutableクラス
   + 変更時にコールバックする

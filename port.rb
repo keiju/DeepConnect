@@ -15,31 +15,6 @@ require "deep-connect/event"
 module DeepConnect
   class Port
 
-    PacketId2Class = [
-      Event::Event, 
-      Event::Request, 
-      Event::IteratorRequest, 
-      Event::IteratorCallBackRequest,
-      Event::IteratorCallBackRequestFinish,
-      Event::IteratorNextRequest, 
-#      Event::IteratorRetryRequest, 
-      Event::IteratorExitRequest, 
-      Event::SessionRequest,
-      Event::SessionRequestNoReply,
-      Event::Reply, 
-      Event::IteratorReply, 
-      Event::IteratorCallBackReply,
-      Event::IteratorCallBackReplyBreak,
-      Event::IteratorReplyFinish, 
-      Event::SessionReply,
-      Event::InitSessionEvent
-    ]
-    Class2PacketId = {}
-    PacketId2Class.each_with_index do
-      |p, idx|
-      Class2PacketId[p] = idx
-    end
-
     PACK_n_SIZE = [1].pack("n").size
     PACK_N_SIZE = [1].pack("N").size
 
@@ -69,57 +44,28 @@ module DeepConnect
       @session = session
     end
 
-#     def start
-#       @import_thread = Thread.start {
-# 	loop do
-# 	  ev = import
-# 	  @session.receive_event ev
-# 	end
-#       }
-
-#       @export_thread = Thread.start {
-# 	loop do
-# 	  ev = @session.accepted_event
-# 	  export(ev)
-# 	end
-#       }
-#     end
-
-    def event2packet_id(ev)
-      unless id = Class2PacketId[ev.class]
-	DC.InternalError "#{ev.class}がPort::Class2PacketIdに登録されていません"
-      end
-      id
-    end
-
     def import
-      pid, sz = read(PACK_n_SIZE + PACK_N_SIZE).unpack("nN")
-      t = PacketId2Class[pid]
+      sz = read(PACK_N_SIZE).unpack("N").first
       bin = read(sz).unpack("a#{sz}")
-#puts "DUMP: #{bin.first.inspect}"
       a = Marshal.load(bin.first)
-      ev = Event.materialize(@session, t, *a)
+      ev = Event.materialize(@session, a.first, *a)
       puts "IMPORT: #{ev.inspect}" if DC::MESSAGE_DISPLAY
       ev
     end
 
     def export(ev)
-#       if ev.kind_of?(Event::Reply)
-# 	puts "EXPORT0: #{ev.class} seq=#{ev.seq} result=#{ev.result.instance_eval{self.class}}"
-#       end
       puts "EXPORT: #{ev.inspect}" if DC::MESSAGE_DISPLAY
-#puts "SEL: #{ev.serialize.inspect}"
-      id = event2packet_id(ev)
       s = Marshal.dump(ev.serialize)
-      packet = [id, s.size, s].pack("nNa#{s.size}")
-      @io.write(packet)
+      size = s.size
+      packet = [size, s].pack("Na#{size}")
+      write(packet)
     end
 
     def read(n)
       begin
 	packet = @io.read(n)
 	fail EOFError, "socket closed" unless packet
-	DC::Raise ProtocolError unless packet.size == n
+#	DC::Raise ProtocolError unless packet.size == n
 	packet
       rescue Errno::ECONNRESET
 	puts "WARN: read中に[#{peeraddr.join(', ')}]の接続が切れました"

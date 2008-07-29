@@ -1,5 +1,11 @@
 2008-07-29  Keiju Ishitsuka  <keiju@emperor2.pendome>
 
+	* performance up
+	  + プロトコル変更(PaketIdを使用しなくした)
+	  + Event#results の仕様変更/QueueからConditionVariableへ
+	  + Port#readでエラーチェックを少なくした.
+	  + ClassSpecSpace#mspecのキャッシュのキーを変更
+
 	* shallow connect 機能
 	* keep alive の 問題解消
 	* DeepConnect::DConnect を DeepConnect::DeepConnect に改名

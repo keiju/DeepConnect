@@ -29,7 +29,7 @@ module DeepConnect
 
   DISPLAY_GC = false
 
-#  KEEP_ALIVE_INTERVAL = 60
+  KEEP_ALIVE_INTERVAL = 60
 
   class DeepConnect
     extend Forwardable

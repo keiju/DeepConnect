@@ -50,7 +50,9 @@ module DeepConnect
       end
       return nil unless csid
 
-      mid = [csid, method]
+#      mid = [csid, method]
+#      mid = sprintf("%X-%s", csid, method)
+      mid = "#{csid}-#{method}"
       case mspec = @method_spec_cache[mid]
       when nil
 	# pass

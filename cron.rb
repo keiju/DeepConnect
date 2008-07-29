@@ -16,7 +16,7 @@ require "deep-connect/deep-connect"
 
 module DeepConnect
 
-  KEEP_ALIVE_INTERVAL = 2
+  KEEP_ALIVE_INTERVAL = 60
 
   class Cron
 

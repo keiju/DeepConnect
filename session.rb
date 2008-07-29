@@ -114,7 +114,7 @@ module DeepConnect
 	begin
 	  DC.Raise SessionServiceStopped
 	rescue
-	  ev.result ev.reply(nil, $!)
+	  ev.result = ev.reply(nil, $!)
 	end
       end
       @waiting = nil
@@ -158,7 +158,7 @@ module DeepConnect
 	  unless req
 	    DC.InternalError "対応する request eventがありません(#{ev.inspect})"
 	  end
-	  req.result ev
+	  req.result = ev
 	end
       end
     end

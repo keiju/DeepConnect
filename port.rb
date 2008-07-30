@@ -46,8 +46,8 @@ module DeepConnect
 
     def import
       sz = read(PACK_N_SIZE).unpack("N").first
-      bin = read(sz).unpack("a#{sz}")
-      a = Marshal.load(bin.first)
+      bin = read(sz)
+      a = Marshal.load(bin)
       ev = Event.materialize(@session, a.first, *a)
       puts "IMPORT: #{ev.inspect}" if DC::MESSAGE_DISPLAY
       ev
@@ -55,11 +55,29 @@ module DeepConnect
 
     def export(ev)
       puts "EXPORT: #{ev.inspect}" if DC::MESSAGE_DISPLAY
-      s = Marshal.dump(ev.serialize)
-      size = s.size
-      packet = [size, s].pack("Na#{size}")
+      bin = Marshal.dump(ev.serialize)
+      size = bin.size
+      
+      packet = [size].pack("N")+bin
       write(packet)
     end
+
+#     def import
+#       sz = read(PACK_N_SIZE).unpack("N").first
+#       bin = read(sz).unpack("a#{sz}")
+#       a = Marshal.load(bin.first)
+#       ev = Event.materialize(@session, a.first, *a)
+#       puts "IMPORT: #{ev.inspect}" if DC::MESSAGE_DISPLAY
+#       ev
+#     end
+
+#     def export(ev)
+#       puts "EXPORT: #{ev.inspect}" if DC::MESSAGE_DISPLAY
+#       s = Marshal.dump(ev.serialize)
+#       size = s.size
+#       packet = [size, s].pack("Na#{size}")
+#       write(packet)
+#     end
 
     def read(n)
       begin

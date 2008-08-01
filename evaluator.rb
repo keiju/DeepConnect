@@ -47,11 +47,12 @@ module DeepConnect
 	fin = event.receiver.send(event.method, *event.args){|*args|
 	  begin
 #puts "evaluate_iterator_request: #{args.inspect}"
-	  if args.size == 1 && args.first.kind_of?(Array)
-	    args = args.first
-	  end
+	    if args.size == 1 && args.first.kind_of?(Array)
+	      args = args.first
+	    end
 #puts "evaluate_iterator_request 2: #{args.inspect}"
-	    session.accept Event::IteratorCallBackRequest.call_back_event(event, *args)
+	    callback_req = Event::IteratorCallBackRequest.call_back_event(event, *args)
+	    session.accept callback_req
 	    callback_reply  = session.iterator_event_pop(event.seq)
 
 	    case callback_reply
@@ -61,10 +62,11 @@ module DeepConnect
 	      callback_reply.result
 	    end
 	  rescue
+	    p $!, $@
 	    DC.Raise InternalError, $!
 	  end
 	}
-	session.accept Event::IteratorCallBackRequestFinish.call_back_event(event)
+#	session.accept Event::IteratorCallBackRequestFinish.call_back_event(event)
 	session.accept event.reply(fin)
       rescue InternalError
 	raise
@@ -73,7 +75,7 @@ module DeepConnect
       rescue Exception
 	session.accept event.reply(fin, $!)
       ensure
-	session.iterator_exit(event.seq)
+#	session.iterator_exit(event.seq)
       end
     end
   end

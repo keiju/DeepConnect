@@ -362,7 +362,7 @@ module DeepConnect
 	when nil
 	  nil
 	when Array
-	  string_ary.collect{|e| PramSpec.identifier(e)}
+	  string_ary.collect{|e| ParamSpec.identifier(e)}
 	else
 	  [ParamSpec.identifier(string_ary)]
 	end

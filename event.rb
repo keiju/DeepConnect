@@ -181,8 +181,10 @@ module DeepConnect
       end
     
       def call_back(&block)
+	Thread.start do
 	while !(ret = @call_back.pop).kind_of?(IteratorCallBackRequestFinish)
 	  block.call ret
+	end
 	end
       end
 

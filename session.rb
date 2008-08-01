@@ -21,22 +21,22 @@ require "deep-connect/exceptions"
 module DeepConnect
   class Session
 
-#    SESSION_SERVICE_NAME = "DC::SESSION"
-    
     def initialize(deep_space, port, local_id = nil)
       @status = :INITIALIZE
 
       @organizer = deep_space.organizer
       @deep_space = deep_space
       @port = port
-#puts "local_id=#{local_id}"      
 
       @export_queue = Queue.new
-#      @import_queue = Queue.new
+
       @waiting = Hash.new
       @waiting_mutex = Mutex.new
 
+      @iterator_waiting = {}
       @iterator_event_queues = {}
+      @iterator_event_queues_mutex = Mutex.new
+      @iterator_event_queues_cv = ConditionVariable.new
       
       @next_request_event_id = 0
       @next_request_event_id_mutex = Mutex.new
@@ -132,7 +132,7 @@ module DeepConnect
 	  when Event::IteratorCallBackRequest
 	    req = nil
 	    @waiting_mutex.synchronize do
-	      req = @waiting[ev.seq[1]]
+	      req = @iterator_waiting[ev.seq[1]]
 	    end
 	    req.push_call_back ev
  	  when Event::IteratorRequest
@@ -147,7 +147,7 @@ module DeepConnect
 	when Event::IteratorCallBackReply
 	  req = nil
 	  @waiting_mutex.synchronize do
-	    req = @waiting[ev.seq]
+	    req = @iterator_waiting[ev.seq]
 	  end
 	  @iterator_event_queues[ev.seq[1]].push ev
 	else
@@ -164,12 +164,31 @@ module DeepConnect
     end
 
     def iterator_event_pop(itr_id)
-      @iterator_event_queues[itr_id].pop
+      ev = @iterator_event_queues[itr_id].pop
+      @iterator_event_queues_cv.broadcast
+      ev
     end
 
-    def iterator_exit(itr_id)
-      @iterator_event_queues.delete(itr_id)
-    end
+#     def iterator_exit(itr_id)
+#       if @iterator_event_counts[itr_id] == 0
+# 	@iterator_event_queues.delete(itr_id)
+#       else
+# 	puts "INFO: ITERATOR_EXIT: block call delayed"
+# 	Thread.start do
+#  puts "INFO: ITERATOR_EXIT: 1"
+# 	  @iterator_event_queues_mutex.synchronize do
+#  puts "INFO: ITERATOR_EXIT: 2"
+# 	    while @iterator_event_counts[itr_id] != 0
+#  puts "INFO: ITERATOR_EXIT: 3"
+# 	      @iterator_event_queues_cv.wait(@iterator_event_queues_mutex)
+#  puts "INFO: ITERATOR_EXIT: 4"
+# 	    end
+# 	    puts "INFO: ITERATOR_EXIT: complete"
+# 	    @iterator_event_queues.delete(itr_id)
+# 	  end
+# 	end
+#       end
+#    end
 
     # イベントの受け取り
     def accept(ev)
@@ -185,7 +204,9 @@ module DeepConnect
 	ev = Event::IteratorRequest.request(self, ref, method, *args)
 	@waiting_mutex.synchronize do
 	  @waiting[ev.seq] = ev
+	  @iterator_waiting[ev.seq] = ev
 	end
+	
 	@export_queue.push ev
 	ev.call_back do |callback_ev|
 	  reply = nil

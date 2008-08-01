@@ -400,6 +400,20 @@ when "16"
   end
   
   dc.export("foo", Foo.new)
+
+when "17"
+
+  class Foo
+    def foo
+      Thread.start do
+	sleep 1
+	p 10
+	x = yield
+	p x
+      end
+    end
+  end
+  dc.export("foo", Foo.new)
   
 end
 

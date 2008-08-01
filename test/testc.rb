@@ -414,6 +414,13 @@ when "14"
   foo = deepspace.import("foo")
   foo.foo
 
+when "17"
+
+  foo = deepspace.import("foo")
+#  foo.foo{sleep 1; p 1; 1}
+  foo.foo{1}
+  sleep 2
+  
 end
 
 sleep 1

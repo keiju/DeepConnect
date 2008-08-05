@@ -12,6 +12,7 @@
 
 
 require "deep-connect/event"
+require "deep-connect/exceptions"
 
 module DeepConnect
   class Evaluator
@@ -19,21 +20,15 @@ module DeepConnect
       @organizer = org
     end
 
-#     def evaluate(session, event)
-#       begin
-# 	case event
-# 	when IteratorNextRequest
-# 	when IteratorRequest
-# 	  evaluate_iterator_request(session, event)
-# 	else
-# 	  evaluate_request(session, event)
-# 	end
-#       rescue
-#       end
-#     end
-
     def evaluate_request(session, event)
       begin
+	if @organizer.shallow_connect?
+#p mspec = Organizer::method_spec(event.receiver, event.method)
+	  if !(mspec = Organizer::method_spec(event.receiver, event.method)) or
+	      !mspec.interface?
+	    DC.Raise NoInterfaceMethod, event.receiver.class, event.method
+	  end
+	end
 	ret = event.receiver.send(event.method, *event.args)
 	unless event.kind_of?(Event::NoReply)
 	  session.accept event.reply(ret)
@@ -50,12 +45,12 @@ module DeepConnect
     def evaluate_iterator_request(session, event)
       begin 
 	fin = event.receiver.send(event.method, *event.args){|*args|
+	  begin
 #puts "evaluate_iterator_request: #{args.inspect}"
 	  if args.size == 1 && args.first.kind_of?(Array)
 	    args = args.first
 	  end
 #puts "evaluate_iterator_request 2: #{args.inspect}"
-	  begin
 	    session.accept Event::IteratorCallBackRequest.call_back_event(event, *args)
 	    callback_reply  = session.iterator_event_pop(event.seq)
 
@@ -65,10 +60,14 @@ module DeepConnect
 	    else
 	      callback_reply.result
 	    end
+	  rescue
+	    DC.Raise InternalError, $!
 	  end
 	}
 	session.accept Event::IteratorCallBackRequestFinish.call_back_event(event)
 	session.accept event.reply(fin)
+      rescue InternalError
+	raise
       rescue ItrBreak
 	# do nothing
       rescue Exception

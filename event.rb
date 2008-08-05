@@ -26,6 +26,17 @@ module DeepConnect
   end
 
   module Event
+    EV = Event
+
+#     MTXCV_POOL = Queue.new
+#     def self.get_mtxcv
+#       begin
+# 	mtxcv = MTXCV_POOL.pop(true)
+#       rescue
+# 	[Mutex.new, ConditionVariable.new]
+#       end
+#     end
+
     def Event.materialize(session, type, *rest)
       type.materialize_sub(session, type, *rest)
     end
@@ -89,7 +100,11 @@ module DeepConnect
     
       def init_req
 	@seq = @session.next_request_event_id
-	@results = Queue.new
+	@result = :__DEEPCONNECT__NO_VALUE__
+	@result_mutex = Mutex.new
+	@result_cv = ConditionVariable.new
+
+#	@result_mutex, @result_cv = EV::get_mtxcv
       end
     
       def set_seq(seq)
@@ -119,24 +134,30 @@ module DeepConnect
 	FALSE
       end
     
-      def result(*ret)
-	if ret.size == 0
-	  ev = @results.pop
-	  if ev.exp
- 	    bt = ev.exp.backtrace
- 	    bt.push "-- peer side --"
- 	    bt.push *caller(0)
- 	    bt = bt.select{|e| /deep-connect/ !~ e} unless DeepConnect::DEBUG
-	    
- 	    raise PeerSideException, ev.exp, bt
-#	    raise PeerSideException.new(ev.exp)
+      def result
+	@result_mutex.synchronize do
+	  while @result == :__DEEPCONNECT__NO_VALUE__
+	    @result_cv.wait(@result_mutex)
 	  end
-	  ev.result
-	else
-	  @results.push *ret
 	end
+#	MTXCV_POOL.push [@result_mutex, @result_cv]
+	if @result.exp
+	  bt = @result.exp.backtrace
+	  bt.push "-- peer side --"
+	  bt.push *caller(0)
+	  bt = bt.select{|e| /deep-connect/ !~ e} unless DC::DEBUG
+	    
+	  raise PeerSideException, @result.exp, bt
+#	    raise PeerSideException.new(@result.exp)
+	end
+	@result.result
       end
-    
+	
+      def result=(ev)
+	@result = ev
+	@result_cv.broadcast
+      end
+
       attr :method
       attr :args
 
@@ -207,7 +228,6 @@ module DeepConnect
 	  method].concat(args)
       end
 
-
       def iterator?
 	true
       end
@@ -215,7 +235,6 @@ module DeepConnect
     
     class IteratorCallBackRequestFinish<IteratorCallBackRequest
     end
-
 
     class IteratorSubRequest < Request
       def itr_id
@@ -399,12 +418,20 @@ module DeepConnect
     end
 
     class SessionReply < Reply
-      def SessionReply.materialize_sub(session, type, klass, seq, receiver, method, ret)
+      def SessionReply.materialize_sub(session, type, klass, seq, receiver, method, ret, exp = nil)
 #	puts "SESSIONREPLY: #{type}, #{session}, #{ret.collect{|e| e.to_s}.join(',')}"	
-	type.new(session, seq, 
-		 session, 
-		 method,
-		 Reference.materialize(session.deep_space, *ret))
+	if exp
+	  type.new(session, seq,
+		   session,
+		   method,
+		   Reference.materialize(session.deep_space, *ret),
+		   Reference.materialize(session.deep_space, *exp))
+	else
+	  type.new(session, seq,
+		   session,
+		   method,
+		   Reference.materialize(session.deep_space, *ret))
+	end
       end
 
       def inspect
@@ -412,6 +439,7 @@ module DeepConnect
       end
     end
 
+    # session 確立時の特殊なイベント
     class InitSessionEvent<Event
       def self.materialize_sub(session, type, klass, local_id)
 	new(local_id)

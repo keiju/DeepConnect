@@ -1,4 +1,5 @@
 
+require "thread"
 require "e2mmap"
 
 module DeepConnect
@@ -49,7 +50,9 @@ module DeepConnect
       end
       return nil unless csid
 
-      mid = [csid, method]
+#      mid = [csid, method]
+#      mid = sprintf("%X-%s", csid, method)
+      mid = "#{csid}-#{method}"
       case mspec = @method_spec_cache[mid]
       when nil
 	# pass
@@ -74,14 +77,30 @@ module DeepConnect
 	cspec = ClassSpec.new(klass)
 	@class_specs[csid] = cspec
       end
-
-      mspec = MethodSpec.spec(*method_spec)
+      
+      if method_spec.size == 1 and method_spec.first.kind_of?(MethodSpec)
+	mspec = method_spec.first
+      else
+	mspec = MethodSpec.spec(*method_spec)
+      end
       cspec.add_method_spec(mspec)
     end
 
     def def_single_method_spec(obj, method_spec)
       klass = class<<obj;self;end
       def_method_spec(klass, method_spec)
+    end
+
+    def def_interface(klass, method)
+      mspec = MethodSpec.new
+      mspec.method = method
+      mspec.interface = true
+      def_method_spec(klass, mspec)
+    end
+
+    def def_single_interface(obj, method)
+      klass = class<<obj;self;end
+      def_interface(klass, method)
     end
 
     def class_specs=(cspecs)
@@ -131,7 +150,11 @@ module DeepConnect
     attr_reader :ancestors
 
     def add_method_spec(mspec)
-      @method_specs[mspec.method] = mspec
+      if sp = @method_specs[mspec.method]
+	@method_specs[mspec.method].override(mspec)
+      else
+	@method_specs[mspec.method] = mspec
+      end
     end
 
     def method_spec(method)
@@ -177,6 +200,8 @@ module DeepConnect
       @args = nil
       @block_rets = nil
       @block_args = nil
+
+      @interface = nil
     end
 
     attr_accessor :rets
@@ -184,9 +209,29 @@ module DeepConnect
     attr_accessor :args
     attr_accessor :block_rets
     attr_accessor :block_args
+    attr_accessor :interface
+    alias interface? interface
 
     def has_block? 
       @block_rets || @block_args 
+    end
+
+    def override(mspec)
+      if mspec.rets
+	@rets = mspec.rets
+      end
+      if mspec.args
+	@args = mspec.args
+      end
+      if mspec.block_rets
+	@block_rets = mspec.block.rets
+      end
+      if mspec.block_args
+	@block_args = mspec.block_args
+      end
+      if mspec.interface
+	@interface = mspec.interface
+      end
     end
 
     class ArgSpecs
@@ -317,7 +362,7 @@ module DeepConnect
 	when nil
 	  nil
 	when Array
-	  string_ary.collect{|e| PramSpec.identifier(e)}
+	  string_ary.collect{|e| ParamSpec.identifier(e)}
 	else
 	  [ParamSpec.identifier(string_ary)]
 	end

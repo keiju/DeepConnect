@@ -1,4 +1,39 @@
+2008-07-29  Keiju Ishitsuka  <keiju@emperor2.pendome>
+
+	* performance up
+	  + プロトコル変更(PaketIdを使用しなくした)
+	  + Event#results の仕様変更/QueueからConditionVariableへ
+	  + Port#readでエラーチェックを少なくした.
+	  + ClassSpecSpace#mspecのキャッシュのキーを変更
+
+	* shallow connect 機能
+	* keep alive の 問題解消
+	* DeepConnect::DConnect を DeepConnect::DeepConnect に改名
+
+2008-07-24  Keiju Ishitsuka  <keiju@emperor2.pendome>
+
+	* future class
+	* 簡易分散GCのパフォーマンスアップ(バッチ化)
+
+2008-07-23  Keiju Ishitsuka  <keiju@emperor2.pendome>
+
+	* KeepAlive のバグフィックス
+
+	* KeepAlive: 相手が生きているかを定期的に確認
+	* cron.rb: 定期的実行サービス(monitorからの改名/機能追加)
+
+2008-07-19  Keiju Ishitsuka  <keiju@emperor2.pendome>
+
+	* セッション切断の処理追加
+	* クライアントの切断時のsessionの処理追加
+	* SessionReplyの例外発生時のバグ修正
+	* 例外メッセージの統合
+	* monitor機能の追加
+
 2008-07-17  Keiju Ishitsuka  <keiju@emperor2.pendome>
+
+	* iteratorの終了処理
+	  + 内部で例外が発生したときの処理がイマイチ
 
 	* block引数周りのバグ(いや問題点?)の修正
 	* 間接参照時のpeerが127.0.0.1の場合の再接続処理のバグ修正

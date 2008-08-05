@@ -17,12 +17,20 @@ require "deep-connect/organizer"
 module DeepConnect
   @RCS_ID='-$Id:  $-'
 
-  DISPLAY_METHOD_MISSING = false
+  DC = DeepConnect
+
+  DISPLAY_MESSAGE_TRACE = false
   MESSAGE_DISPLAY = false
   DEBUG = false
   DISPLAY_METHOD_SPEC = false
+  DISPLAY_MONITOR_MESSAGE = false
+  DISPLAY_KEEP_ALIVE = false
 
-  class DConnect
+  DISPLAY_GC = false
+
+  KEEP_ALIVE_INTERVAL = 60
+
+  class DeepConnect
     extend Forwardable
 
     def self.start(service=0)
@@ -41,19 +49,30 @@ module DeepConnect
     def_delegator :@organizer, :register_service
     def_delegator :@organizer, :open_deep_space
     def_delegator :@organizer, :open_deepspace
+    def_delegator :@organizer, :close_deep_space
+    def_delegator :@organizer, :close_deepspace
+
     def_delegator :@organizer, :local_id
   end
 
-  def DeepConnect.start(service = nil)
-    DConnect.start(service)
+  def DC.start(service = nil)
+    DeepConnect.start(service)
   end
 
-  def DeepConnect.def_method_spec(*opts)
+  def DC.def_method_spec(*opts)
     Organizer.def_method_spec(*opts)
   end
 
-  def DeepConnect.def_single_method_spec(*opts)
+  def DC.def_single_method_spec(*opts)
     Organizer.def_single_method_spec(*opts)
+  end
+
+  def DC.def_interface(*opts)
+    Organizer.def_interface(*opts)
+  end
+
+  def DC.def_single_interface(*opts)
+    Organizer.def_single_interface(*opts)
   end
 
 end

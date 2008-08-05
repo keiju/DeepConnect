@@ -27,8 +27,8 @@ dc.export("TEST3", Array)
 
 case ARGV[0]
 when "S2"
-  session = dc.open_deep_space("localhost", 65533)
-#  session = dc.open_deep_space("gentoo", 65533)
+#  session = dc.open_deep_space("localhost", 65533)
+  session = dc.open_deep_space("gentoo", 65533)
   s2ary = session.import("s2ary")
   dc.export("TEST.S2", s2ary)
 
@@ -323,6 +323,84 @@ when "12"
 
   dc.export("BH", BH)
 
+when "13"
+
+  class Foo
+    def foo
+      1
+    end
+    def slp(time)
+      sleep time
+    end
+  end
+
+  dc.export("foo", Foo.new)
+
+when "14"
+  $dc = dc
+
+  class Foo
+    def foo
+      deepspace = $dc.open_deep_space("gentoo", 65533)
+      s2ary = deepspace.import("s2ary")
+      $dc.export("TEST.S2", s2ary)
+
+      s2Array = deepspace.import("S2ARRAY")
+      $dc.export("TEST.S2ARRAY", s2Array)
+    end
+  end
+  dc.export("foo", Foo.new)
+
+
+when "14.1"
+  $dc = dc
+
+  require "thread"
+  class Foo
+    def foo
+      $cv.broadcast
+    end
+  end
+
+  dc.export("foo", Foo.new)
+
+  mutex = Mutex.new
+  $cv = ConditionVariable.new
+
+  puts "WAIT"
+  mutex.synchronize do
+    $cv.wait(mutex)
+  end
+
+  deepspace = $dc.open_deep_space("gentoo", 65533)
+  s2ary = deepspace.import("s2ary")
+  $dc.export("TEST.S2", s2ary)
+  
+  s2Array = deepspace.import("S2ARRAY")
+  $dc.export("TEST.S2ARRAY", s2Array)
+
+when "15"
+  
+  DeepConnect.def_interface(Array, :[])
+  DeepConnect.def_interface(Array, :push)
+  DeepConnect.def_interface(Array, :inspect)
+
+when "16"
+  class Foo
+    def foo
+      raise Boo
+    end
+    def bar
+      raise "aaa"
+    end
+
+    def baz
+      1
+    end
+  end
+  
+  dc.export("foo", Foo.new)
+  
 end
 
 sleep 1000

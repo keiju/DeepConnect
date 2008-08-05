@@ -18,23 +18,40 @@
 * Object#deep_connect_dup
 * Object#deep_connect_deep_copy
 * ブロック引数の問題 arity を使えばどうにかなる?
--- スケジュール
---- 識別
-* iteratorの終了処理
-  + 内部で例外が発生したときの処理がイマイチ
-* クライアントの切断時のsessionの処理
+* 相手の切断時のsessionの処理
+* KeepAlive: 相手が生きているかを定期的に確認
 * 簡易分散GCのパフォーマンスアップ(バッチ化)
+* future type
 * shallow-connect
-* feature type
-* 疑似Mutalクラス
+* パフォーマンスアップ
+  + プロトコル変更(PaketIdを使用しなくした)
+  + Event#results の仕様変更/QueueからConditionVariableへ
+  + Port#readでエラーチェックを少なくした.
+  + ClassSpecSpace#mspecのキャッシュのキーを変更
+
+-- スケジュール
+* 例外が消えることがある...
+  + 再現待ち
+--- 識別
+
+* shallow-connect 追加
+  + class一括指定
+  + session個別指定(connect時コールバック)
+
+* パフォーマンスアップ
+  + ClassSpecの実クラス化
+  + eventのargs周りの*argsの変更
+
+* DISPLAY_* 関連をまとめる
+
+* 疑似immutableクラス
   + 変更時にコールバックする
 
-* リモートクラスメソッド
-* シンボルの取り扱い
+* ACL
+
 * メソッドスペック
   + instance_eval
   + module_eval
-* ネーミングサーバ
 
 * リモートクラスクラスオブジェクト
   + リモートスーパークラス

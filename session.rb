@@ -12,17 +12,20 @@
 
 require "thread"
 #require "mutex_m"
-require "monitor"
 require "weakref"
 
 require "ipaddr"
 
+require "deep-connect/exceptions"
+
 module DeepConnect
   class Session
 
-#    SESSION_SERVICE_NAME = "DeepConnect::SESSION"
-
+#    SESSION_SERVICE_NAME = "DC::SESSION"
+    
     def initialize(deep_space, port, local_id = nil)
+      @status = :INITIALIZE
+
       @organizer = deep_space.organizer
       @deep_space = deep_space
       @port = port
@@ -37,6 +40,8 @@ module DeepConnect
       
       @next_request_event_id = 0
       @next_request_event_id_mutex = Mutex.new
+
+      @last_keep_alive = nil
     end
 
     attr_reader :organizer
@@ -48,43 +53,75 @@ module DeepConnect
     alias peer_id peer_uuid
 
     def start
+      @last_keep_alive = @organizer.tick
+
+      @status = :SERVICING
       send_class_specs
 
       @import_thread = Thread.start {
 	loop do
 	  begin
 	    ev = @port.import
-	  rescue EOFError, Port::DisconnectClient
+	    @last_keep_alive = @organizer.tick
+	  rescue EOFError, DC::DisconnectClient
 	    # EOFError: クライアントが閉じていた場合
 	    # DisconnectClient: 通信中にクライアント接続が切れた
-	    stop
-	  rescue Port::ProtocolError
+	    @organizer.disconnect_deep_space(@deep_space, :SESSION_CLOSED)
+	  rescue DC::ProtocolError
 	    # 何らかの障害のためにプロトコルが正常じゃなくなった
 	  end
-	  receive(ev)
+	  if @status == :SERVICING
+	    receive(ev)
+	  else
+	    puts "INFO: service is stoped, imported event abandoned(#{ev.inspect})" 
+	  end
 	end
       }
 
       @export_thread = Thread.start {
 	loop do
 	  ev = @export_queue.pop
-	  begin
-	    # export中にexportが発生するとデッドロックになる
-	    # threadが欲しいか?
-	    @port.export(ev)
-	  rescue Errno::EPIPE, Port::DisconnectClient
-	    # EPIPE: クライアントが終了している
-	    # DisconnectClient: 通信中にクライアント接続が切れた
-	    stop
+	  if @status == :SERVICING
+	    begin
+	      # export中にexportが発生するとデッドロックになる
+	      # threadが欲しいか?
+	      @port.export(ev)
+	    rescue Errno::EPIPE, DC::DisconnectClient
+	      # EPIPE: クライアントが終了している
+	      # DisconnectClient: 通信中にクライアント接続が切れた
+	      @organizer.disconnect_deep_space(@deep_space, :SESSION_CLOSED)
+	    end
+	  else
+	    puts "INFO: service is stoped, export event abandoned(#{ev.inspect})" 
 	  end
 	end
       }
       self
     end
 
-    def stop
+    def stop_service(*opts)
+      puts "INFO: STOP_SERVICE: Session: #{self.peer_uuid} #{opts.join(' ')} "
+      @status = :SERVICE_STOP
+      
+      if !opts.include?(:SESSION_CLOSED)
+	@port.shutdown_reading
+      end
       @import_thread.exit
       @export_thread.exit
+      
+      waiting_events = @waiting.sort{|s1, s2| s1[0] <=> s2[0]}
+      for seq, ev in waiting_events
+	begin
+	  DC.Raise SessionServiceStopped
+	rescue
+	  ev.result = ev.reply(nil, $!)
+	end
+      end
+      @waiting = nil
+    end
+
+    def stop(*opts)
+      @port.close
     end
 
     # peerからの受取り
@@ -98,17 +135,6 @@ module DeepConnect
 	      req = @waiting[ev.seq[1]]
 	    end
 	    req.push_call_back ev
-	    
-
-# 	    @iterator_event_queues[ev.itr_id].push ev
-	    
-	    # when ItratorAbort
-# さあどうするか?
-# 	  when Event::IteratorNextRequest
-# #             , Event::IteratorRetryRequest
-# 	    @iterator_event_queues[ev.itr_id].push ev
-# 	  when Event::IteratorExitRequest
-# 	    @iterator_event_queues[ev.itr_id].push ev
  	  when Event::IteratorRequest
  	    @iterator_event_queues[ev.seq] = Queue.new
  	    @organizer.evaluator.evaluate_iterator_request(self, ev)
@@ -123,6 +149,7 @@ module DeepConnect
 	  @waiting_mutex.synchronize do
 	    req = @waiting[ev.seq]
 	  end
+#	  @iterator_event_queues[ev.seq].push ev
 	  @iterator_event_queues[ev.seq[1]].push ev
 	else
 	  req = nil
@@ -130,9 +157,9 @@ module DeepConnect
 	    req = @waiting.delete(ev.seq)
 	  end
 	  unless req
-	    raise "対応する request eventがありません(#{ev.inspect})"
+	    DC.InternalError "対応する request eventがありません(#{ev.inspect})"
 	  end
-	  req.result ev
+	  req.result = ev
 	end
       end
     end
@@ -142,7 +169,7 @@ module DeepConnect
     end
 
     def iterator_exit(itr_id)
-      @iterator_event_queues.delete(itr_id)
+#      @iterator_event_queues.delete(itr_id)
     end
 
     # イベントの受け取り
@@ -152,6 +179,9 @@ module DeepConnect
 
     # イベントの生成/送信
     def send_to(ref, method, *args, &block)
+      unless @status == :SERVICING
+	DC.Raise SessionServiceStopped
+      end
       if iterator?
 	ev = Event::IteratorRequest.request(self, ref, method, *args)
 	@waiting_mutex.synchronize do
@@ -159,7 +189,7 @@ module DeepConnect
 	end
 	@export_queue.push ev
 	ev.call_back do |callback_ev|
-	  call_back_reply = nil
+	  reply = nil
 	  exit = true
 	  begin
 #puts "SEND_TO: #{callback_ev.args.inspect}"
@@ -171,19 +201,23 @@ module DeepConnect
 	    exit = false
 	    reply = callback_ev.reply(ret)
 	  rescue
-	    reply = callback_ev.reply(ret, $!)
+	    reply = callback_ev.reply(ret, $!, Event::IteratorCallBackReplyBreak)
+	    raise
 	  ensure
 	    # break処理
 	    # このメソッドから抜け出てしまう.
 	    if exit
-	      reply = callback_ev.reply(ret, nil, 
-					Event::IteratorCallBackReplyBreak)
+	      unless reply
+		reply = callback_ev.reply(ret, nil, 
+					  Event::IteratorCallBackReplyBreak)
+	      end
 	      @waiting.delete(ev.seq)
 	    else
 	      reply = callback_ev.reply(ret)
 	    end
+	    # 例外して即exit時の例外の伝搬が行われない
+	    @export_queue.push reply
 	  end
-	  @export_queue.push reply
 	end
 	ev.result
       else
@@ -217,18 +251,28 @@ module DeepConnect
       @export_queue.push ev
     end
 
-    def get_service(name)
-      send_peer_session(:get_service, name)
+    def send_disconnect
+      ev = Event::SessionRequestNoReply.request(self, :recv_disconnect)
+      @port.export(ev)
     end
 
-    def get_service_impl(name)
-      if sv = @organizer.service(name)
-	puts "INFO: get_service: #{name}, #{sv}"
-      else
-	puts "WARN: service Not Found: #{name}"
+    def recv_disconnect
+      @organizer.disconnect_deep_space(@deep_space, :REQUEST_FROM_PEER)
+    end
+    Organizer.def_interface(self, :recv_disconnect)
+
+
+    def get_service(name)
+      if (sv = send_peer_session(:get_service, name)) == :DEEPCONNECT_NO_SUCH_SERVICE
+	DC.Raise NoServiceError, name
       end
       sv
     end
+
+    def get_service_impl(name)
+      @organizer.service(name)
+    end
+    Organizer.def_interface(self, :get_service_impl)
 
     def register_root_to_peer(id)
       send_peer_session(:register_root, id)
@@ -238,15 +282,19 @@ module DeepConnect
     def register_root_impl(id)
       @deep_space.register_root_from_other_session(id)
     end
+    Organizer.def_interface(self, :register_root_impl)
 
-    def deregister_root_to_peer(id)
-      send_peer_session_no_recv(:deregister_root, id)
+    def deregister_root_to_peer(ids)
+      idsdump = Marshal.dump(ids)
+      send_peer_session_no_recv(:deregister_root, idsdump)
     end
 
-    def deregister_root_impl(id)
-      @deep_space.delete_root(id)
+    def deregister_root_impl(idsdump)
+      ids = Marshal.load(idsdump)
+      @deep_space.delete_roots(ids)
       nil
     end
+    Organizer.def_interface(self, :deregister_root_impl)
 
     def send_class_specs
       specs_dump = Marshal.dump(Organizer::class_specs)
@@ -256,7 +304,10 @@ module DeepConnect
     def recv_class_specs_impl(specs_dump)
       specs = Marshal.load(specs_dump)
       @deep_space.class_specs = specs
+#p specs
     end
+    Organizer.def_interface(self, :recv_class_specs_impl)
+
 
 #     def send_class_specs(cspecs)
 #       specs_dump = Marshal.dump(cspecs)
@@ -267,6 +318,24 @@ module DeepConnect
 #       specs = Marshal.load(spec_dump)
 #       @object_space.recv_class_specs(specs)
 #     end
+
+    def keep_alive
+      now = @organizer.tick
+      if now > @last_keep_alive + KEEP_ALIVE_INTERVAL*2
+	puts "KEEP ALIVE: session #{self} is dead." if DISPLAY_KEEP_ALIVE
+	false
+      else
+	puts "KEEP ALIVE: send #{self} to keep alive." if DISPLAY_KEEP_ALIVE
+	send_peer_session_no_recv(:recv_keep_alive)
+	true
+      end
+    end
+
+    def recv_keep_alive_impl
+      puts "RECV_KEEP_ALIVE"  if DISPLAY_KEEP_ALIVE
+      @last_keep_alive = @organizer.tick
+    end
+    Organizer.def_interface(self, :recv_keep_alive_impl)
   end
 end
 

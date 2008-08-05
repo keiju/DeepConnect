@@ -20,36 +20,36 @@ STDOUT.sync
 
 #Tracer.on
 dc = DeepConnect.start(65534)
-session = dc.open_deep_space("localhost", 65535)
-#session = dc.open_deep_space("gentoo", 65535)
+deepspace = dc.open_deep_space("localhost", 65535)
+#deepspace = dc.open_deep_space("gentoo", 65535)
 
 case ARGV[0]
 when "1"
-  ref = session.import("TEST")
+  ref = deepspace.import("TEST")
   p ref 
 
 when "2"
-  ref = session.get_service("TEST1")
+  ref = deepspace.get_service("TEST1")
   #p ref
   p ref[0]
   p ref.push 3
-  p ref.peer_inspect
+  puts ref.peer_inspect
 
 when "3"
-  r1 = session.get_service("TEST1")
-  r2 = session.get_service("TEST2")
+  r1 = deepspace.get_service("TEST1")
+  r2 = deepspace.get_service("TEST2")
   r1.push r2
   puts "r1= #{r1.peer_inspect}"
 
 when "4"
-  r = session.get_service("TEST1")
+  r = deepspace.get_service("TEST1")
   r.each{|e| puts "TEST1: #{e}"}
 when "4.1"
-  r = session.get_service("TEST1")
+  r = deepspace.get_service("TEST1")
   r.each{|e| puts "TEST1: #{e}"; next}
 
 when "4.2"
-  r = session.get_service("TEST1")
+  r = deepspace.get_service("TEST1")
   a = 0
   r.each do |e| 
     puts "TEST1: #{e}"
@@ -58,7 +58,7 @@ when "4.2"
   end
 
 when "4.3"
-  r = session.get_service("TEST1")
+  r = deepspace.get_service("TEST1")
   a = 0
   r.each do |e| 
     puts e
@@ -66,9 +66,19 @@ when "4.3"
     break if a==2
   end
 
+when "4.4"
+  r = deepspace.get_service("TEST1")
+  a = 0
+  r.each do |e| 
+    puts e
+    a += 1
+    raise "foo" if a==2
+  end
+
+
 # ruby1.9ではサポートされなくなった.
 # when "4.4"
-#   r = session.get_service("TEST1")
+#   r = deepspace.get_service("TEST1")
 #   a = 0
 #   r.each do |e| 
 #     puts e
@@ -78,23 +88,24 @@ when "4.3"
 
 
 when "5"
-  r = session.get_service("TEST.S2")
+  r = deepspace.get_service("TEST.S2")
+  sleep 5
   p r[0]
 
 when "6"
-  a = session.get_service("TEST3")
-  10.times do
+  a = deepspace.get_service("TEST3")
+  1000.times do
     a.new(10)
   end
 
   ObjectSpace.garbage_collect
   puts "Sleep IN"
-#  sleep 10
+  sleep 10
 #  require "tracer"
 #  Tracer.on
 #  sleep 
 when "6.2"
-  a = session.get_service("TEST.S2ARRAY")
+  a = deepspace.get_service("TEST.S2ARRAY")
   10.times do
     a.new(10)
   end
@@ -103,36 +114,36 @@ when "6.2"
   puts "Sleep IN"
 
 when "7"
-  foo = session.get_service("TEST7")
+  foo = deepspace.get_service("TEST7")
   puts "TEST7: foo: #{foo.inspect}"
   ret = foo.foo(["a", "b"])
   puts "TEST7: #{ret.inspect}"
 
 when "7.1"
-  foo = session.get_service("TEST7")
+  foo = deepspace.get_service("TEST7")
   puts "TEST7.1a: #{foo.foo(["a", [["b"]]]).inspect}"
   puts "TEST7.1b: #{foo.bar(["a", ["b"]]).inspect}"
 
 when "7.2"
-  foo = session.get_service("TEST7")
+  foo = deepspace.get_service("TEST7")
   puts "TEST7.1a: #{foo.foo("aaaa").inspect}"
   puts "TEST7.1b: #{foo.foo("aaaa").peer_inspect}"
 
 when "7.3"
-  foo = session.get_service("TEST7")
+  foo = deepspace.get_service("TEST7")
   r1, r2 = foo.foo(["aaaa"], ["bbbb"])
   puts "TEST7.1 ret1: #{r1.inspect}"
   puts "TEST7.1 ret2: #{r2.inspect}"
 
 when "7.4"
-  foo = session.get_service("TEST7")
+  foo = deepspace.get_service("TEST7")
   r1, r2 = foo.foo(["aaaa"], ["bbbb"])
   puts "TEST7.1 ret1: #{r1.inspect}"
   puts "TEST7.1 ret2: #{r2.inspect}"
 
 
 when "7.5"
-  foo = session.get_service("TEST7")
+  foo = deepspace.get_service("TEST7")
   r1, r2, r3 = foo.foo(["aaaa"], ["bbbb"], ["cccc"])
   puts "TEST7.1 ret1: #{r1.inspect}"
   puts "TEST7.1 ret2: #{r2.inspect}"
@@ -174,7 +185,7 @@ when "7.6"
 
 
   puts "REMOTE:"
-  foo = session.get_service("TEST7")
+  foo = deepspace.get_service("TEST7")
 
   foo.foo0(1) do |ba1, ba2|
     puts "TEST7.60 ba1: #{ba1.inspect}"
@@ -200,23 +211,23 @@ when "7.6"
   end
 
 when "7.7"
-  foo = session.get_service("TEST7")
+  foo = deepspace.get_service("TEST7")
   foo.foo(1) do |ba1|
     puts "TEST7.6a ba1: #{ba1.inspect}"
     [1,2]
   end
 
 when "7.8"
-  foo = session.get_service("TEST7")
+  foo = deepspace.get_service("TEST7")
   p foo.foo(["a", "b"])
 
 when "8"
-  foo = session.import("TEST8")
+  foo = deepspace.import("TEST8")
   p foo.foo(0)
 
 when "9"
 
-  a = session.import("Array")
+  a = deepspace.import("Array")
   b = a - [1,2]
   p b.peer_inspect
 
@@ -224,7 +235,7 @@ when "9.1"
 
   DeepConnect::MESSAGE_DISPLAY = true
 
-  r = session.import("regexp")
+  r = deepspace.import("regexp")
   p r.peer_inspect
   p r.methods
   p r =~ "foo"
@@ -235,19 +246,19 @@ when "9.1"
 when "9.2"
 
   DeepConnect::MESSAGE_DISPLAY = true
-  r = session.import("Regexp")
+  r = deepspace.import("Regexp")
   p r
   p  r.union(/foo/, /bar/)
 
 when "9.3"
 
-  r = session.import("range")
+  r = deepspace.import("range")
   p r
 
 when "9.4"
 #  DeepConnect::MESSAGE_DISPLAY = true
 
-  r = session.import("hash")
+  r = deepspace.import("hash")
   p r.peer_inspect
 
   s = {3=>4}
@@ -257,13 +268,13 @@ when "9.4"
 
 when "9.5"
 
-  s = session.import("st")
+  s = deepspace.import("st")
   p s
   p s.peer_inspect
 
   St = Struct.new("Foo", :foo, :bar)
 
-  Foo = session.import("Foo")
+  Foo = deepspace.import("Foo")
   p foo = Foo.new
   p foo.foo
   p foo.baz
@@ -273,13 +284,13 @@ when "10"
   class Foo
   end
 
-  RFoo = session.import("Foo")
+  RFoo = deepspace.import("Foo")
   p foo = RFoo.new
   p foo.foo
 
 when "10.1"
 
-  RFile = session.import("File")
+  RFile = deepspace.import("File")
   p foo = RFile.open("/etc/passwd")
   foo.gets
 
@@ -289,7 +300,7 @@ when "10.2"
   class Foo
   end
 
-  RFoo = session.import("Foo")
+  RFoo = deepspace.import("Foo")
   p foo = RFoo.new
   p foo.dc_dup
 
@@ -297,13 +308,13 @@ when "10.2"
 
 when "11"
   
-  ary = session.import("ary")
+  ary = deepspace.import("ary")
   ary.each{|x1, y1| puts "x1=#{x1.inspect} y1=#{y1.inspect}"}
 
 
 when "11.1"
   
-  RFoo = session.import("Foo")
+  RFoo = deepspace.import("Foo")
   p foo = RFoo.new
   foo.foo{|x1, y1| puts "x1=#{x1.inspect} y1=#{y1.inspect}"}
 
@@ -315,7 +326,7 @@ when "11.1.1"
 
   
   puts "REMOTE:"
-  RFoo = session.import("Foo")
+  RFoo = deepspace.import("Foo")
   p foo = RFoo.new
   foo.foo{|*x1| puts "x1=#{x1.inspect}"}
 
@@ -327,7 +338,7 @@ when "11.1.2"
   ary.each{|x1| puts "x1=#{x1.inspect}"}
 
   puts "REMOTE:"
-  RFoo = session.import("Foo")
+  RFoo = deepspace.import("Foo")
   p foo = RFoo.new
   foo.foo{|x1| puts "x1=#{x1.inspect}"}
 
@@ -338,7 +349,7 @@ when "11.1.3"
   ary.each{|x1, x2, x3| puts "x1=#{x1.inspect} x2=#{x2.inspect} x3=#{x3.inspect}"}
 
   puts "REMOTE:"
-  RFoo = session.import("Foo")
+  RFoo = deepspace.import("Foo")
   p foo = RFoo.new
   foo.foo{|x1, x2, x3| puts "x1=#{x1.inspect} x2=#{x2.inspect} x3=#{x3.inspect}"}
 
@@ -351,24 +362,57 @@ when "11.2"
   end
 
   puts "REMOTE: 1 variable"
-  foo = session.import("foo")
+  foo = deepspace.import("foo")
   for k in foo
     p k
     p k[0], k[1]
   end
 
   puts "REMOTE: 2 variable"
-  foo = session.import("foo")
+  foo = deepspace.import("foo")
   for k,v in foo
     p k, v
   end
 
 when "12"
   
-  RBH = session.import("BH")
+  RBH = deepspace.import("BH")
   foo = RBH.new
   foo.each{|e| p e}
 
+when "13"
+  sleep 1
+  deepspace.close
+  sleep 1
+
+when "13.1"
+  deepspace.close
+  sleep 1
+
+when "13.2"
+  
+  foo = deepspace.import("foo")
+  p foo.foo
+  Thread.start do 
+    begin
+      foo.slp 5
+    rescue
+      puts "XXXXXXXXXX:#{$!}"
+    end
+  end
+  
+  deepspace.close
+  sleep 1
+
+when "13.3"
+  # スリープ中にサーバーを切断するテスト
+  foo = deepspace.import("foo")
+  sleep 100
+  foo.foo
+
+when "14"
+  foo = deepspace.import("foo")
+  foo.foo
 
 end
 

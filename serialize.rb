@@ -51,7 +51,7 @@ class Object
 
   def deep_connect_serialize_val(deep_space)
     if DeepConnect::UNSERIALIZABLE_CLASS_SET.include?(self.class)
-      raise "#{self.class}はシリアライズできません"
+      DeepConnect.Raise CantSerializable, self.class.name
     end
     vnames = instance_variables
     vnames.collect{|v| 
@@ -62,7 +62,7 @@ class Object
 
   def deep_connect_dup
     if DeepConnect::UNSERIALIZABLE_CLASS_SET.include?(self.class)
-      raise "#{self.class}はdupできません"
+      DeepConnect.Raise CantDup, self.class.name
     end
     self
   end
@@ -72,7 +72,7 @@ class Object
 
   def deep_connect_deep_copy
     if DeepConnect::UNSERIALIZABLE_CLASS_SET.include?(self.class)
-      raise "#{self.class}はdeep_copyできません"
+      DeepConnect.Raise CantDeepCopy, self.class.name
     end
     self
   end

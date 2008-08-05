@@ -11,35 +11,67 @@
 #
 require "forwardable"
 
+require "deep-connect/class-spec-space"
+
+module DeepConnect
+  class Organizer
+    @CLASS_SPEC_SPACE = ClassSpecSpace.new(:local)
+    
+    extend SingleForwardable
+
+    def_delegator :@CLASS_SPEC_SPACE, :class_specs
+    def_delegator :@CLASS_SPEC_SPACE, :def_method_spec
+    def_delegator :@CLASS_SPEC_SPACE, :def_single_method_spec
+    def_delegator :@CLASS_SPEC_SPACE, :def_interface
+    def_delegator :@CLASS_SPEC_SPACE, :def_single_interface
+    def_delegator :@CLASS_SPEC_SPACE, :method_spec
+    def_delegator :@CLASS_SPEC_SPACE, :class_spec_id_of
+  end
+end
+
 require "deep-connect/accepter"
 require "deep-connect/evaluator"
 require "deep-connect/deep-space"
 require "deep-connect/port"
 require "deep-connect/event"
+require "deep-connect/cron"
+require "deep-connect/exceptions"
 
-require "deep-connect/class-spec-space"
 
 trap("SIGPIPE", "IGNORE")
 
 module DeepConnect
-  class Organizer
 
+  class Organizer
     def initialize
+      @shallow_connect = false
+
       @accepter = Accepter.new(self)
-      @deep_spaces = {}
       @evaluator = Evaluator.new(self)
-#      @naming = Naming.new
-      @naming = {}
+
+      @services = {}
+      @deep_spaces = {}
+
+      @cron = Cron.new(self)
 
       @local_id_mutex = Mutex.new
       @local_id_cv = ConditionVariable.new
       @local_id = nil
-
     end
+
+    attr_accessor :shallow_connect
+    alias shallow_connect? shallow_connect
 
     attr_reader :accepter
     attr_reader :evaluator
-#    attr_reader :naming
+
+    def tick
+      @cron.tick
+    end
+
+    def deep_spaces
+      @deep_spaces
+    end
 
     def local_id
       @local_id_mutex.synchronize do
@@ -56,11 +88,27 @@ module DeepConnect
       @local_id_cv.broadcast
 
       @accepter.start
+      @cron.start
     end
 
     def stop
       @accepter.close
     end
+
+    # client sesssion開始
+    def open_deep_space(ipaddr, port)
+      sock = TCPSocket.new(ipaddr, port)
+      port = Port.new(sock)
+      init_session_ev = Event::InitSessionEvent.new(local_id)
+      port.export init_session_ev
+      connect_deep_space_with_port(port)
+    end
+    alias open_deepspace open_deep_space
+
+    def close_deep_space(deep_space)
+      disconnect_deep_space(deep_space)
+    end
+    alias close_deepspace close_deep_space
 
     def deep_space(peer_id, &block)
       if deep_space = @deep_spaces[peer_id]
@@ -79,6 +127,15 @@ module DeepConnect
       deep_space = DeepSpace.new(self, port, local_id)
       port.attach(deep_space.session)
 #      uuid = session.peer_id unless uuid
+      if @deep_spaces[deep_space.peer_uuid]
+	# ポート番号が再利用されているときは, 既存の方はすでにおなくな
+	# りになっている
+	old = @deep_spaces[deep_space.peer_uuid]
+	puts "INFO: port no recyicled"
+	puts "INFO: disconnect recycled deep_space: #{old}"
+
+	disconnect_deep_space(old, :SESSION_CLOSED)
+      end
       @deep_spaces[deep_space.peer_uuid] = deep_space
       puts "CONNECT DeepSpace: #{deep_space.peer_uuid}" if $DEBUG
       deep_space.connect
@@ -86,24 +143,32 @@ module DeepConnect
     end
     alias connect_deepspace_with_port connect_deep_space_with_port
 
-    # client sesssion開始
-    def open_deep_space(ipaddr, port)
-      sock = TCPSocket.new(ipaddr, port)
-      port = Port.new(sock)
-      init_session_ev = Event::InitSessionEvent.new(local_id)
-      port.export init_session_ev
-      connect_deep_space_with_port(port)
-    end
-    alias open_deepspace open_deep_space
 
-    # naming
+    def disconnect_deep_space(deep_space, *opts)
+      @deep_spaces.delete(deep_space.peer_uuid)
+      deep_space.disconnect(*opts)
+    end
+
+    def keep_alive
+      puts "KEEP ALIVE: Start" if DISPLAY_KEEP_ALIVE
+      for uuid, deep_space in @deep_spaces.dup
+	unless deep_space.session.keep_alive
+	  disconnect_deep_space(deep_space, :SESSION_CLOSED)
+	end
+      end
+    end
+
+    # services
     def register_service(name, obj)
-      @naming[name] = obj
+      @services[name] = obj
     end
     alias export register_service
 
     def service(name)
-      @naming[name]
+      unless @services.key?(name)
+	return :DEEPCONNECT_NO_SUCH_SERVICE
+      end
+      @services[name]
     end
     alias import service
 
@@ -113,7 +178,7 @@ module DeepConnect
 	  return o
 	end
       end
-      raise "登録されていません.#{id}"
+      DC::InternalError "deep_spaceにid(=#{id})をobject_idとするオブジェクトが登録されていません.)"
     end
 
     @@ABSOLUTE_IMMUTABLE_CLASSES = [
@@ -147,17 +212,11 @@ module DeepConnect
       @@IMMUTABLE_CLASSES
     end
 
-    @CLASS_SPEC_SPACE = ClassSpecSpace.new(:local)
-    
-    extend SingleForwardable
-
-    def_delegator :@CLASS_SPEC_SPACE, :class_specs
-    def_delegator :@CLASS_SPEC_SPACE, :def_method_spec
-    def_delegator :@CLASS_SPEC_SPACE, :def_single_method_spec
-    def_delegator :@CLASS_SPEC_SPACE, :method_spec
-    def_delegator :@CLASS_SPEC_SPACE, :class_spec_id_of
+    def_interface(Exception, :message)
 
     def_method_spec(Exception, "VAL backtrace()")
+    def_interface(Exception, :backtrace)
+
     def_method_spec(Exception, "REF set_backtrace(VAL)")
 
     def_method_spec(Array, :method=> :-, :args=> "VAL")

@@ -29,6 +29,8 @@
   + Port#readでエラーチェックを少なくした.
   + ClassSpecSpace#mspecのキャッシュのキーを変更
 * イテレータ中でスレッドを実行しなかでyieldされるとNG
+* パフォーマンスアップ
+  + eventのargs周りの*argsの変更
 
 -- スケジュール
 * 例外が消えることがある...
@@ -41,7 +43,6 @@
 
 * パフォーマンスアップ
   + ClassSpecの実クラス化
-  + eventのargs周りの*argsの変更
 
 * DISPLAY_* 関連をまとめる
 

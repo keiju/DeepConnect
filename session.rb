@@ -149,33 +149,6 @@ module DeepConnect
       end
     end
 
-    def iterator_event_pop(itr_id)
-      ev = @iterator_event_queues[itr_id].pop
-      @iterator_event_queues_cv.broadcast
-      ev
-    end
-
-#     def iterator_exit(itr_id)
-#       if @iterator_event_counts[itr_id] == 0
-# 	@iterator_event_queues.delete(itr_id)
-#       else
-# 	puts "INFO: ITERATOR_EXIT: block call delayed"
-# 	Thread.start do
-#  puts "INFO: ITERATOR_EXIT: 1"
-# 	  @iterator_event_queues_mutex.synchronize do
-#  puts "INFO: ITERATOR_EXIT: 2"
-# 	    while @iterator_event_counts[itr_id] != 0
-#  puts "INFO: ITERATOR_EXIT: 3"
-# 	      @iterator_event_queues_cv.wait(@iterator_event_queues_mutex)
-#  puts "INFO: ITERATOR_EXIT: 4"
-# 	    end
-# 	    puts "INFO: ITERATOR_EXIT: complete"
-# 	    @iterator_event_queues.delete(itr_id)
-# 	  end
-# 	end
-#       end
-#    end
-
     # イベントの受け取り
     def accept(ev)
       @export_queue.push ev

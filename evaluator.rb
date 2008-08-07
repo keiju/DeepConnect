@@ -23,7 +23,6 @@ module DeepConnect
     def evaluate_request(session, event)
       begin
 	if @organizer.shallow_connect?
-#p mspec = Organizer::method_spec(event.receiver, event.method)
 	  if !(mspec = Organizer::method_spec(event.receiver, event.method)) or
 	      !mspec.interface?
 	    DC.Raise NoInterfaceMethod, event.receiver.class, event.method
@@ -40,10 +39,14 @@ module DeepConnect
       end
     end
 
-    class ItrBreak<Exception;end
-
     def evaluate_iterator_request(session, event)
       begin 
+	if @organizer.shallow_connect?
+	  if !(mspec = Organizer::method_spec(event.receiver, event.method)) or
+	      !mspec.interface?
+	    DC.Raise NoInterfaceMethod, event.receiver.class, event.method
+	  end
+	end
 	fin = event.receiver.send(event.method, *event.args){|*args|
 	  begin
 	    if args.size == 1 && args.first.kind_of?(Array)

@@ -23,7 +23,7 @@ module DeepConnect
 
   class Future < Delegator
 
-    NULLVALUE = :__FUTURE_NULLVALUE__
+    NULLVALUE = :__DEEPCONNECT_FUTURE_NULLVALUE__
 
     def self.future(&block)
       Futre.new(&block)
@@ -55,7 +55,7 @@ module DeepConnect
 
     def inspect
       if @value == NULLVALUE
-	"#<#{self.class}: NULL>"
+	"#<#{self.class}: (NOT ARRIVED)>"
       else
 	"#<#{self.class}: #{@value.inspect}>"
       end

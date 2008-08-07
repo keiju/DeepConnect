@@ -153,9 +153,9 @@ module DeepConnect
     def method_missing(method, *args, &block)
       puts "SEND MESSAGE: #{self} #{method.id2name}" if DISPLAY_MESSAGE_TRACE
       if iterator?
-	@deep_space.session.send_to(self, method, *args, &block)
+	@deep_space.session.send_to(self, method, args, &block)
       else
-	@deep_space.session.send_to(self, method, *args)
+	@deep_space.session.send_to(self, method, args)
       end
     end
     

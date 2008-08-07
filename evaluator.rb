@@ -46,36 +46,58 @@ module DeepConnect
       begin 
 	fin = event.receiver.send(event.method, *event.args){|*args|
 	  begin
-#puts "evaluate_iterator_request: #{args.inspect}"
 	    if args.size == 1 && args.first.kind_of?(Array)
 	      args = args.first
 	    end
-#puts "evaluate_iterator_request 2: #{args.inspect}"
-	    callback_req = Event::IteratorCallBackRequest.call_back_event(event, *args)
-	    session.accept callback_req
-	    callback_reply  = session.iterator_event_pop(event.seq)
+	    callback_req = session.block_yield(event, args)
 
-	    case callback_reply
+	    case callback_req.result_event
 	    when Event::IteratorCallBackReplyBreak
-	      raise ItrBreak
+	      break callback_req.result
 	    else
-	      callback_reply.result
+	      callback_req.result
 	    end
 	  rescue
-	    p $!, $@
-	    DC.Raise InternalError, $!
+	    # ここ内部エラーじゃないなぁ...
+	    if DEBUG
+	      puts "INFO: BLOCK YIELD EXCEPTION:"
+	      puts  "\t#{$!}"
+	      $@.each{|l| puts "\t#{l}"}
+	    end
+	    raise
 	  end
 	}
-#	session.accept Event::IteratorCallBackRequestFinish.call_back_event(event)
 	session.accept event.reply(fin)
-      rescue InternalError
-	raise
-      rescue ItrBreak
-	# do nothing
       rescue Exception
 	session.accept event.reply(fin, $!)
-      ensure
-#	session.iterator_exit(event.seq)
+      end
+    end
+
+    def evaluate_block_yield(session, ev)
+      if @organizer.shallow_connect?
+	# yield が許されているかチェック
+      end
+      begin
+	args = ev.args
+	if ev.block.arity == 1 or ev.block.arity < 0
+	  ret = ev.block.call(args)
+	else
+	  ret = ev.block.call(*args)
+	end
+	session.accept ev.reply(ret)
+      rescue LocalJumpError
+	exp = $!
+	case exp.reason
+	when :break
+	  session.accept ev.reply(ret, 
+				  exp.exit_value, 
+				  Event::IteratorCallBackReplyBreak)
+	else
+	  session.accept ev.reply(ret, exp)
+	end
+      rescue Exception
+	exp = $!
+	session.accept e = ev.reply(ret, exp)
       end
     end
   end

@@ -46,7 +46,7 @@ when "4"
   r.each{|e| puts "TEST1: #{e}"}
 when "4.1"
   r = deepspace.get_service("TEST1")
-  r.each{|e| puts "TEST1: #{e}"; next}
+  r.each{|e| puts "TEST1: #{e}"; next; 1}
 
 when "4.2"
   r = deepspace.get_service("TEST1")
@@ -417,10 +417,9 @@ when "14"
 when "17"
 
   foo = deepspace.import("foo")
-#  foo.foo{sleep 1; p 1; 1}
   foo.foo{1}
   sleep 2
-  
+
 end
 
 sleep 1

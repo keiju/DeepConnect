@@ -1,3 +1,7 @@
+2008-08-07  Keiju Ishitsuka  <keiju@emperor2.pendome>
+
+	* block yield 改変版
+
 2008-08-01  Keiju Ishitsuka  <keiju@emperor2.pendome>
 
 	* イテレータ中でスレッドを実行しなかでyieldされるとNG になる問題を

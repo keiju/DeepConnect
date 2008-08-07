@@ -27,8 +27,8 @@ dc.export("TEST3", Array)
 
 case ARGV[0]
 when "S2"
-#  session = dc.open_deep_space("localhost", 65533)
-  session = dc.open_deep_space("gentoo", 65533)
+  session = dc.open_deep_space("localhost", 65533)
+#  session = dc.open_deep_space("gentoo", 65533)
   s2ary = session.import("s2ary")
   dc.export("TEST.S2", s2ary)
 
@@ -137,10 +137,10 @@ when "7.6"
     DeepConnect.def_method_spec(self, "VAL foo2(VAL){*REF}")
 
     def bar(a, &block)
-      yield 13, 14
-      yield 15, 16
+      yield 13, [14]
+      yield 15, [16]
     end
-    #DeepConnect.def_method_spec(self, "VAL bar(VAL){VAL}")
+    DeepConnect.def_method_spec(self, "VAL bar(VAL){*VAL}")
   end
 
 

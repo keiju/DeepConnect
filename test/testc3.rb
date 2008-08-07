@@ -18,7 +18,7 @@ ro = deepspace.import("foo")
 #Profiler__.start_profile
 
 #10000.times{ DeepConnect.future{ro.baz} }
-1000.times{ ro.baz }
+10000.times{ ro.baz }
 
 #Profiler__.print_profile(STDOUT)
 

@@ -129,37 +129,23 @@ module DeepConnect
       if ev.request?
 	Thread.start do
 	  case ev
-	  when Event::IteratorCallBackRequest
-	    req = nil
-	    @waiting_mutex.synchronize do
-	      req = @iterator_waiting[ev.seq[1]]
-	    end
-	    req.push_call_back ev
+ 	  when Event::IteratorCallBackRequest
+	    @organizer.evaluator.evaluate_block_yield(self, ev)
  	  when Event::IteratorRequest
- 	    @iterator_event_queues[ev.seq] = Queue.new
  	    @organizer.evaluator.evaluate_iterator_request(self, ev)
 	  else
 	    @organizer.evaluator.evaluate_request(self, ev)
 	  end
 	end
       else
-	case ev
-	when Event::IteratorCallBackReply
-	  req = nil
-	  @waiting_mutex.synchronize do
-	    req = @iterator_waiting[ev.seq]
-	  end
-	  @iterator_event_queues[ev.seq[1]].push ev
-	else
-	  req = nil
-	  @waiting_mutex.synchronize do
-	    req = @waiting.delete(ev.seq)
-	  end
-	  unless req
-	    DC.InternalError "対応する request eventがありません(#{ev.inspect})"
-	  end
-	  req.result = ev
+	req = nil
+	@waiting_mutex.synchronize do
+	  req = @waiting.delete(ev.seq)
 	end
+	unless req
+	  DC.InternalError "対応する request eventがありません(#{ev.inspect})"
+	end
+	req.result = ev
       end
     end
 
@@ -196,58 +182,29 @@ module DeepConnect
     end
 
     # イベントの生成/送信
-    def send_to(ref, method, *args, &block)
+    def send_to(ref, method, args=[], &block)
       unless @status == :SERVICING
 	DC.Raise SessionServiceStopped
       end
       if iterator?
-	ev = Event::IteratorRequest.request(self, ref, method, *args)
-	@waiting_mutex.synchronize do
-	  @waiting[ev.seq] = ev
-	  @iterator_waiting[ev.seq] = ev
-	end
-	
-	@export_queue.push ev
-	ev.call_back do |callback_ev|
-	  reply = nil
-	  exit = true
-	  begin
-#puts "SEND_TO: #{callback_ev.args.inspect}"
-	    if block.arity == 1 && callback_ev.args.size > 1
-	      ret = yield callback_ev.args	      
-	    else
-	      ret = yield *callback_ev.args
-	    end
-	    exit = false
-	    reply = callback_ev.reply(ret)
-	  rescue
-	    reply = callback_ev.reply(ret, $!, Event::IteratorCallBackReplyBreak)
-	    raise
-	  ensure
-	    # break処理
-	    # このメソッドから抜け出てしまう.
-	    if exit
-	      unless reply
-		reply = callback_ev.reply(ret, nil, 
-					  Event::IteratorCallBackReplyBreak)
-	      end
-	      @waiting.delete(ev.seq)
-	    else
-	      reply = callback_ev.reply(ret)
-	    end
-	    # 例外して即exit時の例外の伝搬が行われない
-	    @export_queue.push reply
-	  end
-	end
-	ev.result
+	ev = Event::IteratorRequest.request(self, ref, method, args, block)
       else
-	ev = Event::Request.request(self, ref, method, *args)
-	@waiting_mutex.synchronize do
-	  @waiting[ev.seq] = ev
-	end
-	@export_queue.push ev
-	ev.result
+	ev = Event::Request.request(self, ref, method, args)
       end
+      @waiting_mutex.synchronize do
+	@waiting[ev.seq] = ev
+      end
+      @export_queue.push ev
+      ev.result
+    end
+
+    def block_yield(event, args)
+      ev = Event::IteratorCallBackRequest.call_back_event(event, args)
+      @waiting_mutex.synchronize do
+	@waiting[ev.seq] = ev
+      end
+      @export_queue.push ev
+      ev
     end
 
     # イベントID取得
@@ -258,7 +215,7 @@ module DeepConnect
     end
 
     def send_peer_session(req, *args)
-      ev = Event::SessionRequest.request(self, (req.id2name+"_impl").intern, *args)
+      ev = Event::SessionRequest.request(self, (req.id2name+"_impl").intern, args)
       @waiting_mutex.synchronize do
 	@waiting[ev.seq] = ev
       end
@@ -267,7 +224,7 @@ module DeepConnect
     end
 
     def send_peer_session_no_recv(req, *args)
-      ev = Event::SessionRequestNoReply.request(self, (req.id2name+"_impl").intern, *args)
+      ev = Event::SessionRequestNoReply.request(self, (req.id2name+"_impl").intern, args)
       @export_queue.push ev
     end
 

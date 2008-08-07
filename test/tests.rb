@@ -414,6 +414,26 @@ when "17"
     end
   end
   dc.export("foo", Foo.new)
+
+when "18"
+
+  class Foo;end
+
+  dc.export("Foo", Foo)
+  puts "SLEEP IN"
+  sleep 5
+  puts "GC start"
+  GC.start
+
+when "18.1"
+
+  session = dc.open_deep_space("localhost", 65533)
+#  session = dc.open_deep_space("gentoo", 65533)
+
+  s2Array = session.import("S2ARRAY")
+  s2a = s2Array.new
+  s2a.release
+  dc.export("TEST.18.1", s2a)
   
 end
 

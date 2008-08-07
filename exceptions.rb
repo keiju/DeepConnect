@@ -4,6 +4,8 @@ require "e2mmap"
 module DeepConnect
   extend Exception2MessageMapper
 
+  def_exception :IllegalReference, "不正なリファレンス参照です"
+
   def_exception :NoInterfaceMethod, "No interface method(%s.%s)"
 
   def_exception :NoServiceError, "No such service(%s)"
@@ -16,6 +18,7 @@ module DeepConnect
 
   def_exception :InternalError, "DeepConnect internal error(%s)"
   def_exception :ProtocolError, "Protocol error!!"
+
 
   def self.InternalError(message)
     DC.Raise InternalError, message

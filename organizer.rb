@@ -172,13 +172,20 @@ module DeepConnect
     end
     alias import service
 
+    def release_object(obj)
+      for id, dspace in @deep_spaces
+	dspace.release_object(obj)
+      end
+    end
+
     def id2obj(id)
       for peer_id, s in @deep_spaces
 	if o = s.root(id)
 	  return o
 	end
       end
-      DC::InternalError "deep_spaceにid(=#{id})をobject_idとするオブジェクトが登録されていません.)"
+      IllegalObject.new
+#      DC::InternalError "deep_spaceにid(=#{id})をobject_idとするオブジェクトが登録されていません.)"
     end
 
     @@ABSOLUTE_IMMUTABLE_CLASSES = [

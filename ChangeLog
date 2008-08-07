@@ -1,3 +1,8 @@
+2008-08-08  Keiju Ishitsuka  <keiju@emperor2.pendome>
+
+	* Reference.release
+	* referenceの不正アクセスチェック
+
 2008-08-07  Keiju Ishitsuka  <keiju@emperor2.pendome>
 
 	* block yield 改変版
@@ -7,7 +12,6 @@
 	* イテレータ中でスレッドを実行しなかでyieldされるとNG になる問題を
 	  取りあえず解決
 	* ParamSpec.param_specs のバグ修正
-
 
 2008-07-29  Keiju Ishitsuka  <keiju@emperor2.pendome>
 

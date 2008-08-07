@@ -420,6 +420,19 @@ when "17"
   foo.foo{1}
   sleep 2
 
+when "18", "release"
+
+  RFoo = deepspace.import("Foo")
+  foo = RFoo.new
+  foo.release
+  sleep 10
+  foo.foo
+
+when "18.1"
+
+  a = deepspace.import("TEST.18.1")
+  a.foo
+
 end
 
 sleep 1

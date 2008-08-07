@@ -107,6 +107,10 @@ module DeepConnect
     #
     # export root 関連メソッド
     #
+    def release_object(obj)
+      @export_roots.delete(obj.object_id)
+    end
+
     def set_root(root)
       @export_roots[root.object_id] = root
       root.object_id
@@ -114,7 +118,7 @@ module DeepConnect
     alias set_export_root set_root
     
     def root(id)
-      @export_roots[id]
+      @export_roots.fetch(id){IllegalObject.new}
     end
     alias export_root root
 
@@ -148,6 +152,11 @@ module DeepConnect
     def register_import_reference(v)
       @import_reference[v.peer_id] = WeakRef.new(v)
       ObjectSpace.define_finalizer(v, deregister_import_reference_proc)
+    end
+
+    def deregister_import_reference_id(rid)
+      @import_reference.delete(rid)
+      @deregister_reference_queue.push rid
     end
 
     def deregister_import_reference_proc
@@ -187,6 +196,14 @@ module DeepConnect
       @session.deregister_root_to_peer(ids)
     end
     
+  end
+
+  class IllegalObject
+    def send(*opts)
+      DC.Raise IllegalReference
+    end
+    alias __send__ send
+    alias __public_send__ send
   end
 end
 

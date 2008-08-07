@@ -149,6 +149,12 @@ module DeepConnect
     def peer
       @deep_space.root(@peer_id)
     end
+
+    def release
+      peer_id = @peer_id
+#      @peer_id = :__DEEPCONNECT__RELEASED__
+      @deep_space.deregister_import_reference_id(peer_id)
+    end
     
     def method_missing(method, *args, &block)
       puts "SEND MESSAGE: #{self} #{method.id2name}" if DISPLAY_MESSAGE_TRACE

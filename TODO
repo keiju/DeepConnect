@@ -31,6 +31,8 @@
 * イテレータ中でスレッドを実行しなかでyieldされるとNG
 * パフォーマンスアップ その2
   + eventのargs周りの*argsの変更
+* Reference.release
+* referenceの不正アクセスチェック
 
 -- スケジュール
 * 例外が消えることがある...
@@ -44,6 +46,8 @@
 * パフォーマンスアップ
   + ClassSpecの実クラス化
   + Eventの非クラス化
+
+* release
 
 * DISPLAY_* 関連をまとめる
 

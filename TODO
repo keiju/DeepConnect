@@ -33,8 +33,18 @@
   + eventのargs周りの*argsの変更
 * Reference.release
 * referenceの不正アクセスチェック
+* session個別指定
+  + connect時コールバック
 
 -- スケジュール
+* shallow-connect 追加
+  + class一括指定
+  + session個別指定(connect時コールバック)
+     - session単位method-spec
+     - session単位export
+
+* Eventのmaterialize時に 対応するEventクラスがなかったときの処理
+
 * 例外が消えることがある...
   + 再現待ち
 --- 識別
@@ -42,12 +52,11 @@
 * shallow-connect 追加
   + class一括指定
   + session個別指定(connect時コールバック)
+  + 最初shallow-modeで何かした後, deep-mode というのもあり?
 
 * パフォーマンスアップ
   + ClassSpecの実クラス化
   + Eventの非クラス化
-
-* release
 
 * DISPLAY_* 関連をまとめる
 
@@ -57,6 +66,7 @@
 * ACL
 
 * メソッドスペック
+  + VOID型 = FUTURE型?
   + instance_eval
   + module_eval
 

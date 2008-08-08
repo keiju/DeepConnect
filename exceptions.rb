@@ -15,6 +15,8 @@ module DeepConnect
 
   def_exception :SessionServiceStopped, "Session service stopped"
   def_exception :DisconnectClient, "%sの接続が切れました"
+  def_exception :ConnectCancel, "%sの接続を拒否しました"
+  def_exception :ConnectionRefused, "%sへの接続が拒否されました"
 
   def_exception :InternalError, "DeepConnect internal error(%s)"
   def_exception :ProtocolError, "Protocol error!!"

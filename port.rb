@@ -25,6 +25,7 @@ module DeepConnect
     end
 
     def close
+p "CLOSE"
       @io.close
     end
 

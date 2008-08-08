@@ -101,23 +101,29 @@ module DeepConnect
 
     def stop_service(*opts)
       puts "INFO: STOP_SERVICE: Session: #{self.peer_uuid} #{opts.join(' ')} "
+      org_status = @status
       @status = :SERVICE_STOP
       
       if !opts.include?(:SESSION_CLOSED)
 	@port.shutdown_reading
       end
-      @import_thread.exit
-      @export_thread.exit
+
+      if org_status == :SERVICING
+	@import_thread.exit
+	@export_thread.exit
       
-      waiting_events = @waiting.sort{|s1, s2| s1[0] <=> s2[0]}
-      for seq, ev in waiting_events
-	begin
-	  DC.Raise SessionServiceStopped
-	rescue
-	  ev.result = ev.reply(nil, $!)
+	@waiting_mutex.synchronize do
+	  waiting_events = @waiting.sort{|s1, s2| s1[0] <=> s2[0]}
+	  for seq, ev in waiting_events
+	    begin
+	      DC.Raise SessionServiceStopped
+	    rescue
+	      ev.result = ev.reply(nil, $!)
+	    end
+	  end
+	  @waiting.clear
 	end
       end
-      @waiting = nil
     end
 
     def stop(*opts)
@@ -202,6 +208,8 @@ module DeepConnect
     end
 
     def send_disconnect
+      return unless  @status == :SERVICING
+
       ev = Event::SessionRequestNoReply.request(self, :recv_disconnect)
       @port.export(ev)
     end

@@ -25,6 +25,19 @@ dc = DeepConnect.start(65533)
 dc.register_service("s2ary", ["xxx"])
 dc.register_service("S2ARRAY", Array)
 
+case ARGV[0]
+when "19"
+  count = 0
+  dc.when_connected do
+    if (count+=1) <= 1
+      true
+    else
+      false
+    end
+  end
+
+end
+
 sleep 1000
 
 

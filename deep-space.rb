@@ -68,6 +68,7 @@ module DeepConnect
     end
 
     def disconnect(*opts)
+      org_status = @status
       @status = :SERVICE_STOP
       
       @session.stop_service(*opts)
@@ -76,7 +77,7 @@ module DeepConnect
 	@session.stop
       end
 
-      @deregister_reference_thread.exit
+      @deregister_reference_thread.exit if org_status == :SERVICING
       @import_reference = nil
       @export_roots = nil
     end

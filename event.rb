@@ -440,11 +440,26 @@ module DeepConnect
 	@local_id=local_id
       end
 
-
       attr_reader :local_id
 
       def serialize
 	[self.class, @local_id]
+      end
+    end
+
+    class ConnectResult<Event
+      def self.materialize_sub(session, type, klass, result)
+	new(result)
+      end
+
+      def initialize(result)
+	@result = result
+      end
+
+      attr_reader :result
+
+      def serialize
+	[self.class, @result]
       end
     end
   end

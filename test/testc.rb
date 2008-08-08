@@ -433,6 +433,20 @@ when "18.1"
   a = deepspace.import("TEST.18.1")
   a.foo
 
+when "19"
+
+when "19.1"
+
+#  require "tracer"
+#  Tracer.on
+
+  ref = deepspace.import("TEST")
+  p ref 
+
+when "19.2"
+  a = deepspace.import("TEST.19.2")
+  a.foo
+
 end
 
 sleep 1

@@ -15,8 +15,6 @@ require "deep-connect/reference"
 
 module DeepConnect
   UNSERIALIZABLE_CLASSES = [
-    StopIteration,
-    Enumerable::Enumerator,
     Binding,
     UnboundMethod,
     Method,
@@ -32,6 +30,12 @@ module DeepConnect
   ]
   if defined?(Continuation)
     UNSERIALIZABLE_CLASSES.push Continuation
+  end
+  if defined?(StopIteration)
+    UNSERIALIZABLE_CLASSES.push StopIteration
+  end
+  if defined?(Enumerable::Enumerator)
+    UNSERIALIZABLE_CLASSES.push Enumerable::Enumerator
   end
 
   UNSERIALIZABLE_CLASS_SET = {}

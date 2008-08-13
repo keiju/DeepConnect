@@ -27,7 +27,7 @@ module DeepConnect
     end
 
     def open(service = 0)
-      @probe = TCPServer.open(service)
+      @probe = TCPServer.open("", service)
     end
 
     def start

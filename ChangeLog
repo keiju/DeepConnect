@@ -1,3 +1,8 @@
+2008-08-15  Keiju Ishitsuka  <keiju@emperor2.pendome>
+
+	* Organizer.id2obj での IllegalObject 問題解消
+	* block_yieldのバグ解消
+
 2008-08-08  Keiju Ishitsuka  <keiju@emperor2.pendome>
 
 	* 接続時のプロトコル変更

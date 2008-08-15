@@ -213,7 +213,7 @@ module DeepConnect
 
     def id2obj(id)
       for peer_id, s in @deep_spaces
-	if o = s.root(id)
+	if o = s.root(id) and !o.kind_of?(IllegalObject)
 	  return o
 	end
       end

@@ -20,6 +20,9 @@ Thread.abort_on_exception=true
 
 #Tracer.on
 dc = DeepConnect.start(65535)
+#dc.when_connected do |deep_space, port|
+#  ...
+#end
 dc.export("TEST", "foo")
 dc.export("TEST1", [1, 2, 3])
 dc.export("TEST2", ["foo", "bar", "baz"])
@@ -27,8 +30,8 @@ dc.export("TEST3", Array)
 
 case ARGV[0]
 when "S2"
-#  session = dc.open_deep_space("localhost", 65533)
-  session = dc.open_deep_space("gentoo", 65533)
+  session = dc.open_deep_space("localhost", 65533)
+#  session = dc.open_deep_space("gentoo", 65533)
   s2ary = session.import("s2ary")
   dc.export("TEST.S2", s2ary)
 
@@ -137,10 +140,10 @@ when "7.6"
     DeepConnect.def_method_spec(self, "VAL foo2(VAL){*REF}")
 
     def bar(a, &block)
-      yield 13, 14
-      yield 15, 16
+      yield 13, [14]
+      yield 15, [16]
     end
-    #DeepConnect.def_method_spec(self, "VAL bar(VAL){VAL}")
+    DeepConnect.def_method_spec(self, "VAL bar(VAL){*VAL}")
   end
 
 
@@ -174,6 +177,17 @@ when "7.8"
   end
 
   dc.export("TEST7", Foo.new)
+
+when "7.9"
+  class Foo
+    def foo(a, &block)
+      yield 1
+      yield 2, 3
+    end
+  end
+
+  dc.export("TEST7", Foo.new)
+
 
 
 when "8"
@@ -400,7 +414,39 @@ when "16"
   end
   
   dc.export("foo", Foo.new)
-  
+
+when "18"
+
+  class Foo;end
+
+  dc.export("Foo", Foo)
+  puts "SLEEP IN"
+  sleep 5
+  puts "GC start"
+  GC.start
+
+when "18.1"
+
+  session = dc.open_deep_space("localhost", 65533)
+#  session = dc.open_deep_space("gentoo", 65533)
+
+  s2Array = session.import("S2ARRAY")
+  s2a = s2Array.new
+  s2a.release
+  dc.export("TEST.18.1", s2a)
+
+when "19"
+  dc.when_connected {false}
+
+when "19.2"
+  session = dc.open_deep_space("localhost", 65533)
+#  session = dc.open_deep_space("gentoo", 65533)
+
+  s2Array = session.import("S2ARRAY")
+  s2a = s2Array.new
+  s2a.release
+  dc.export("TEST.19.2", s2a)
+    
 end
 
 sleep 1000

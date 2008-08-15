@@ -1,3 +1,27 @@
+2008-08-15  Keiju Ishitsuka  <keiju@emperor2.pendome>
+
+	* Organizer.id2obj での IllegalObject 問題解消
+	* block_yieldのバグ解消
+
+2008-08-08  Keiju Ishitsuka  <keiju@emperor2.pendome>
+
+	* 接続時のプロトコル変更
+	* session個別指定
+	  + connect時コールバック(when_connect_proc)
+	
+	* Reference.release
+	* referenceの不正アクセスチェック
+
+2008-08-07  Keiju Ishitsuka  <keiju@emperor2.pendome>
+
+	* block yield 改変版
+
+2008-08-01  Keiju Ishitsuka  <keiju@emperor2.pendome>
+
+	* イテレータ中でスレッドを実行しなかでyieldされるとNG になる問題を
+	  取りあえず解決
+	* ParamSpec.param_specs のバグ修正
+
 2008-07-29  Keiju Ishitsuka  <keiju@emperor2.pendome>
 
 	* performance up

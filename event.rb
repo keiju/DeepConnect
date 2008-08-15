@@ -28,15 +28,6 @@ module DeepConnect
   module Event
     EV = Event
 
-#     MTXCV_POOL = Queue.new
-#     def self.get_mtxcv
-#       begin
-# 	mtxcv = MTXCV_POOL.pop(true)
-#       rescue
-# 	[Mutex.new, ConditionVariable.new]
-#       end
-#     end
-
     def Event.materialize(session, type, *rest)
       type.materialize_sub(session, type, *rest)
     end
@@ -50,7 +41,7 @@ module DeepConnect
       attr_reader :session
       attr :receiver
       attr :seq
-    
+      
       public :iterator?
 
       def inspect
@@ -61,56 +52,53 @@ module DeepConnect
     module NoReply; end
 
     class Request < Event
-      def Request.request(session, receiver, method, *args)
-	req = new(session, receiver, method, *args)
+      def Request.request(session, receiver, method, args)
+	req = new(session, receiver, method, args)
 	req.init_req
 	req
       end
       
-      def Request.receipt(session, seq, receiver, method, *args)
-	rec = new(session, receiver, method, *args)
+      def Request.receipt(session, seq, receiver, method, args)
+	rec = new(session, receiver, method, args)
 	rec.set_seq(seq)
 	rec
       end
-    
-      def Request.materialize_sub(session, type, klass, seq, receiver_id, method, *args)
+      
+      def Request.materialize_sub(session, type, klass, seq, receiver_id, method, args)
 	receiver = session.deep_space.root(receiver_id)
 
 	type.receipt(session, seq,
 		     receiver,
 		     method,
-		     *args.collect{|elm| 
+		     args.collect{|elm| 
 		       Reference.materialize(session.deep_space, *elm)})
       end
 
       def reply(ret, exp = nil, reply_class = reply_class)
-	  
 	reply_class.reply(self.session, self, ret, exp)
       end
 
       def reply_class
 	Reply
       end
-    
-      def initialize(session, receiver, method, *args)
+      
+      def initialize(session, receiver, method, args)
 	super(session, receiver)
 	@method = method
 	@args = args
       end
-    
+      
       def init_req
 	@seq = @session.next_request_event_id
 	@result = :__DEEPCONNECT__NO_VALUE__
 	@result_mutex = Mutex.new
 	@result_cv = ConditionVariable.new
-
-#	@result_mutex, @result_cv = EV::get_mtxcv
       end
-    
+      
       def set_seq(seq)
 	@seq = seq
       end
-    
+      
       def serialize
 	mspec = @session.deep_space.method_spec(@receiver, @method)
 	if mspec && mspec.args
@@ -122,37 +110,37 @@ module DeepConnect
 	    Reference.serialize(@session.deep_space, elm)
 	  }
 	end
-#	@receiver.peer_id
-	[self.class, @seq, @receiver.peer_id, @method].concat(args)
+	sel = [self.class, @seq, @receiver.peer_id, @method]
+	sel.push args
+	sel
       end
-    
+      
       def request?
-	TRUE
+	true
       end
-    
-      def iterator?
-	FALSE
-      end
-    
-      def result
+
+      def result_event
 	@result_mutex.synchronize do
 	  while @result == :__DEEPCONNECT__NO_VALUE__
 	    @result_cv.wait(@result_mutex)
 	  end
 	end
-#	MTXCV_POOL.push [@result_mutex, @result_cv]
+	@result
+      end
+      
+      def result
+	result_event
 	if @result.exp
 	  bt = @result.exp.backtrace
 	  bt.push "-- peer side --"
 	  bt.push *caller(0)
 	  bt = bt.select{|e| /deep-connect/ !~ e} unless DC::DEBUG
-	    
+	  
 	  raise PeerSideException, @result.exp, bt
-#	    raise PeerSideException.new(@result.exp)
 	end
 	@result.result
       end
-	
+      
       def result=(ev)
 	@result = ev
 	@result_cv.broadcast
@@ -166,56 +154,42 @@ module DeepConnect
       end
     end
 
-    class IteratorRequest < Request
-      def initialize(*opts)
-	super
-	@call_back = Queue.new
-      end
+    class RequestWithBlock < Request
+      def self.materialize_sub(session, type, klass, seq, receiver_id, method, args, block)
 
-      def reply_class
-	IteratorReply
-      end
-    
-      def iterator?
-	TRUE
-      end
-    
-      def call_back(&block)
-	while !(ret = @call_back.pop).kind_of?(IteratorCallBackRequestFinish)
-	  block.call ret
-	end
-      end
+	receiver = receiver(session, receiver_id)
 
-      def push_call_back(ev)
-	@call_back.push ev
-      end
-    end
-
-    class IteratorCallBackRequest<Request
-
-      def IteratorCallBackRequest.materialize_sub(session, type, klass, seq, receiver_id, method, *args)
 	type.receipt(session, seq,
-		     Reference.materialize(session.deep_space, *receiver_id),
+		     receiver,
 		     method,
-		     *args.collect{|elm| 
-		       Reference.materialize(session.deep_space, *elm)})
+		     args.collect{|elm| 
+		       Reference.materialize(session.deep_space, *elm)},
+		     Reference.materialize(session.deep_space, *block))
       end
 
-      def IteratorCallBackRequest.call_back_event(event, *args)
-	req = new(event.session, event.receiver, event.method, *args)
+      def self.request(session, receiver, method, args, block)
+	req = new(session, receiver, method, args, block)
 	req.init_req
-	req.set_seq([req.seq, event.seq])
 	req
       end
-
-      def reply_class
-	IteratorCallBackReply
+      
+      def self.receipt(session, seq, receiver, method, args, block)
+	rec = new(session, receiver, method, args, block)
+	rec.set_seq(seq)
+	rec
       end
 
+      def initialize(session, receiver, method, args, block)
+	super(session, receiver, method, args)
+	@block = block
+      end
+
+      attr_reader :block
+
       def serialize
-	mspec = @session.deep_space.my_method_spec(@receiver, @method)
-	if mspec && mspec.block_args
-	  args = mspec.block_arg_zip(@args){|spec, arg|
+	mspec = method_spec(@receiver, @method)
+	if mspec && mspec_args(mspec)
+	  args = mspec_arg_zip(mspec){|spec, arg|
 	    Reference.serialize_with_spec(@session.deep_space, arg, spec)
 	  }
 	else
@@ -223,38 +197,84 @@ module DeepConnect
 	    Reference.serialize(@session.deep_space, elm)
 	  }
 	end
-	[self.class, @seq,  
-	  Reference.serialize(@session.deep_space, @receiver),
-	  method].concat(args)
+	receiver_id = receiver_id(@receiver)
+	#	@receiver.peer_id
+	sel = [self.class, @seq, receiver_id, @method]
+	sel.push args
+	sel.push Reference.serialize(@session.deep_space, @block)
+	sel
+      end
+    end
+
+    class IteratorRequest<RequestWithBlock
+
+      def self.receiver(session, receiver_id)
+	session.deep_space.root(receiver_id)
       end
 
-      def iterator?
-	true
+      def method_spec(receiver, method)
+	@session.deep_space.method_spec(receiver, method)
+      end
+
+      def receiver_id(receriver)
+	receiver.peer_id
+      end
+
+      def mspec_args(mspec)
+	mspec.args
+      end
+
+      def mspec_arg_zip(mspec, &block)
+	mspec.arg_zip(@args, &block)
+      end
+
+      def reply_class
+	IteratorReply
       end
     end
     
-    class IteratorCallBackRequestFinish<IteratorCallBackRequest
-    end
+    class IteratorCallBackRequest<RequestWithBlock
 
-    class IteratorSubRequest < Request
-      def itr_id
-	@args[0]
+      def self.receiver(session, receiver_id)
+	Reference.materialize(session.deep_space, *receiver_id)
       end
-    end
 
-    class IteratorNextRequest<IteratorSubRequest; end
-    class IteratorExitRequest<IteratorSubRequest; end
-#    class IteratorRetryRequest<IteratorSubRequest; end
+      def method_spec(receiver, method)
+	@session.deep_space.my_method_spec(receiver, method)
+      end
 
-    class SessionRequest < Request
-      def SessionRequest.request(session, method, *args)
-	req = new(session, session, method, *args)
+      def receiver_id(receriver)
+	Reference.serialize(@session.deep_space, @receiver)
+      end
+
+      def mspec_args(mspec)
+	mspec.block_args
+      end
+
+      def mspec_arg_zip(mspec, &block)
+	mspec.block_arg_zip(@args, &block)
+      end
+
+      def IteratorCallBackRequest.call_back_event(event, args)
+	req = new(event.session, event.receiver, event.method, args, event.block)
 	req.init_req
 	req
       end
 
-      def SessionRequest.receipt(session, seq, dummy, method, *args)
-	rec = new(session, session, method, *args)
+      def reply_class
+	IteratorCallBackReply
+      end
+    end
+    
+    class SessionRequest < Request
+      def SessionRequest.request(session, method, args=[])
+	req = new(session, session, method, args)
+	req.init_req
+	req
+      end
+
+      def SessionRequest.receipt(session, seq, dummy, method, args=[])
+	rec = new(session, session, method, args)
 	rec.set_seq(seq)
 	rec
       end
@@ -262,16 +282,18 @@ module DeepConnect
       def reply_class
 	SessionReply
       end
-    
+      
       def serialize
 	args = @args.collect{|elm| 
 	  Reference.serialize(@session.deep_space, elm)
 	}
-	[self.class, @seq, @receiver.peer_id, @method].concat(args)
+	sel = [self.class, @seq, @receiver.peer_id, @method]
+	sel.push args
+	sel
       end
 
       def inspect
-#	sprintf "#<#{self.class}, session=#{@session}, seq=#{@seq}, method=#{@method.id2name}, args=#{@args.collect{|e| e.to_s}.join(', ')}>"
+	#	sprintf "#<#{self.class}, session=#{@session}, seq=#{@seq}, method=#{@method.id2name}, args=#{@args.collect{|e| e.to_s}.join(', ')}>"
 	sprintf "#<#{self.class}, session=#{@session}, seq=#{@seq}, method=#{@method.id2name}, args=...>"
       end
     end
@@ -300,7 +322,7 @@ module DeepConnect
       def self.reply(session, req, ret, exp=nil)
 	new(session, req.seq, req.receiver, req.method, ret, exp)
       end
-    
+      
       def initialize(session, seq, receiver, method, ret, exp=nil)
 	super(session, receiver)
 	@seq = seq
@@ -308,7 +330,7 @@ module DeepConnect
 	@result = ret
 	@exp = exp
       end
-    
+      
       def serialize
 	mspec = @session.deep_space.my_method_spec(@receiver, @method)
 	if mspec && mspec.rets
@@ -341,29 +363,16 @@ module DeepConnect
       def request?
 	false
       end
-    
-      def iterator?
-	false
-      end
-    
+      
       attr_reader :result
       attr_reader :exp
 
       def inspect
-	sprintf "#<#{self.class}, session=#{@session}, seq=#{@seq}, receiver=#{@receiver}, method=#{@method} result=#{@result}}>"
+	sprintf "#<#{self.class}, session=#{@session}, seq=#{@seq}, receiver=#{@receiver}, method=#{@method} result=#{@result} exp=#{@exp}}>"
       end
     end
 
-    class IteratorReply < Reply
-
-      def iterator?
-	true
-      end
-    
-      def finish?
-	false
-      end
-    end
+    class IteratorReply < Reply; end
 
     class IteratorCallBackReply<Reply
       def serialize
@@ -394,32 +403,14 @@ module DeepConnect
 	    sel_result]
 	end
       end
-
-      def iterator?
-	true
-      end
     end
 
-    class IteratorCallBackReplyBreak<IteratorCallBackReply
-      def iterator?
-	true
-      end
-    end
-
-
-    class IteratorReplyFinish < Reply
-      def iterator?
-	true
-      end
-    
-      def finish?
-	true
-      end
-    end
+    class IteratorCallBackReplyBreak<IteratorCallBackReply; end
+    class IteratorReplyFinish < Reply; end
 
     class SessionReply < Reply
       def SessionReply.materialize_sub(session, type, klass, seq, receiver, method, ret, exp = nil)
-#	puts "SESSIONREPLY: #{type}, #{session}, #{ret.collect{|e| e.to_s}.join(',')}"	
+	#	puts "SESSIONREPLY: #{type}, #{session}, #{ret.collect{|e| e.to_s}.join(',')}"	
 	if exp
 	  type.new(session, seq,
 		   session,
@@ -449,14 +440,28 @@ module DeepConnect
 	@local_id=local_id
       end
 
-
       attr_reader :local_id
 
       def serialize
 	[self.class, @local_id]
       end
     end
+
+    class ConnectResult<Event
+      def self.materialize_sub(session, type, klass, result)
+	new(result)
+      end
+
+      def initialize(result)
+	@result = result
+      end
+
+      attr_reader :result
+
+      def serialize
+	[self.class, @result]
+      end
+    end
   end
 end
-
 

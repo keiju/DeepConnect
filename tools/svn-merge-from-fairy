@@ -1,0 +1,17 @@
+#!/usr/local/bin/ruby
+#
+#   svn-tags - 
+#   	$Release Version: $
+#   	$Revision: 1.1 $
+#   	$Date: 1997/08/08 00:57:08 $
+#   	by Keiju ISHITSUKA
+#
+# --
+#
+#   
+#
+
+@RCS_ID='-$Id:  $-'
+
+system("svn merge -r#{ARGV[0]} http://localhost/svn/repos/lib/ruby/deep-connect/branches/fairy-trunk")
+

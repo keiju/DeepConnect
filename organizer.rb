@@ -54,6 +54,8 @@ module DeepConnect
 
       @cron = Cron.new(self)
 
+      @when_connect_proc = proc{true}
+
       @local_id_mutex = Mutex.new
       @local_id_cv = ConditionVariable.new
       @local_id = nil
@@ -116,9 +118,14 @@ module DeepConnect
       end
 
       # セッションを自動的に開く
-      deep_space = open_deep_space(*peer_id)
-      block.call deep_space if block_given?
-      deep_space
+      begin
+	deep_space = open_deep_space(*peer_id)
+	block.call deep_space if block_given?
+	deep_space
+      rescue ConnectionRefused
+	puts "WARN: クライアント(#{peer_id}への接続が拒否されました"
+	raise
+      end
     end
     alias deepspace deep_space
 
@@ -136,19 +143,45 @@ module DeepConnect
 
 	disconnect_deep_space(old, :SESSION_CLOSED)
       end
+      unless @when_connect_proc.call deep_space, port
+	puts "CONNECT Canceld DeepSpace: #{deep_space.peer_uuid}" if $DEBUG
+	connect_ev = Event::ConnectResult.new(false)
+	port.export connect_ev
+
+	disconnect_deep_space(deep_space)
+	DC::Raise ConnectCancel, deep_space
+      end
+
+      connect_ev = Event::ConnectResult.new(true)
+      port.export connect_ev
+
+      ev = port.import
+      if ev.kind_of?(Event::ConnectResult)
+	unless ev.result
+	  DC::Raise ConnectionRefused, deep_space
+	end
+      else
+	DC::Raise ProtocolError, deep_space
+      end
+
       @deep_spaces[deep_space.peer_uuid] = deep_space
+
       puts "CONNECT DeepSpace: #{deep_space.peer_uuid}" if $DEBUG
       deep_space.connect
       deep_space
     end
     alias connect_deepspace_with_port connect_deep_space_with_port
 
-
     def disconnect_deep_space(deep_space, *opts)
       @deep_spaces.delete(deep_space.peer_uuid)
       deep_space.disconnect(*opts)
     end
 
+    def when_connected(&block)
+      @when_connect_proc = block
+    end
+
+    #
     def keep_alive
       puts "KEEP ALIVE: Start" if DISPLAY_KEEP_ALIVE
       for uuid, deep_space in @deep_spaces.dup
@@ -172,13 +205,20 @@ module DeepConnect
     end
     alias import service
 
+    def release_object(obj)
+      for id, dspace in @deep_spaces
+	dspace.release_object(obj)
+      end
+    end
+
     def id2obj(id)
       for peer_id, s in @deep_spaces
-	if o = s.root(id)
+	if o = s.root(id) and !o.kind_of?(IllegalObject)
 	  return o
 	end
       end
-      DC::InternalError "deep_spaceにid(=#{id})をobject_idとするオブジェクトが登録されていません.)"
+      IllegalObject.new
+#      DC::InternalError "deep_spaceにid(=#{id})をobject_idとするオブジェクトが登録されていません.)"
     end
 
     @@ABSOLUTE_IMMUTABLE_CLASSES = [

@@ -46,7 +46,7 @@ when "4"
   r.each{|e| puts "TEST1: #{e}"}
 when "4.1"
   r = deepspace.get_service("TEST1")
-  r.each{|e| puts "TEST1: #{e}"; next}
+  r.each{|e| puts "TEST1: #{e}"; next; 1}
 
 when "4.2"
   r = deepspace.get_service("TEST1")
@@ -220,6 +220,13 @@ when "7.7"
 when "7.8"
   foo = deepspace.get_service("TEST7")
   p foo.foo(["a", "b"])
+
+when "7.9"
+  foo = deepspace.get_service("TEST7")
+  foo.foo(1) do |s| 
+    p s
+  end
+  
 
 when "8"
   foo = deepspace.import("TEST8")
@@ -413,6 +420,39 @@ when "13.3"
 when "14"
   foo = deepspace.import("foo")
   foo.foo
+
+when "17"
+
+  foo = deepspace.import("foo")
+  foo.foo{1}
+  sleep 2
+
+when "18", "release"
+
+  RFoo = deepspace.import("Foo")
+  foo = RFoo.new
+  foo.release
+  sleep 10
+  foo.foo
+
+when "18.1"
+
+  a = deepspace.import("TEST.18.1")
+  a.foo
+
+when "19"
+
+when "19.1"
+
+#  require "tracer"
+#  Tracer.on
+
+  ref = deepspace.import("TEST")
+  p ref 
+
+when "19.2"
+  a = deepspace.import("TEST.19.2")
+  a.foo
 
 end
 

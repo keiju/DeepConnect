@@ -27,21 +27,32 @@ module DeepConnect
     end
 
     def open(service = 0)
-      @probe = TCPServer.open(service)
+      @probe = TCPServer.open("", service)
     end
 
     def start
       @probe_thread = Thread.start {
 	loop do
 	  sock = @probe.accept
-	  port = Port.new(sock)
-	  begin
-	    unless (ev = port.import).kind_of?(Event::InitSessionEvent)
-	      puts "WARN: 接続初期化エラー: [#{port.peeraddr}]"
+	  Thread.start do
+	    port = Port.new(sock)
+	    begin
+	      unless (ev = port.import).kind_of?(Event::InitSessionEvent)
+		puts "WARN: 接続初期化エラー: [#{port.peeraddr}]"
+	      end
+	      begin
+		@organizer.connect_deep_space_with_port port, ev.local_id
+	      rescue ConnectCancel
+		puts "INFO: クライアント(#{ev.local_id}からの接続を拒否しました."
+	      rescue ConnectionRefused
+		puts "WARN: クライアント(#{ev.local_id}への接続が拒否されました"
+	      rescue ProtocolError, IOError
+		puts "WARN: 接続初期化エラー: [#{port.peeraddr}]"
+
+	      end
+	    rescue EOFError
+	      puts "WARN: 接続初期化中に[#{port.peeraddr}]との接続が切れました"
 	    end
-	    @organizer.connect_deep_space_with_port port, ev.local_id
-	  rescue EOFError
-	    puts "WARN: 接続初期化中に[#{port.peeraddr}]との接続が切れました"
 	  end
 	end
       }

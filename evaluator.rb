@@ -82,11 +82,14 @@ module DeepConnect
       end
       begin
 	args = ev.args
-	if ev.block.arity == 1 or ev.block.arity < 0
-	  ret = ev.block.call(args)
-	else
-	  ret = ev.block.call(*args)
+	if args.size == 1 && args.kind_of?(Array)
+	  args = args.first
 	end
+ 	if ev.block.arity == 1 or ev.block.arity < 0
+ 	  ret = ev.block.call(args)
+ 	else
+ 	  ret = ev.block.call(*args)
+ 	end
 	session.accept ev.reply(ret)
       rescue LocalJumpError
 	exp = $!

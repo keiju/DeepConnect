@@ -178,6 +178,17 @@ when "7.8"
 
   dc.export("TEST7", Foo.new)
 
+when "7.9"
+  class Foo
+    def foo(a, &block)
+      yield 1
+      yield 2, 3
+    end
+  end
+
+  dc.export("TEST7", Foo.new)
+
+
 
 when "8"
 

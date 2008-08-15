@@ -221,6 +221,13 @@ when "7.8"
   foo = deepspace.get_service("TEST7")
   p foo.foo(["a", "b"])
 
+when "7.9"
+  foo = deepspace.get_service("TEST7")
+  foo.foo(1) do |s| 
+    p s
+  end
+  
+
 when "8"
   foo = deepspace.import("TEST8")
   p foo.foo(0)

@@ -32,11 +32,6 @@ module DeepConnect
 
       @waiting = Hash.new
       @waiting_mutex = Mutex.new
-
-      @iterator_waiting = {}
-      @iterator_event_queues = {}
-      @iterator_event_queues_mutex = Mutex.new
-      @iterator_event_queues_cv = ConditionVariable.new
       
       @next_request_event_id = 0
       @next_request_event_id_mutex = Mutex.new

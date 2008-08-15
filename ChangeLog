@@ -1,5 +1,7 @@
 2008-08-15  Keiju Ishitsuka  <keiju@emperor2.pendome>
 
+	* Session: 不必要なインスタンス変数削除
+
 	* Organizer.id2obj での IllegalObject 問題解消
 	* block_yieldのバグ解消
 

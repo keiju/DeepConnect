@@ -1,3 +1,8 @@
+2008-08-21  Keiju Ishitsuka  <keiju@emperor2.pendome>
+
+	* Future: Ruby 1.9 対応
+	  - delegator の振る舞いが違う
+
 2008-08-15  Keiju Ishitsuka  <keiju@emperor2.pendome>
 
 	* Session: 不必要なインスタンス変数削除

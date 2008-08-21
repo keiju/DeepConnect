@@ -35,9 +35,9 @@
 * referenceの不正アクセスチェック
 * session個別指定
   + connect時コールバック
+* fairyで動作しない
 
 -- スケジュール
-* fairyで動作しない
 * shallow-connect 追加
   + class一括指定
   + session個別指定(connect時コールバック)

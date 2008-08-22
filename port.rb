@@ -56,6 +56,7 @@ p "CLOSE"
 
     def export(ev)
       puts "EXPORT: #{ev.inspect}" if DC::MESSAGE_DISPLAY
+#      p ev.serialize
       s = Marshal.dump(ev.serialize)
       size = s.size
       packet = [size, s].pack("Na#{size}")

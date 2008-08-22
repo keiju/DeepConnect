@@ -210,6 +210,14 @@ module DeepConnect
 	      @peer_id) 
     end
 
+#     def marshal_dump
+#       Reference.serialize(@deep_space, self)
+#     end
+    
+#     def marshal_load(obj)
+#       Reference.materialize(
+#     end
+
     def deep_connect_dup
       @deep_space.session.send_to(self, :deep_connect_dup)
     end

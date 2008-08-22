@@ -39,6 +39,8 @@ module DeepConnect
       end
     end
 
+    def __setobj__(dummy); end
+
     def value
       @value_mutex.synchronize do
 	while @value == NULLVALUE
@@ -55,9 +57,9 @@ module DeepConnect
 
     def inspect
       if @value == NULLVALUE
-	"#<#{self.class}: (NOT ARRIVED)>"
+	"#<DeepConnect::Future: (NOT ARRIVED)>"
       else
-	"#<#{self.class}: #{@value.inspect}>"
+	"#<DeepConnect::Future: #{@value.inspect}>"
       end
     end
   end

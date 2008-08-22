@@ -35,9 +35,9 @@
 * referenceの不正アクセスチェック
 * session個別指定
   + connect時コールバック
+* fairyで動作しない
 
 -- スケジュール
-* fairyで動作しない
 * shallow-connect 追加
   + class一括指定
   + session個別指定(connect時コールバック)
@@ -48,6 +48,9 @@
 
 * 例外が消えることがある...
   + 再現待ち
+
+* シンボルID が rubyのバージョンが異なると一致しないようだ.
+
 --- 識別
 
 * shallow-connect 追加

@@ -10,7 +10,6 @@
 #   
 #
 
-require "deep-connect/deep-connect"
 require "deep-connect/reference"
 
 module DeepConnect
@@ -25,8 +24,8 @@ module DeepConnect
     ThreadGroup,
     Thread,
     Data,
-    Class,
-    Module,
+#    Class,
+#    Module,
   ]
   if defined?(Continuation)
     UNSERIALIZABLE_CLASSES.push Continuation

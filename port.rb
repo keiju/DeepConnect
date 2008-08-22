@@ -47,9 +47,13 @@ p "CLOSE"
 
     def import
       sz = read(PACK_N_SIZE).unpack("N").first
-      bin = read(sz).unpack("a#{sz}")
-      a = Marshal.load(bin.first)
+      bin = read(sz)
+#      puts "IMPORT: start" if DC::MESSAGE_DISPLAY
+      a = Marshal.load(bin)
+#      puts "IMPORT: serialize start" if DC::MESSAGE_DISPLAY
+#      p a
       ev = Event.materialize(@session, a.first, *a)
+#      puts "XXXXXXX"
       puts "IMPORT: #{ev.inspect}" if DC::MESSAGE_DISPLAY
       ev
     end
@@ -61,6 +65,7 @@ p "CLOSE"
       size = s.size
       packet = [size, s].pack("Na#{size}")
       write(packet)
+      puts "EXPORT: finsh" if DC::MESSAGE_DISPLAY
     end
 
     def read(n)

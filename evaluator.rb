@@ -49,9 +49,9 @@ module DeepConnect
 	end
 	fin = event.receiver.send(event.method, *event.args){|*args|
 	  begin
-	    if args.size == 1 && args.first.kind_of?(Array)
-	      args = args.first
-	    end
+#  	    if args.size == 1 && args.first.kind_of?(Array)
+#  	      args = args.first
+#  	    end
 	    callback_req = session.block_yield(event, args)
 
 	    case callback_req.result_event
@@ -82,14 +82,20 @@ module DeepConnect
       end
       begin
 	args = ev.args
-	if args.size == 1 && args.kind_of?(Array)
-	  args = args.first
+
+	if ev.block.arity > 1
+	  begin
+	    if args.size == 1 && args.first.__deep_connect_reference?
+	      if args.first.kind_of?(Array)
+		args = args.first.dc_dup
+	      end
+	    end
+	  rescue
+	    p $!, $!
+	    raise
+	  end
 	end
- 	if ev.block.arity == 1 or ev.block.arity < 0
- 	  ret = ev.block.call(args)
- 	else
- 	  ret = ev.block.call(*args)
- 	end
+	ret = ev.block.call(*args)
 	session.accept ev.reply(ret)
       rescue LocalJumpError
 	exp = $!

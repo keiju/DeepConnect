@@ -29,9 +29,9 @@ dc.export("TEST2", ["foo", "bar", "baz"])
 dc.export("TEST3", Array)
 
 case ARGV[0]
-when "S2"
-  session = dc.open_deep_space("localhost", 65533)
-#  session = dc.open_deep_space("gentoo", 65533)
+when "5", "S2"
+#  session = dc.open_deep_space("localhost", 65533)
+  session = dc.open_deep_space("gentoo", 65533)
   s2ary = session.import("s2ary")
   dc.export("TEST.S2", s2ary)
 
@@ -188,7 +188,17 @@ when "7.9"
 
   dc.export("TEST7", Foo.new)
 
+when "7.param"
+  class Foo
+    def foo1(&block)
+      yield 1
+      yield [1]
+      yield 1, 2
+      yield [1, 2]
+    end
+  end
 
+  dc.export("TEST7.P", Foo)
 
 when "8"
 
@@ -446,6 +456,14 @@ when "19.2"
   s2a = s2Array.new
   s2a.release
   dc.export("TEST.19.2", s2a)
+
+when "20"
+  require "matrix"
+
+  v = Vector[1,1]
+  
+  dc.export("TEST.20", v)
+
     
 end
 

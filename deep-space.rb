@@ -11,7 +11,6 @@
 #
 
 require "thread"
-require "weakref"
 require "forwardable"
 
 require "ipaddr"
@@ -46,6 +45,7 @@ module DeepConnect
 
       # importしているオブジェクト
       @import_reference = {}
+      @import_reference_mutex = Mutex.new
       @deregister_reference_queue = Queue.new
     end
 
@@ -138,9 +138,9 @@ module DeepConnect
     # import 関連メソッド
     #
     def import_reference(id)
-      if wr = @import_reference[id]
+      if @import_reference[id]
 	begin
-	  wr.__getobj__
+	  ObjectSpace._id2ref(@import_reference[id])
 	rescue
 	  @import_reference.delete(id)
 	  nil
@@ -151,12 +151,16 @@ module DeepConnect
     end
 
     def register_import_reference(v)
-      @import_reference[v.peer_id] = WeakRef.new(v)
+      @import_reference_mutex.synchronize do
+	@import_reference[v.peer_id] = v.object_id
+      end
       ObjectSpace.define_finalizer(v, deregister_import_reference_proc)
     end
 
     def deregister_import_reference_id(rid)
-      @import_reference.delete(rid)
+      @import_reference_mutex.synchronize do
+	@import_reference.delete(rid)
+      end
       @deregister_reference_queue.push rid
     end
 

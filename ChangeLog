@@ -1,3 +1,21 @@
+2008-08-22  Keiju Ishitsuka  <keiju@emperor2.pendome>
+
+	* to_splat 対応
+	
+	* Reference#inspect: 表示問題解消
+
+	* Module#===: 再定義
+
+	* new reference
+	  - できるだけデレゲートする版
+	* block args 
+	  - バグがあった
+
+2008-08-21  Keiju Ishitsuka  <keiju@emperor2.pendome>
+
+	* Future: Ruby 1.9 対応
+	  - delegator の振る舞いが違う
+
 2008-08-15  Keiju Ishitsuka  <keiju@emperor2.pendome>
 
 	* Organizer.id2obj での IllegalObject 問題解消

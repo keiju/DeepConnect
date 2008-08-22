@@ -29,8 +29,9 @@ when "1"
   p ref 
 
 when "2"
-  ref = deepspace.get_service("TEST1")
-  #p ref
+  ref = deepspace.import("TEST1")
+puts "A"
+  puts ref
   p ref[0]
   p ref.push 3
   puts ref.peer_inspect
@@ -89,7 +90,8 @@ when "4.4"
 
 when "5"
   r = deepspace.get_service("TEST.S2")
-  sleep 5
+#  sleep 5
+  p r
   p r[0]
 
 when "6"
@@ -211,6 +213,26 @@ when "7.6"
   end
 
 when "7.7"
+  class Foo
+    def foo(a, &block)
+      ret = yield [1]
+      puts "TEST7.7 ret: #{ret.inspect}"
+    end
+
+    def bar(a, &block)
+      yield 1, 2
+      yield 3, 4
+    end
+  end
+
+puts "LOCAL:"
+  foo = Foo.new
+  foo.foo(1) do |ba1|
+    puts "TEST7.6a ba1: #{ba1.inspect}"
+    [1,2]
+  end
+  
+puts "REMOTE:"
   foo = deepspace.get_service("TEST7")
   foo.foo(1) do |ba1|
     puts "TEST7.6a ba1: #{ba1.inspect}"
@@ -226,7 +248,40 @@ when "7.9"
   foo.foo(1) do |s| 
     p s
   end
-  
+
+when "7.param", "block args"
+  class Foo
+    def foo1(&block)
+      yield 1
+      yield [1]
+      yield 1, 2
+      yield [1, 2]
+    end
+  end
+  RFoo = deepspace.get_service("TEST7.P")
+
+  puts "TEST: foo1{|a|...}"
+  puts "LOCAL:"
+  Foo.new.foo1{|a| puts "#{a.inspect}"}
+
+  puts "REMOTE:"
+  RFoo.new.foo1{|a| puts "#{a.inspect}"}
+
+  puts 
+  puts "TEST: foo1{|*a|...}"
+  puts "LOCAL:"
+  Foo.new.foo1{|*a| p a}
+
+  puts "REMOTE:"
+  RFoo.new.foo1{|*a| p a}
+
+  puts 
+  puts "TEST: foo1{|a, b|...}"
+  puts "LOCAL:"
+  Foo.new.foo1{|a, b| puts "#{a.inspect}, #{b.inspect}"}
+
+  puts "REMOTE:"
+  RFoo.new.foo1{|a, b| puts "#{a.inspect}, #{b.inspect}"}
 
 when "8"
   foo = deepspace.import("TEST8")
@@ -453,6 +508,37 @@ when "19.1"
 when "19.2"
   a = deepspace.import("TEST.19.2")
   a.foo
+
+when "20", "vector"
+
+  require "matrix"
+  
+  p v0 = Vector[1,2]
+  p v1 = deepspace.import("TEST.20")
+
+  p v0+v1
+
+
+when "20.1"
+
+  require "matrix"
+  
+  p v0 = Vector[1,2]
+  p v1 = deepspace.import("TEST.20")
+
+  p v0.kind_of?(Vector)
+  p v1.kind_of?(Vector)
+  
+  p Vector === v0
+  p Vector === v1
+
+
+  case v1
+  when Vector
+    p 1
+  else
+    p 2
+  end
 
 end
 

@@ -1,3 +1,16 @@
+2008-08-22  Keiju Ishitsuka  <keiju@emperor2.pendome>
+
+	* to_splat 対応
+	
+	* Reference#inspect: 表示問題解消
+
+	* Module#===: 再定義
+
+	* new reference
+	  - できるだけデレゲートする版
+	* block args 
+	  - バグがあった
+
 2008-08-21  Keiju Ishitsuka  <keiju@emperor2.pendome>
 
 	* Future: Ruby 1.9 対応

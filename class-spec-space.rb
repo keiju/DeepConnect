@@ -42,8 +42,7 @@ module DeepConnect
 
     def method_spec(ref_or_obj, method)
       puts "method_spec(#{ref_or_obj}, #{method})" if DISPLAY_METHOD_SPEC
-      case ref_or_obj
-      when Reference
+      if ref_or_obj.__deep_connect_reference?
 	csid = ref_or_obj.csid
       else
 	csid = class_spec_id_of(ref_or_obj)
@@ -635,10 +634,9 @@ module DeepConnect
     end
 
     def self.mkkey(receiver, method_name)
-      case receiver
-      when Reference
-	receiver.class_name+"#"+method_name.to_s
-      when Class
+      if receiver.__deep_connect_reference?
+	receiver.class.name+"#"+method_name.to_s
+      elsif receiver.kind_of?(Class)
 	receiver.name+"."+method_name.to_s
       else
 	receiver.class.name+"#"+method_name.to_s

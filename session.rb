@@ -80,7 +80,9 @@ module DeepConnect
 	    begin
 	      # export中にexportが発生するとデッドロックになる
 	      # threadが欲しいか?
-	      @port.export(ev)
+#	      Thread.start do
+		@port.export(ev)
+#	      end
 	    rescue Errno::EPIPE, DC::DisconnectClient
 	      # EPIPE: クライアントが終了している
 	      # DisconnectClient: 通信中にクライアント接続が切れた

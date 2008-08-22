@@ -12,8 +12,6 @@
 
 @RCS_ID='-$Id:  $-'
 
-require "deep-connect/deep-connect"
-
 module DeepConnect
 
   KEEP_ALIVE_INTERVAL = 60
@@ -27,7 +25,7 @@ module DeepConnect
       [KEEP_ALIVE_INTERVAL, proc{|org, cron, t| org.keep_alive}],
     ]
 
-    MON_INTERVAL = 1
+    MON_INTERVAL = 10
 
     def initialize(organizer)
       @organizer = organizer

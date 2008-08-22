@@ -27,6 +27,8 @@ module DeepConnect
   DISPLAY_MONITOR_MESSAGE = false
   DISPLAY_KEEP_ALIVE = false
 
+  DEBUG_REFERENCE = false
+
   DISPLAY_GC = false
 
 #  KEEP_ALIVE_INTERVAL = 60

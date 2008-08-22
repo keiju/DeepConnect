@@ -218,7 +218,7 @@ module DeepConnect
 	end
       end
       IllegalObject.new
-#      DC::InternalError "deep_spaceにid(=#{id})をobject_idとするオブジェクトが登録されていません.)"
+      DC::InternalError "deep_spaceにid(=#{id})をobject_idとするオブジェクトが登録されていません.)"
     end
 
     @@ABSOLUTE_IMMUTABLE_CLASSES = [

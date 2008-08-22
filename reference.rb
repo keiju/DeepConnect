@@ -15,6 +15,16 @@ require "deep-connect/class-spec-space"
 module DeepConnect
   class Reference
 
+    preserved = [
+      :__id__, :object_id, :__send__, :public_send, :respond_to?, :send,
+      :instance_eval, :instance_exec, :extend
+    ]
+    instance_methods.each do |m|
+      next if preserved.include?(m.intern)
+      alias_method "__deep_connect_org_#{m}", m
+      undef_method m
+    end
+
     # session ローカルなプロキシを生成
     #	[クラス名, 値]
     #	[クラス名, ローカルSESSION, 値]
@@ -23,21 +33,21 @@ module DeepConnect
 	return Reference.serialize_with_spec(deep_space, value, spec)
       end
 
-      if value.kind_of? Reference
+      if value.__deep_connect_reference?
 	if deep_space == value.deep_space
-	  [value.class, value.csid, value.peer_id, :PEER_OBJECT]
+	  [value.__deep_connect_real_class, value.csid, value.peer_id, :PEER_OBJECT]
 	else
 	  uuid = value.deep_space.peer_uuid.dup
 	  if uuid[0] == "::ffff:127.0.0.1"
 	    uuid[0] = :SAME_UUIDADDR
 	  end
 	    
-	  [value.class, value.csid, value.peer_id, uuid]
+	  [value.__deep_connect_real_class, value.csid, value.peer_id, uuid]
 	end
       else
 	case value
 	when *Organizer::immutable_classes
-	  [value.class, value.class.name, value]
+	  [value.__deep_connect_real_class, value.__deep_connect_real_class.name, value]
 	else
 	  object_id = deep_space.set_root(value)
 	  csid = deep_space.my_csid_of(value)
@@ -47,20 +57,19 @@ module DeepConnect
     end
 
     def Reference.serialize_with_spec(deep_space, value, spec)
-      case value
-      when Reference
+      if value.__deep_connect_reference?
 	if deep_space == value.deep_space
-	  [value.class, value.csid, value.peer_id, :PEER_OBJECT]
+	  [value.__deep_connect_real_class, value.csid, value.peer_id, :PEER_OBJECT]
 	else
 	  uuid = value.deep_space.peer_uuid.dup
 	  if uuid[0] == "::ffff:127.0.0.1"
 	    uuid[0] = :SAME_UUIDADDR
 	  end
 	    
-	  [value.class, value.csid, value.peer_id, uuid]
+	  [value.__deep_connect_real_class, value.csid, value.peer_id, uuid]
 	end
-      when *Organizer::absolute_immutable_classes
-	[value.class, value.class.name, value]
+      elsif Organizer::absolute_immutable_classes.include?(value)
+	[value.__deep_connect_real_class, value.__deep_connect_real_class.name, value]
       else 
 	case spec
 	when MethodSpec::DefaultParamSpec
@@ -73,7 +82,7 @@ module DeepConnect
 	  serialize_val(deep_space, value, spec)
 	when MethodSpec::DValParamSpec
 	  # 第2引数意味なし
-	  [value.class, value.class.name, value]
+	  [value.__deep_connect_real_class, value.__deep_connect_real_class.name, value]
 	else
 	  raise ArgumentError,
 	    "argument is only specified(#{MethodSpec::ARG_SPEC.join(', ')})(#{spec})"
@@ -84,10 +93,10 @@ module DeepConnect
     def Reference.serialize_val(deep_space, value, spec)
       case value
       when *Organizer::immutable_classes
-	[value.class, value.class.name, value]
+	[value.__deep_connect_real_class, value.__deep_connect_real_class.name, value]
       else 
-	[:VAL, value.class.name, 
-	  [value.class, value.deep_connect_serialize_val(deep_space)]]
+	[:VAL, value.__deep_connect_real_class.name, 
+	  [value.__deep_connect_real_class, value.deep_connect_serialize_val(deep_space)]]
       end
     end
     
@@ -155,9 +164,16 @@ module DeepConnect
 #      @peer_id = :__DEEPCONNECT__RELEASED__
       @deep_space.deregister_import_reference_id(peer_id)
     end
+
+#    TO_METHODS = [:to_ary, :to_str, :to_int, :to_regexp]
+    TO_METHODS = [:to_ary, :to_str, :to_int, :to_regexp, :to_splat]
     
     def method_missing(method, *args, &block)
-      puts "SEND MESSAGE: #{self} #{method.id2name}" if DISPLAY_MESSAGE_TRACE
+      puts "SEND MESSAGE: #{self.inspect} #{method.id2name}" if DISPLAY_MESSAGE_TRACE
+
+      if TO_METHODS.include?(method)
+	return self.dc_dup.send(method)
+      end
       if iterator?
 	@deep_space.session.send_to(self, method, args, &block)
       else
@@ -165,17 +181,17 @@ module DeepConnect
       end
     end
     
-    def peer_to_s
-      @deep_space.session.send_to(self, :to_s)
-    end
+#     def peer_to_s
+#       @deep_space.session.send_to(self, :to_s)
+#     end
 
-    def peer_inspect
-      @deep_space.session.send_to(self, :inspect)
-    end
+#     def peer_inspect
+#       @deep_space.session.send_to(self, :inspect)
+#     end
 
-    def peer_class
-      @deep_space.session.send_to(self, :class)
-    end
+#     def peer_class
+#       @deep_space.session.send_to(self, :class)
+#     end
 
 #     def to_s
 #       @deep_space.session.send_to(self, :to_s)
@@ -187,27 +203,128 @@ module DeepConnect
 #       a
 #     end
 
-    def =~(other)
-      @deep_space.session.send_to(self, :=~, other)
+#     def =~(other)
+#       @deep_space.session.send_to(self, :=~, other)
+#     end
+
+#     def ===(other)
+#       @deep_space.session.send_to(self, :===, other)
+#     end
+
+#     def id
+#       @deep_space.session.send_to(self, :id)
+#     end
+    
+#     def coerce(other)
+#       return  other, peer
+#     end
+
+    def __deep_connect_reference?
+      true
+    end
+    alias dc_reference? __deep_connect_reference?
+
+    def __deep_connect_real_class
+      Reference
+    end
+    
+    class UndefinedClass;end
+
+    def peer_class
+      return @peer_class if @peer_class
+      begin
+	@peer_class = self.class.dc_deep_copy
+      rescue
+	@peer_class = UndefinedClass
+      end
+      @peer_class
+    end
+
+
+    def respond_to?(m, include_private = false)
+      return true if super
+      return @deep_space.session.send_to(self, :respond_to?, [m, include_private])
+    end
+
+    def ==(obj)
+      return true if obj.equal?(self)
+
+#      self.deep_connect_copy == obj
+      false
+    end
+
+    def equal?(obj)
+      self.object_id == obj.object_id
+    end
+
+    def kind_of?(klass)
+      if klass.__deep_connect_reference?
+	@deep_space.session.send_to(self, :kind_of?, klass)
+      else
+	self.peer_class <= klass
+      end
     end
 
     def ===(other)
-      @deep_space.session.send_to(self, :===, other)
+      if other.__deep_connect_reference?
+	@deep_space.session.send_to(self, :===, other)
+      else
+	case other
+	when Class
+	  self.peer_class <= klass
+	end
+      end
     end
 
-    def id
-      @deep_space.session.send_to(self, :id)
+#     def to_ary
+#       if respond_to?(:to_ary)
+# 	self.dc_dup.to_ary
+#       end
+#     end
+
+    def to_str
+      if respond_to?(:to_str)
+	self.dc_dup.to_str
+      end
     end
-    
-    def coerce(other)
-      return  other, peer
+
+    def to_s(force = false)
+      if !force && /deep-connect/ =~ caller(1).first
+	unless /deep-connect\/test/ =~ caller(1).first
+	  return __deep_connect_org_to_s
+	end
+      end
+
+      @deep_space.session.send_to(self, :to_s)
     end
-    
-    def inspect
-      sprintf("<Reference: deep_space=%s csid=%s id=%x>", 
-	      @deep_space.to_s, 
-	      @csid, 
-	      @peer_id) 
+
+    def inspect(force = false)
+      if !force && /deep-connect/ =~ caller(1).first
+	unless /deep-connect\/test/ =~ caller(1).first
+	  return sprintf("<DC::Ref: deep_space=%s csid=%s id=%x>", 
+		@deep_space.to_s, 
+		@csid, 
+		@peer_id)
+	end
+      end
+
+      if DC::DEBUG_REFERENCE
+	sprintf("<DC::Ref[deep_space=%s csid=%s id=%x]: %s>", 
+		@deep_space.to_s, 
+		@csid, 
+		@peer_id,
+		to_s) 
+      else
+	sprintf("<DC::Ref: %s>", to_s(true)) 
+      end
+    end
+
+    def peer_inspect
+      @deep_space.session.send_to(self, :inspect)
+    end
+
+    def my_inspect
+      __deep_connect_org_inspect
     end
 
     def deep_connect_dup
@@ -223,3 +340,24 @@ module DeepConnect
   end
 
 end
+
+class Object
+  def __deep_connect_reference?
+    false
+  end
+  alias dc_reference? __deep_connect_reference?
+
+  def __deep_connect_real_class
+    self.class
+  end
+end
+
+class Module
+  def ===(other)
+    other.kind_of?(self)
+  end
+end
+
+		  
+
+  

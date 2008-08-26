@@ -1,5 +1,8 @@
 2008-08-26  Keiju Ishitsuka  <keiju@emperor2.pendome>
 
+	* to_** シリーズのメソッドスペックを追加
+	* Reference#method_missing の to_** の特別扱いの削除
+
 	* GC周りのバグ修正
 
 	* deep-space の referctoring

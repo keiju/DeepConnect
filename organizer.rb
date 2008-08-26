@@ -259,6 +259,14 @@ module DeepConnect
 
     def_method_spec(Exception, "REF set_backtrace(VAL)")
 
+    def_method_spec(Object, "VAL to_a()")
+    #def_method_spec(Object, "VAL to_s()")
+    def_method_spec(Object, "VAL to_ary()")
+    def_method_spec(Object, "VAL to_str()")
+    def_method_spec(Object, "VAL to_int()")
+    def_method_spec(Object, "VAL to_regexp()")
+    def_method_spec(Object, "VAL to_splat()")
+
     def_method_spec(Array, :method=> :-, :args=> "VAL")
     def_method_spec(Array, :method=> :&, :args=> "VAL")
     def_method_spec(Array, :method=> :|, :args=> "VAL")

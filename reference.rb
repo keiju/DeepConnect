@@ -167,14 +167,14 @@ module DeepConnect
     end
 
 #    TO_METHODS = [:to_ary, :to_str, :to_int, :to_regexp]
-    TO_METHODS = [:to_ary, :to_str, :to_int, :to_regexp, :to_splat]
+#    TO_METHODS = [:to_ary, :to_str, :to_int, :to_regexp, :to_splat]
     
     def method_missing(method, *args, &block)
       puts "SEND MESSAGE: #{self.inspect} #{method.id2name}" if DC::DISPLAY_MESSAGE_TRACE
 
-      if TO_METHODS.include?(method)
-	return self.dc_dup.send(method)
-      end
+#       if TO_METHODS.include?(method)
+# 	return self.dc_dup.send(method)
+#       end
       if iterator?
 	@deep_space.session.send_to(self, method, args, &block)
       else
@@ -282,6 +282,10 @@ module DeepConnect
 #       Reference.serialize(@deep_space, self)
 #     end
 
+#     def marshal_load(obj)
+#       Reference.materialize(
+#     end
+
 #     def to_ary
 #       if respond_to?(:to_ary)
 # 	self.dc_dup.to_ary
@@ -292,6 +296,10 @@ module DeepConnect
 #       if respond_to?(:to_str)
 # 	self.dc_dup.to_str
 #       end
+#     end
+
+#     def to_a
+#       self.dc_dup.to_a
 #     end
 
     def to_s(force = false)

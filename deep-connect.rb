@@ -29,7 +29,7 @@ module DeepConnect
 
   DEBUG_REFERENCE = false
 
-  DISPLAY_GC = false
+  DISPLAY_GC = true
 
 #  KEEP_ALIVE_INTERVAL = 60
 

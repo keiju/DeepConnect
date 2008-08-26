@@ -17,7 +17,7 @@ module DeepConnect
 
     preserved = [
       :__id__, :object_id, :__send__, :public_send, :respond_to?, :send,
-      :instance_eval, :instance_exec, :extend
+      :instance_eval, :instance_exec, :extend, "!".intern
     ]
     instance_methods.each do |m|
       next if preserved.include?(m.intern)
@@ -101,6 +101,7 @@ module DeepConnect
     end
     
     def Reference.materialize(deep_space, type, csid, object_id, uuid=nil)
+      puts "X:#{Thread.current}:1" if $FOO == 1
       if type == Reference
 	if uuid
 	  if uuid == :PEER_OBJECT
@@ -170,7 +171,6 @@ module DeepConnect
     
     def method_missing(method, *args, &block)
       puts "SEND MESSAGE: #{self.inspect} #{method.id2name}" if DISPLAY_MESSAGE_TRACE
-
       if TO_METHODS.include?(method)
 	return self.dc_dup.send(method)
       end
@@ -290,11 +290,11 @@ module DeepConnect
 #       end
 #     end
 
-    def to_str
-      if respond_to?(:to_str)
-	self.dc_dup.to_str
-      end
-    end
+#     def to_str
+#       if respond_to?(:to_str)
+# 	self.dc_dup.to_str
+#       end
+#     end
 
     def to_s(force = false)
       if !force && /deep-connect/ =~ caller(1).first

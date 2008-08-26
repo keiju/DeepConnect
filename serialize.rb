@@ -62,7 +62,6 @@ class Object
 	DeepConnect::Reference.serialize(deep_space, instance_variable_get(v))]}
   end
 
-
   def deep_connect_dup
     if DeepConnect::UNSERIALIZABLE_CLASS_SET.include?(self.class)
       DeepConnect.Raise CantDup, self.class.name

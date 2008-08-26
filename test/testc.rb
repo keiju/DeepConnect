@@ -36,6 +36,13 @@ puts "A"
   p ref.push 3
   puts ref.peer_inspect
 
+when "2.1"
+  ref = deepspace.import("TEST1")
+  puts ref
+  p ref.to_a
+  p ref.to_ary
+  p Array(ref)
+
 when "3"
   r1 = deepspace.get_service("TEST1")
   r2 = deepspace.get_service("TEST2")

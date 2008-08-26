@@ -540,6 +540,17 @@ when "20.1"
     p 2
   end
 
+when "21", "!"
+
+p $"
+
+  p DeepConnect::DISPLAY_MESSAGE_TRACE
+
+  ref = deepspace.import("TEST1")
+  p ref
+  p !ref
+
+
 end
 
 sleep 1

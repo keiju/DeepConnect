@@ -278,6 +278,10 @@ module DeepConnect
 #       end
 #     end
 
+#     def marshal_dump
+#       Reference.serialize(@deep_space, self)
+#     end
+
 #     def to_ary
 #       if respond_to?(:to_ary)
 # 	self.dc_dup.to_ary

@@ -20,7 +20,7 @@ module DeepConnect
   # DC is a internal using short cut of DeepConnect .
   DC = DeepConnect
 
-  DISPLAY_MESSAGE_TRACE = true
+  DISPLAY_MESSAGE_TRACE = false
   MESSAGE_DISPLAY = false
   DEBUG = true
   DISPLAY_METHOD_SPEC = false
@@ -28,7 +28,6 @@ module DeepConnect
   DISPLAY_KEEP_ALIVE = false
 
   DEBUG_REFERENCE = false
-
   DISPLAY_GC = false
 
 #  KEEP_ALIVE_INTERVAL = 60

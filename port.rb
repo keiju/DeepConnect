@@ -55,14 +55,29 @@ p "CLOSE"
       ev = Event.materialize(@session, a.first, *a)
 #      puts "XXXXXXX"
       puts "IMPORT: #{ev.inspect}" if DC::MESSAGE_DISPLAY
+#       if :output == ev.instance_eval{@method} && ev.kind_of?(Event::Reply)
+# 	if !ev.result.__deep_connect_reference?
+# 	  puts "IMPORT 1: #{a.inspect}"
+# 	  puts "IMPORT 2: #{ev.inspect}"
+# 	  $FOO = Thread.current
+# 	  ev2 = Event.materialize(@session, a.first, *a)
+# 	  puts "IMPORT 2: #{ev2.inspect}"
+# 	  $FOO = 0
+# 	end
+#       end
       ev
     end
 
     def export(ev)
       puts "EXPORT: #{ev.inspect}" if DC::MESSAGE_DISPLAY
+#      p ev.serialize
       bin = Marshal.dump(ev.serialize)
+#       if /output/ =~ ev.instance_eval{@method}
+# 	puts "EXPORT 1: #{ev.inspect}" 
+# 	puts "EXPORT 2: #{Marshal.load(bin).inspect}"
+#       end
       size = bin.size
-      
+
       packet = [size].pack("N")+bin
       write(packet)
       puts "EXPORT: finsh" if DC::MESSAGE_DISPLAY

@@ -550,6 +550,36 @@ p $"
   p ref
   p !ref
 
+when "20", "vector"
+
+  require "matrix"
+  
+  p v0 = Vector[1,2]
+  p v1 = deepspace.import("TEST.20")
+
+  p v0+v1
+
+
+when "20.1"
+
+  require "matrix"
+  
+  p v0 = Vector[1,2]
+  p v1 = deepspace.import("TEST.20")
+
+  p v0.kind_of?(Vector)
+  p v1.kind_of?(Vector)
+  
+  p Vector === v0
+  p Vector === v1
+
+
+  case v1
+  when Vector
+    p 1
+  else
+    p 2
+  end
 
 end
 

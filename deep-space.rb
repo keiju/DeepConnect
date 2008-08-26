@@ -149,44 +149,57 @@ module DeepConnect
     #
     def init_import_feature
       # importしているオブジェクト
+
+      # peer_id => ref_id
       @import_reference = {}
+      @rev_import_reference = {}
+
       @import_reference_mutex = Mutex.new
       @deregister_reference_queue = Queue.new
     end
 
-    def import_reference(id)
-      if @import_reference[id]
-	begin
-	  ObjectSpace._id2ref(@import_reference[id])
-	rescue
-	  @import_reference.delete(id)
+    def import_reference(peer_id)
+      @import_reference_mutex.synchronize do
+	if rid = @import_reference[peer_id]
+	  begin
+	    ObjectSpace._id2ref(rid)
+	  rescue
+	    ref_id = @import_reference.delete(peer_id)
+	    @rev_import_reference.delete(ref_id)
+	    @deregister_reference_queue.push peer_id
+	    nil
+	  end
+	else
 	  nil
 	end
-      else
-	nil
       end
     end
 
-    def register_import_reference(v)
+    def register_import_reference(ref)
       @import_reference_mutex.synchronize do
-	@import_reference[v.peer_id] = v.object_id
+	@import_reference[ref.peer_id] = ref.object_id
+	@rev_import_reference[ref.object_id] = ref.peer_id
       end
-      ObjectSpace.define_finalizer(v, deregister_import_reference_proc)
+      ObjectSpace.define_finalizer(ref, deregister_import_reference_proc)
     end
 
-    def deregister_import_reference_id(rid)
+    def deregister_import_reference_id(peer_id)
       @import_reference_mutex.synchronize do
-	@import_reference.delete(rid)
+	ref_id = @import_reference.delete(peer_id)
+	@rev_import_reference.delete(ref_id)
       end
-      @deregister_reference_queue.push rid
+      @deregister_reference_queue.push peer_id
     end
 
     def deregister_import_reference_proc
-      proc do |id|
+      proc do |ref_id|
 	if @status == :SERVICING
-	  puts "GC: gced id: #{id}" if DISPLAY_GC
-	  @import_reference.delete(id)
-	  @deregister_reference_queue.push id
+	  @import_reference_mutex.synchronize do
+	    puts "GC: gced id: #{ref_id}" if DISPLAY_GC
+	    peer_id = @rev_import_reference.delete(ref_id)
+	    @import_reference.delete(peer_id)
+	  end
+	  @deregister_reference_queue.push peer_id
 	end
       end
     end

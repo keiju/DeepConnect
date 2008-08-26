@@ -1,3 +1,10 @@
+2008-08-26  Keiju Ishitsuka  <keiju@emperor2.pendome>
+
+	* GC周りのバグ修正
+
+	* deep-space の referctoring
+	* メッセージ``!'' の対応(Ruby1.9)
+
 2008-08-22  Keiju Ishitsuka  <keiju@emperor2.pendome>
 
 	* to_splat 対応

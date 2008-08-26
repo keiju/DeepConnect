@@ -15,9 +15,10 @@ require "deep-connect/class-spec-space"
 module DeepConnect
   class Reference
 
+    # !は転送しても意味がない(というわけでもないけど....)
     preserved = [
       :__id__, :object_id, :__send__, :public_send, :respond_to?, :send,
-      :instance_eval, :instance_exec, :extend
+      :instance_eval, :instance_exec, :extend, "!".intern
     ]
     instance_methods.each do |m|
       next if preserved.include?(m.intern)
@@ -169,7 +170,7 @@ module DeepConnect
     TO_METHODS = [:to_ary, :to_str, :to_int, :to_regexp, :to_splat]
     
     def method_missing(method, *args, &block)
-      puts "SEND MESSAGE: #{self.inspect} #{method.id2name}" if DISPLAY_MESSAGE_TRACE
+      puts "SEND MESSAGE: #{self.inspect} #{method.id2name}" if DC::DISPLAY_MESSAGE_TRACE
 
       if TO_METHODS.include?(method)
 	return self.dc_dup.send(method)
@@ -180,6 +181,7 @@ module DeepConnect
 	@deep_space.session.send_to(self, method, args)
       end
     end
+
     
 #     def peer_to_s
 #       @deep_space.session.send_to(self, :to_s)
@@ -265,16 +267,16 @@ module DeepConnect
       end
     end
 
-    def ===(other)
-      if other.__deep_connect_reference?
-	@deep_space.session.send_to(self, :===, other)
-      else
-	case other
-	when Class
-	  self.peer_class <= klass
-	end
-      end
-    end
+#     def ===(other)
+#       if other.__deep_connect_reference?
+# 	@deep_space.session.send_to(self, :===, other)
+#       else
+# 	case other
+# 	when Class
+# 	  self.peer_class <= klass
+# 	end
+#       end
+#     end
 
 #     def to_ary
 #       if respond_to?(:to_ary)
@@ -282,11 +284,11 @@ module DeepConnect
 #       end
 #     end
 
-    def to_str
-      if respond_to?(:to_str)
-	self.dc_dup.to_str
-      end
-    end
+#     def to_str
+#       if respond_to?(:to_str)
+# 	self.dc_dup.to_str
+#       end
+#     end
 
     def to_s(force = false)
       if !force && /deep-connect/ =~ caller(1).first

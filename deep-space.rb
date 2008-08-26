@@ -37,16 +37,9 @@ module DeepConnect
       ipaddr = ipaddr.ipv4_mapped if ipaddr.ipv4?
       @peer_uuid = [ipaddr.to_s, local_id]
 
-      # class spec
-      @class_spec_space = ClassSpecSpace.new(:remote)
-
-      # exportしているオブジェクト
-      @export_roots = {}
-
-      # importしているオブジェクト
-      @import_reference = {}
-      @import_reference_mutex = Mutex.new
-      @deregister_reference_queue = Queue.new
+      init_class_spec_feature
+      init_export_feature
+      init_import_feature
     end
 
     attr_reader :status
@@ -82,7 +75,19 @@ module DeepConnect
       @export_roots = nil
     end
 
-    #  接続時に転送する
+    def import(name)
+      @session.get_service(name)
+    end
+    alias get_service import 
+
+    #
+    # class spec feature
+    #
+    def init_class_spec_feature
+      # class spec
+      @class_spec_space = ClassSpecSpace.new(:remote)
+    end
+
     def_delegator :@class_spec_space, :class_specs=
     def_delegator :@class_spec_space, :method_spec
     def_delegator :@class_spec_space, :class_spec_id_of
@@ -108,6 +113,11 @@ module DeepConnect
     #
     # export root 関連メソッド
     #
+    def init_export_feature
+      # exportしているオブジェクト
+      @export_roots = {}
+    end
+
     def release_object(obj)
       @export_roots.delete(obj.object_id)
     end
@@ -137,6 +147,13 @@ module DeepConnect
     #
     # import 関連メソッド
     #
+    def init_import_feature
+      # importしているオブジェクト
+      @import_reference = {}
+      @import_reference_mutex = Mutex.new
+      @deregister_reference_queue = Queue.new
+    end
+
     def import_reference(id)
       if @import_reference[id]
 	begin
@@ -186,11 +203,6 @@ module DeepConnect
 	end
       end
     end
-
-    def get_service(name)
-      @session.get_service(name)
-    end
-    alias import get_service
 
     def register_root_to_peer(id)
       @session.register_root_to_peer(id)

@@ -13,7 +13,7 @@
 $DEBUG = 1
 require "tracer"
 
-require "deep-connect/deep-connect"
+require "deep-connect"
 
 Thread.abort_on_exception=true
 STDOUT.sync
@@ -539,6 +539,17 @@ when "20.1"
   else
     p 2
   end
+
+when "21", "!"
+
+p $"
+
+  p DeepConnect::DISPLAY_MESSAGE_TRACE
+
+  ref = deepspace.import("TEST1")
+  p ref
+  p !ref
+
 
 end
 

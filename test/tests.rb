@@ -27,6 +27,7 @@ dc.export("TEST", "foo")
 dc.export("TEST1", [1, 2, 3])
 dc.export("TEST2", ["foo", "bar", "baz"])
 dc.export("TEST3", Array)
+dc.export("TEST22", Object.new)
 
 case ARGV[0]
 when "5", "S2"

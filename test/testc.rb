@@ -557,6 +557,27 @@ p $"
   p ref
   p !ref
 
+when "22", "*"
+  p = proc{|e| p e}
+
+  puts "22.1"
+  foo = Object.new
+  p.call *foo
+
+  foo = deepspace.import("TEST22")
+  p.call *foo
+
+  puts "22.2"
+  foo = [1,2,3]
+  p.call *foo
+
+  foo = deepspace.import("TEST1")
+  p.call *foo
+
+  puts "22.3"
+  v = deepspace.import("TEST.20")
+  p.call v
+
 
 end
 

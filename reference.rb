@@ -166,6 +166,7 @@ module DeepConnect
       @deep_space.deregister_import_reference_id(peer_id)
     end
 
+# 将来, 最適化のために必要になるかも
 #    TO_METHODS = [:to_ary, :to_str, :to_int, :to_regexp]
 #    TO_METHODS = [:to_ary, :to_str, :to_int, :to_regexp, :to_splat]
     

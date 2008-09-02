@@ -1,7 +1,15 @@
 2008-09-02  Keiju Ishitsuka  <keiju@emperor2.pendome>
 
-	* when_disconnected
+	* Session#start: 例外発生時の処理
+	* Accepter#stop: ditto.
+	* Reference#inspect: サービス停止中の処理
+	* Organizer#stop: ditto.
+	* Organizer#when_connected: ditto.
+	* evaluator: SystemExitの取り扱い
+	* DeepConnect#when_disconnected: 追加
 
+	* when_disconnected
+	
 	* deep-space: @export_roots の排他制御追加
 	* deep-space#deregister_roots_to_peer:
 	    すでに登録されているときは, 登録をリクエストしない

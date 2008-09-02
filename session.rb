@@ -61,7 +61,10 @@ module DeepConnect
 	  rescue EOFError, DC::DisconnectClient
 	    # EOFError: クライアントが閉じていた場合
 	    # DisconnectClient: 通信中にクライアント接続が切れた
-	    @organizer.disconnect_deep_space(@deep_space, :SESSION_CLOSED)
+	    Thread.start do
+	      @organizer.disconnect_deep_space(@deep_space, :SESSION_CLOSED)
+	    end
+	    Thread.stop
 	  rescue DC::ProtocolError
 	    # 何らかの障害のためにプロトコルが正常じゃなくなった
 	  end
@@ -86,7 +89,10 @@ module DeepConnect
 	    rescue Errno::EPIPE, DC::DisconnectClient
 	      # EPIPE: クライアントが終了している
 	      # DisconnectClient: 通信中にクライアント接続が切れた
-	      @organizer.disconnect_deep_space(@deep_space, :SESSION_CLOSED)
+	      Thread.start do
+		@organizer.disconnect_deep_space(@deep_space, :SESSION_CLOSED)
+	      end
+	      Thread.stop
 	    end
 	  else
 	    puts "INFO: service is stoped, export event abandoned(#{ev.inspect})" 
@@ -113,6 +119,7 @@ module DeepConnect
 	  waiting_events = @waiting.sort{|s1, s2| s1[0] <=> s2[0]}
 	  for seq, ev in waiting_events
 	    begin
+	      p ev
 	      DC.Raise SessionServiceStopped
 	    rescue
 	      ev.result = ev.reply(nil, $!)
@@ -121,6 +128,7 @@ module DeepConnect
 	  @waiting.clear
 	end
       end
+
     end
 
     def stop(*opts)

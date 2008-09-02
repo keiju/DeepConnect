@@ -311,7 +311,11 @@ module DeepConnect
 	end
       end
 
-      @deep_space.session.send_to(self, :to_s)
+      if @deep_space.status == :SERVICING
+	@deep_space.session.send_to(self, :to_s)
+      else
+	"(no service)"
+      end
     end
 
     def inspect(force = false)

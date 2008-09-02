@@ -32,6 +32,8 @@ module DeepConnect
 	unless event.kind_of?(Event::NoReply)
 	  session.accept event.reply(ret)
 	end
+      rescue SystemExit
+	raise
       rescue Exception
 	unless event.kind_of?(Event::NoReply)
 	  session.accept event.reply(ret, $!)
@@ -71,6 +73,8 @@ module DeepConnect
 	  end
 	}
 	session.accept event.reply(fin)
+      rescue SystemExit
+	raise
       rescue Exception
 	session.accept event.reply(fin, $!)
       end

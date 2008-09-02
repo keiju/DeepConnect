@@ -53,6 +53,7 @@ module DeepConnect
     def_delegator :@organizer, :close_deep_space
     def_delegator :@organizer, :close_deepspace
     def_delegator :@organizer, :when_connected
+    def_delegator :@organizer, :when_disconnected
 
     def_delegator :@organizer, :export
     def_delegator :@organizer, :register_service

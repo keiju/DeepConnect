@@ -212,13 +212,13 @@ module DeepConnect
     end
 
     def id2obj(id)
-      for peer_id, s in @deep_spaces
+      for peer_id, s in @deep_spaces.dup
 	if o = s.root(id) and !o.kind_of?(IllegalObject)
 	  return o
 	end
       end
       IllegalObject.new
-      DC::InternalError "deep_spaceにid(=#{id})をobject_idとするオブジェクトが登録されていません.)"
+#      DC::InternalError "deep_spaceにid(=#{id})をobject_idとするオブジェクトが登録されていません.)"
     end
 
     @@ABSOLUTE_IMMUTABLE_CLASSES = [

@@ -101,7 +101,6 @@ module DeepConnect
     end
     
     def Reference.materialize(deep_space, type, csid, object_id, uuid=nil)
-      puts "X:#{Thread.current}:1" if $FOO == 1
       if type == Reference
 	if uuid
 	  if uuid == :PEER_OBJECT
@@ -171,6 +170,7 @@ module DeepConnect
     
     def method_missing(method, *args, &block)
       puts "SEND MESSAGE: #{self.inspect} #{method.id2name}" if DISPLAY_MESSAGE_TRACE
+
 #       if TO_METHODS.include?(method)
 # 	return self.dc_dup.send(method)
 #       end

@@ -129,6 +129,7 @@ module DeepConnect
 
     # peerからの受取り
     def receive(ev)
+      #Thread.start do
       if ev.request?
 	Thread.start do
 	  case ev
@@ -150,6 +151,7 @@ module DeepConnect
 	end
 	req.result = ev
       end
+      #end
     end
 
     # イベントの受け取り
@@ -230,8 +232,8 @@ module DeepConnect
     Organizer.def_interface(self, :get_service_impl)
 
     def register_root_to_peer(id)
+      # 同期を取るためにno_recvはNG
       send_peer_session(:register_root, id)
-      nil
     end
 
     def register_root_impl(id)

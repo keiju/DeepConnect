@@ -45,36 +45,24 @@ module DeepConnect
     end
 
     def import
+#      puts "IMPORT: start0" 
       sz = read(PACK_N_SIZE).unpack("N").first
       bin = read(sz)
-#      puts "IMPORT: start" if DC::MESSAGE_DISPLAY
       a = Marshal.load(bin)
-#      puts "IMPORT: serialize start" if DC::MESSAGE_DISPLAY
-#      p a
-      ev = Event.materialize(@session, a.first, *a)
-#      puts "XXXXXXX"
+      begin
+	# ここで, ネットワーク通信発生する可能性あり.
+	ev = Event.materialize(@session, a.first, *a)
+      rescue
+	p $!, $@
+	raise
+      end
       puts "IMPORT: #{ev.inspect}" if DC::MESSAGE_DISPLAY
-#       if :output == ev.instance_eval{@method} && ev.kind_of?(Event::Reply)
-# 	if !ev.result.__deep_connect_reference?
-# 	  puts "IMPORT 1: #{a.inspect}"
-# 	  puts "IMPORT 2: #{ev.inspect}"
-# 	  $FOO = Thread.current
-# 	  ev2 = Event.materialize(@session, a.first, *a)
-# 	  puts "IMPORT 2: #{ev2.inspect}"
-# 	  $FOO = 0
-# 	end
-#       end
       ev
     end
 
     def export(ev)
       puts "EXPORT: #{ev.inspect}" if DC::MESSAGE_DISPLAY
-#      p ev.serialize
       bin = Marshal.dump(ev.serialize)
-#       if /output/ =~ ev.instance_eval{@method}
-# 	puts "EXPORT 1: #{ev.inspect}" 
-# 	puts "EXPORT 2: #{Marshal.load(bin).inspect}"
-#       end
       size = bin.size
 
       packet = [size].pack("N")+bin
@@ -97,6 +85,7 @@ module DeepConnect
     def write(packet)
       begin
 	@io.write(packet)
+#	@io.flush
       rescue Errno::ECONNRESET
 	puts "WARN: write中に[#{peeraddr.join(', ')}]の接続が切れました"
 	DC::Raise DisconnectClient, peeraddr

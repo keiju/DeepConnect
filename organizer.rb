@@ -55,6 +55,7 @@ module DeepConnect
       @cron = Cron.new(self)
 
       @when_connect_proc = proc{true}
+      @when_disconnect_proc = proc{}
 
       @local_id_mutex = Mutex.new
       @local_id_cv = ConditionVariable.new
@@ -175,10 +176,16 @@ module DeepConnect
     def disconnect_deep_space(deep_space, *opts)
       @deep_spaces.delete(deep_space.peer_uuid)
       deep_space.disconnect(*opts)
+
+      @when_disconnected_proc.call(deep_space, opts)
     end
 
     def when_connected(&block)
       @when_connect_proc = block
+    end
+
+    def when_disconnected(&block)
+      @when_disconnected_proc = block
     end
 
     #
@@ -190,6 +197,7 @@ module DeepConnect
 	end
       end
     end
+
 
     # services
     def register_service(name, obj)

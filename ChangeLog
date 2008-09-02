@@ -1,5 +1,7 @@
 2008-09-02  Keiju Ishitsuka  <keiju@emperor2.pendome>
 
+	* when_disconnected
+
 	* deep-space: @export_roots の排他制御追加
 	* deep-space#deregister_roots_to_peer:
 	    すでに登録されているときは, 登録をリクエストしない

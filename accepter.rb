@@ -59,7 +59,7 @@ module DeepConnect
     end
 
     def stop
-      @probe_thread.stop
+      @probe_thread.exit
       @probe.close
     end
   end

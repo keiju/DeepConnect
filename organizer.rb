@@ -95,7 +95,7 @@ module DeepConnect
     end
 
     def stop
-      @accepter.close
+      @accepter.stop
     end
 
     # client sesssion³«»Ï
@@ -175,9 +175,14 @@ module DeepConnect
 
     def disconnect_deep_space(deep_space, *opts)
       @deep_spaces.delete(deep_space.peer_uuid)
+      begin
       deep_space.disconnect(*opts)
+      rescue
+	p $!, $@
+	raise
+      end
 
-      @when_disconnected_proc.call(deep_space, opts)
+      @when_disconnect_proc.call(deep_space, opts)
     end
 
     def when_connected(&block)
@@ -185,7 +190,7 @@ module DeepConnect
     end
 
     def when_disconnected(&block)
-      @when_disconnected_proc = block
+      @when_disconnect_proc = block
     end
 
     #

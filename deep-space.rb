@@ -115,32 +115,45 @@ module DeepConnect
     #
     def init_export_feature
       # exportしているオブジェクト
+      @export_roots_mutex = Mutex.new
       @export_roots = {}
     end
 
     def release_object(obj)
-      @export_roots.delete(obj.object_id)
+      @export_roots_mutex.synchronize do
+	@export_roots.delete(obj.object_id)
+      end
     end
 
     def set_root(root)
-      @export_roots[root.object_id] = root
-      root.object_id
+      @export_roots_mutex.synchronize do
+	@export_roots[root.object_id] = root
+	root.object_id
+      end
     end
     alias set_export_root set_root
     
     def root(id)
-      @export_roots.fetch(id){IllegalObject.new}
+      @export_roots_mutex.synchronize do
+	@export_roots.fetch(id){IllegalObject.new}
+      end
     end
     alias export_root root
 
     def register_root_from_other_session(id)
-      @export_roots[id] = @organizer.id2obj(id)
+      obj = @organizer.id2obj(id)
+      @export_roots_mutex.synchronize do
+	@export_roots[id] = obj
+      end
+      obj
     end
 
     def delete_roots(ids)
       puts "GC: delete root: #{ids.join(' ')}" if DISPLAY_GC
-      for id in ids
-	@export_roots.delete(id)
+      @export_roots_mutex.synchronize do
+	for id in ids
+	  @export_roots.delete(id)
+	end
       end
     end
 
@@ -218,7 +231,9 @@ module DeepConnect
     end
 
     def register_root_to_peer(id)
-      @session.register_root_to_peer(id)
+      unless import_reference(id)
+	@session.register_root_to_peer(id)
+      end
     end
 
     def deregister_roots_to_peer(ids)

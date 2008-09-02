@@ -366,6 +366,7 @@ module DeepConnect
       
       attr_reader :result
       attr_reader :exp
+      attr_reader :method
 
       def inspect
 	sprintf "#<#{self.class}, session=#{@session}, seq=#{@seq}, receiver=#{@receiver}, method=#{@method} result=#{@result} exp=#{@exp}}>"

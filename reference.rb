@@ -173,6 +173,7 @@ module DeepConnect
     def method_missing(method, *args, &block)
       puts "SEND MESSAGE: #{self.inspect} #{method.id2name}" if DC::DISPLAY_MESSAGE_TRACE
 
+
 #       if TO_METHODS.include?(method)
 # 	return self.dc_dup.send(method)
 #       end

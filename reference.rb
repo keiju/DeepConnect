@@ -244,7 +244,6 @@ module DeepConnect
       @peer_class
     end
 
-
     def respond_to?(m, include_private = false)
       return true if super
       return @deep_space.session.send_to(self, :respond_to?, [m, include_private])
@@ -340,7 +339,15 @@ module DeepConnect
     end
 
     def peer_inspect
-      @deep_space.session.send_to(self, :inspect)
+      begin
+	@deep_space.session.send_to(self, :inspect)
+      rescue SessionServiceStopped
+	sprintf("<DC::Ref[deep_space=%s csid=%s id=%x]: %s>", 
+		@deep_space.to_s, 
+		@csid, 
+		@peer_id,
+		"(service stoped)") 
+      end
     end
 
     def my_inspect

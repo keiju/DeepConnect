@@ -1,3 +1,7 @@
+2008-09-09  Keiju Ishitsuka  <keiju@emperor2.pendome>
+
+	* Reference#inspect: サービス停止中の処理
+
 2008-09-02  Keiju Ishitsuka  <keiju@emperor2.pendome>
 
 	* Session#start: 例外発生時の処理

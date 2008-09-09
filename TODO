@@ -52,8 +52,6 @@
 --- 識別
 
 * shallow-connect 追加
-  + class一括指定
-  + session個別指定(connect時コールバック)
   + 最初shallow-modeで何かした後, deep-mode というのもあり?
 
 * パフォーマンスアップ

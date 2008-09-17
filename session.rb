@@ -103,7 +103,9 @@ module DeepConnect
     end
 
     def stop_service(*opts)
-      puts "INFO: STOP_SERVICE: Session: #{self.peer_uuid} #{opts.join(' ')} "
+      unless DISABLE_INFO
+	puts "INFO: STOP_SERVICE: Session: #{self.peer_uuid} #{opts.join(' ')} "
+      end
       org_status = @status
       @status = :SERVICE_STOP
       

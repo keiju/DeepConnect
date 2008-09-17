@@ -4,7 +4,7 @@ require "e2mmap"
 module DeepConnect
   extend Exception2MessageMapper
 
-  def_exception :IllegalReference, "不正なリファレンス参照です"
+  def_exception :IllegalReference, "不正なリファレンス参照です(id=%x, method=%s)"
 
   def_exception :NoInterfaceMethod, "No interface method(%s.%s)"
 

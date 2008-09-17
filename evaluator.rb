@@ -32,6 +32,9 @@ module DeepConnect
 	unless event.kind_of?(Event::NoReply)
 	  session.accept event.reply(ret)
 	end
+#      rescue SygnalException
+#	puts "Info: catch"
+#	
       rescue SystemExit
 	raise
       rescue Exception

@@ -22,13 +22,16 @@ module DeepConnect
 
   DISPLAY_MESSAGE_TRACE = false
   MESSAGE_DISPLAY = false
-  DEBUG = true
+  DEBUG = false
   DISPLAY_METHOD_SPEC = false
   DISPLAY_MONITOR_MESSAGE = false
   DISPLAY_KEEP_ALIVE = false
 
   DEBUG_REFERENCE = false
   DISPLAY_GC = false
+
+  DISABLE_INFO = true
+
 
 #  KEEP_ALIVE_INTERVAL = 60
 

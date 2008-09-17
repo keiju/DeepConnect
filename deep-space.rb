@@ -135,7 +135,7 @@ module DeepConnect
     
     def root(id)
       @export_roots_mutex.synchronize do
-	@export_roots.fetch(id){IllegalObject.new}
+	@export_roots.fetch(id){:__DEEPCONNECT_NO_VALUE__}
       end
     end
     alias export_root root
@@ -160,6 +160,8 @@ module DeepConnect
     #
     # import 関連メソッド
     #
+    DISABLE_GC = true
+
     def init_import_feature
       # importしているオブジェクト
 
@@ -188,12 +190,31 @@ module DeepConnect
       end
     end
 
+    def import_reference_for_disable_gc(peer_id)
+      @import_reference_mutex.synchronize do
+	@import_reference[peer_id]
+      end
+    end
+
+
     def register_import_reference(ref)
       @import_reference_mutex.synchronize do
 	@import_reference[ref.peer_id] = ref.object_id
 	@rev_import_reference[ref.object_id] = ref.peer_id
       end
       ObjectSpace.define_finalizer(ref, deregister_import_reference_proc)
+    end
+
+    def register_import_reference_for_disable_gc(ref)
+      @import_reference_mutex.synchronize do
+	@import_reference[ref.peer_id] = ref
+#	@rev_import_reference[ref.object_id] = ref
+      end
+    end
+
+    if DISABLE_GC
+      alias import_reference import_reference_for_disable_gc
+      alias register_import_reference register_import_reference_for_disable_gc
     end
 
     def deregister_import_reference_id(peer_id)
@@ -244,8 +265,12 @@ module DeepConnect
   end
 
   class IllegalObject
+    def initialize(id)
+      @id = id
+    end
+
     def send(*opts)
-      DC.Raise IllegalReference
+      DC.Raise IllegalReference, @id, opts.first
     end
     alias __send__ send
     alias __public_send__ send

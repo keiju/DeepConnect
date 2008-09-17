@@ -154,7 +154,7 @@ module DeepConnect
     attr_reader :deep_space
     attr_reader :csid
     attr_reader :peer_id
-    
+     
     def peer
       @deep_space.root(@peer_id)
     end
@@ -247,15 +247,19 @@ module DeepConnect
       return @deep_space.session.send_to(self, :respond_to?, [m, include_private])
     end
 
+    # ここは, オブジェクトの同値性を用いていない
     def ==(obj)
-      return true if obj.equal?(self)
-
-#      self.deep_connect_copy == obj
-      false
+      obj.__deep_connect_reference? &&
+	@deep_space == obj.deep_space && 
+	@peer_id == obj.peer_id
     end
 
     def equal?(obj)
       self.object_id == obj.object_id
+    end
+
+    def hash
+      @deep_space.object_id ^ @peer_id
     end
 
     def kind_of?(klass)
@@ -264,6 +268,10 @@ module DeepConnect
       else
 	self.peer_class <= klass
       end
+    end
+
+    def nil?
+      false
     end
 
 #     def ===(other)

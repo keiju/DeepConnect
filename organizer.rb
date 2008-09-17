@@ -10,8 +10,11 @@
 #   
 #
 require "forwardable"
+require "monitor"
 
 require "deep-connect/class-spec-space"
+
+require "matrix"
 
 module DeepConnect
   class Organizer
@@ -50,7 +53,10 @@ module DeepConnect
       @evaluator = Evaluator.new(self)
 
       @services = {}
+
       @deep_spaces = {}
+      @deep_spaces_mon = Monitor.new
+      @deep_spaces_cv = @deep_spaces_mon.new_cond
 
       @cron = Cron.new(self)
 
@@ -114,74 +120,74 @@ module DeepConnect
     alias close_deepspace close_deep_space
 
     def deep_space(peer_id, &block)
-      if deep_space = @deep_spaces[peer_id]
-	return deep_space
-      end
+      @deep_spaces_mon.synchronize do
+	if deep_space = @deep_spaces[peer_id]
+	  return deep_space
+	end
 
-      # セッションを自動的に開く
-      begin
-	deep_space = open_deep_space(*peer_id)
-	block.call deep_space if block_given?
-	deep_space
-      rescue ConnectionRefused
-	puts "WARN: クライアント(#{peer_id}への接続が拒否されました"
-	raise
+	# セッションを自動的に開く
+	begin
+	  deep_space = open_deep_space(*peer_id)
+	  block.call deep_space if block_given?
+	  deep_space
+	rescue ConnectionRefused
+	  puts "WARN: クライアント(#{peer_id}への接続が拒否されました"
+	  raise
+	end
       end
     end
     alias deepspace deep_space
 
     # sessionサービス開始
     def connect_deep_space_with_port(port, local_id = nil)
-      deep_space = DeepSpace.new(self, port, local_id)
-      port.attach(deep_space.session)
+      @deep_spaces_mon.synchronize do
+	deep_space = DeepSpace.new(self, port, local_id)
+	port.attach(deep_space.session)
 #      uuid = session.peer_id unless uuid
-      if @deep_spaces[deep_space.peer_uuid]
+	if @deep_spaces[deep_space.peer_uuid]
 	# ポート番号が再利用されているときは, 既存の方はすでにおなくな
 	# りになっている
-	old = @deep_spaces[deep_space.peer_uuid]
-	puts "INFO: port no recyicled"
-	puts "INFO: disconnect recycled deep_space: #{old}"
+	  old = @deep_spaces[deep_space.peer_uuid]
+	  puts "INFO: port no recyicled"
+	  puts "INFO: disconnect recycled deep_space: #{old}"
 
-	disconnect_deep_space(old, :SESSION_CLOSED)
-      end
-      unless @when_connect_proc.call deep_space, port
-	puts "CONNECT Canceld DeepSpace: #{deep_space.peer_uuid}" if $DEBUG
-	connect_ev = Event::ConnectResult.new(false)
+	  disconnect_deep_space(old, :SESSION_CLOSED)
+	end
+	unless @when_connect_proc.call deep_space, port
+	  puts "CONNECT Canceld DeepSpace: #{deep_space.peer_uuid}" if $DEBUG
+	  connect_ev = Event::ConnectResult.new(false)
+	  port.export connect_ev
+
+	  disconnect_deep_space(deep_space)
+	  DC::Raise ConnectCancel, deep_space
+	end
+
+	connect_ev = Event::ConnectResult.new(true)
 	port.export connect_ev
 
-	disconnect_deep_space(deep_space)
-	DC::Raise ConnectCancel, deep_space
-      end
-
-      connect_ev = Event::ConnectResult.new(true)
-      port.export connect_ev
-
-      ev = port.import
-      if ev.kind_of?(Event::ConnectResult)
-	unless ev.result
-	  DC::Raise ConnectionRefused, deep_space
+	ev = port.import
+	if ev.kind_of?(Event::ConnectResult)
+	  unless ev.result
+	    DC::Raise ConnectionRefused, deep_space
+	  end
+	else
+	  DC::Raise ProtocolError, deep_space
 	end
-      else
-	DC::Raise ProtocolError, deep_space
+
+	@deep_spaces[deep_space.peer_uuid] = deep_space
+
+	puts "CONNECT DeepSpace: #{deep_space.peer_uuid}" if $DEBUG
+	deep_space.connect
+	deep_space
       end
-
-      @deep_spaces[deep_space.peer_uuid] = deep_space
-
-      puts "CONNECT DeepSpace: #{deep_space.peer_uuid}" if $DEBUG
-      deep_space.connect
-      deep_space
     end
     alias connect_deepspace_with_port connect_deep_space_with_port
 
     def disconnect_deep_space(deep_space, *opts)
-      @deep_spaces.delete(deep_space.peer_uuid)
-      begin
-      deep_space.disconnect(*opts)
-      rescue
-	p $!, $@
-	raise
+      @deep_spaces_mon.synchronize do
+	@deep_spaces.delete(deep_space.peer_uuid)
       end
-
+      deep_space.disconnect(*opts)
       @when_disconnect_proc.call(deep_space, opts)
     end
 
@@ -219,18 +225,27 @@ module DeepConnect
     alias import service
 
     def release_object(obj)
-      for id, dspace in @deep_spaces
+      for id, dspace in @deep_spaces.dup
 	dspace.release_object(obj)
       end
     end
 
     def id2obj(id)
-      for peer_id, s in @deep_spaces.dup
-	if o = s.root(id) and !o.kind_of?(IllegalObject)
-	  return o
+      @deep_spaces_mon.synchronize do
+	for peer_id, s in @deep_spaces
+#	if o = s.root(id) and !o.kind_of?(IllegalObject)
+	  if o = s.root(id) and o != :__DEEPCONNECT_NO_VALUE__
+#	  puts "ZZZZZ: #{o}"
+	    return o
+	  end
 	end
+# 	begin
+# 	  ObjectSpace._id2ref(id)
+# 	rescue
+# 	end
+# 	sleep 5
+	IllegalObject.new(id)
       end
-      IllegalObject.new
 #      DC::InternalError "deep_spaceにid(=#{id})をobject_idとするオブジェクトが登録されていません.)"
     end
 
@@ -250,6 +265,9 @@ module DeepConnect
       Range,
       Time,
       File::Stat,
+      Matrix,
+      Vector,
+      Matrix::Scalar
     ]
     
     @@IMMUTABLE_CLASSES = @@ABSOLUTE_IMMUTABLE_CLASSES + 

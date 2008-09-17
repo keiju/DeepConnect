@@ -1,3 +1,10 @@
+2008-09-17  Keiju Ishitsuka  <keiju@emperor2.pendome>
+
+	* Reference#==, equal?, hash: ローカル実行に変更
+	* Organizer#deep_space, connect_deep_space_with_port,
+	  disconnect_deep_space, id2obj: 排他制御
+	* DeepSpace: DISABLE_GC 対応
+
 2008-09-02  Keiju Ishitsuka  <keiju@emperor2.pendome>
 
 	* Session#start: 例外発生時の処理

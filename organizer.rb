@@ -1,3 +1,4 @@
+# encoding: UTF-8
 #
 #   organizer.rb - 
 #   	$Release Version: $
@@ -104,7 +105,7 @@ module DeepConnect
       @accepter.stop
     end
 
-    # client sesssion³«»Ï
+    # client sesssioné–‹å§‹
     def open_deep_space(ipaddr, port)
       sock = TCPSocket.new(ipaddr, port)
       port = Port.new(sock)
@@ -125,28 +126,28 @@ module DeepConnect
 	  return deep_space
 	end
 
-	# ¥»¥Ã¥·¥ç¥ó¤ò¼«Æ°Åª¤Ë³«¤¯
+	# ã‚»ãƒƒã‚·ãƒ§ãƒ³ã‚’è‡ªå‹•çš„ã«é–‹ã
 	begin
 	  deep_space = open_deep_space(*peer_id)
 	  block.call deep_space if block_given?
 	  deep_space
-	rescue ConnectionRefused
-	  puts "WARN: ¥¯¥é¥¤¥¢¥ó¥È(#{peer_id}¤Ø¤ÎÀÜÂ³¤¬µñÈİ¤µ¤ì¤Ş¤·¤¿"
+	rescue ConnectionRefused, Errno::ECONNREFUSED
+	  puts "WARN: ã‚¯ãƒ©ã‚¤ã‚¢ãƒ³ãƒˆ(#{peer_id}ã¸ã®æ¥ç¶šãŒæ‹’å¦ã•ã‚Œã¾ã—ãŸ"
 	  raise
 	end
       end
     end
     alias deepspace deep_space
 
-    # session¥µ¡¼¥Ó¥¹³«»Ï
+    # sessionã‚µãƒ¼ãƒ“ã‚¹é–‹å§‹
     def connect_deep_space_with_port(port, local_id = nil)
       @deep_spaces_mon.synchronize do
 	deep_space = DeepSpace.new(self, port, local_id)
 	port.attach(deep_space.session)
 #      uuid = session.peer_id unless uuid
 	if @deep_spaces[deep_space.peer_uuid]
-	# ¥İ¡¼¥ÈÈÖ¹æ¤¬ºÆÍøÍÑ¤µ¤ì¤Æ¤¤¤ë¤È¤­¤Ï, ´ûÂ¸¤ÎÊı¤Ï¤¹¤Ç¤Ë¤ª¤Ê¤¯¤Ê
-	# ¤ê¤Ë¤Ê¤Ã¤Æ¤¤¤ë
+	# ãƒãƒ¼ãƒˆç•ªå·ãŒå†åˆ©ç”¨ã•ã‚Œã¦ã„ã‚‹ã¨ãã¯, æ—¢å­˜ã®æ–¹ã¯ã™ã§ã«ãŠãªããª
+	# ã‚Šã«ãªã£ã¦ã„ã‚‹
 	  old = @deep_spaces[deep_space.peer_uuid]
 	  puts "INFO: port no recyicled"
 	  puts "INFO: disconnect recycled deep_space: #{old}"
@@ -246,7 +247,7 @@ module DeepConnect
 # 	sleep 5
 	IllegalObject.new(id)
       end
-#      DC::InternalError "deep_space¤Ëid(=#{id})¤òobject_id¤È¤¹¤ë¥ª¥Ö¥¸¥§¥¯¥È¤¬ÅĞÏ¿¤µ¤ì¤Æ¤¤¤Ş¤»¤ó.)"
+#      DC::InternalError "deep_spaceã«id(=#{id})ã‚’object_idã¨ã™ã‚‹ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆãŒç™»éŒ²ã•ã‚Œã¦ã„ã¾ã›ã‚“.)"
     end
 
     @@ABSOLUTE_IMMUTABLE_CLASSES = [

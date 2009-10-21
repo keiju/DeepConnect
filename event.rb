@@ -1,4 +1,4 @@
-#!/usr/local/bin/ruby
+# encoding: UTF-8
 #
 #   event.rb - 
 #   	$Release Version: $
@@ -18,7 +18,13 @@ module DeepConnect
 
   class PeerSideException<StandardError
     def initialize(exp)
-      super(exp.message)
+#Fairy::Log.debug(self, exp.inspect)
+      begin 
+	m = exp.message
+      rescue
+	m = "(NoMessage from PeerSide)"
+      end
+      super(m)
       @peer_exception = exp
     end
 
@@ -431,7 +437,7 @@ module DeepConnect
       end
     end
 
-    # session ³ÎÎ©»þ¤ÎÆÃ¼ì¤Ê¥¤¥Ù¥ó¥È
+    # session ?Î©?ÄŽ??ÄŠÅ¤Å™Å³Åˆ
     class InitSessionEvent<Event
       def self.materialize_sub(session, type, klass, local_id)
 	new(local_id)

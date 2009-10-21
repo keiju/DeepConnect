@@ -1,3 +1,4 @@
+# encoding: UTF-8
 #
 #   serialize.rb - 
 #   	$Release Version: $

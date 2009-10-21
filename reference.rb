@@ -1,3 +1,4 @@
+# encoding: UTF-8
 #
 #   reference.rb - 
 #   	$Release Version: $
@@ -25,9 +26,9 @@ module DeepConnect
       undef_method m
     end
 
-    # session ¥í¡¼¥«¥ë¤Ê¥×¥í¥­¥·¤òÀ¸À®
-    #	[¥¯¥é¥¹Ì¾, ÃÍ]
-    #	[¥¯¥é¥¹Ì¾, ¥í¡¼¥«¥ëSESSION, ÃÍ]
+    # session ãƒ­ãƒ¼ã‚«ãƒ«ãªãƒ—ãƒ­ã‚­ã‚·ã‚’ç”Ÿæˆ
+    #	[ã‚¯ãƒ©ã‚¹å, å€¤]
+    #	[ã‚¯ãƒ©ã‚¹å, ãƒ­ãƒ¼ã‚«ãƒ«SESSION, å€¤]
     def Reference.serialize(deep_space, value, spec = nil)
       if spec
 	return Reference.serialize_with_spec(deep_space, value, spec)
@@ -38,7 +39,7 @@ module DeepConnect
 	  [value.__deep_connect_real_class, value.csid, value.peer_id, :PEER_OBJECT]
 	else
 	  uuid = value.deep_space.peer_uuid.dup
-	  if uuid[0] == "::ffff:127.0.0.1"
+	  if uuid[0] == "127.0.0.1" || uuid[0] == "::ffff:127.0.0.1"
 	    uuid[0] = :SAME_UUIDADDR
 	  end
 	    
@@ -62,7 +63,7 @@ module DeepConnect
 	  [value.__deep_connect_real_class, value.csid, value.peer_id, :PEER_OBJECT]
 	else
 	  uuid = value.deep_space.peer_uuid.dup
-	  if uuid[0] == "::ffff:127.0.0.1"
+	  if uuid[0] == "127.0.0.1" || uuid[0] == "::ffff:127.0.0.1"
 	    uuid[0] = :SAME_UUIDADDR
 	  end
 	    
@@ -81,7 +82,7 @@ module DeepConnect
 	when MethodSpec::ValParamSpec
 	  serialize_val(deep_space, value, spec)
 	when MethodSpec::DValParamSpec
-	  # Âè2°ú¿ô°ÕÌ£¤Ê¤·
+	  # ç¬¬2å¼•æ•°æ„å‘³ãªã—
 	  [value.__deep_connect_real_class, value.__deep_connect_real_class.name, value]
 	else
 	  raise ArgumentError,
@@ -121,7 +122,7 @@ module DeepConnect
 	  materialize_val(deep_space, type, 
 			  csid, object_id[0], object_id[1])
 	else
-	  # Â¨ÃÍ
+	  # å³å€¤
 	  object_id
 	end
       end
@@ -247,7 +248,7 @@ module DeepConnect
       return @deep_space.session.send_to(self, :respond_to?, [m, include_private])
     end
 
-    # ¤³¤³¤Ï, ¥ª¥Ö¥¸¥§¥¯¥È¤ÎÆ±ÃÍÀ­¤òÍÑ¤¤¤Æ¤¤¤Ê¤¤
+    # ã“ã“ã¯, ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã®åŒå€¤æ€§ã‚’ç”¨ã„ã¦ã„ãªã„
     def ==(obj)
       obj.__deep_connect_reference? &&
 	@deep_space == obj.deep_space && 

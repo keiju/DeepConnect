@@ -1,5 +1,6 @@
+# encoding: UTF-8
 #
-#   dist.rb - 
+#   deep-connect.rb - 
 #   	$Release Version: $
 #   	$Revision: 1.1 $
 #   	$Date: 1997/08/08 00:57:08 $
@@ -30,7 +31,7 @@ module DeepConnect
   DEBUG_REFERENCE = false
   DISPLAY_GC = false
 
-  DISABLE_INFO = true
+  DISABLE_INFO = false
 
 
 #  KEEP_ALIVE_INTERVAL = 60

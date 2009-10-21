@@ -464,6 +464,15 @@ when "20"
   
   dc.export("TEST.20", v)
 
+when "30"
+  class Foo
+    def foo
+      sleep 100
+    end
+  end
+
+  dc.export("TEST30", Foo.new)
+
     
 end
 

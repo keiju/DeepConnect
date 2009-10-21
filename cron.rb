@@ -1,3 +1,4 @@
+# encoding: UTF-8
 #
 #   cron.rb - 
 #   	$Release Version: $
@@ -14,7 +15,7 @@
 
 module DeepConnect
 
-  KEEP_ALIVE_INTERVAL = 10
+  KEEP_ALIVE_INTERVAL = 60
 
   class Cron
 

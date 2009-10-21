@@ -557,6 +557,14 @@ p $"
   p ref
   p !ref
 
+when "30"
+
+  ref = deepspace.import("TEST30")
+  begin 
+    ref.foo
+  rescue DeepConnect::PeerSideException
+    
+  end
 
 end
 

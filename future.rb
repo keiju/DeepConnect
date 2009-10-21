@@ -1,3 +1,4 @@
+#!/usr/local/bin/ruby
 #
 #   future.rb - 
 #   	$Release Version: $

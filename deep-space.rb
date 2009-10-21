@@ -1,3 +1,4 @@
+# encoding: UTF-8
 #
 #   deep-space.rb - 
 #   	$Release Version: $
@@ -34,7 +35,9 @@ module DeepConnect
 
       addr = port.peeraddr[3]
       ipaddr = IPAddr.new(addr)
-      ipaddr = ipaddr.ipv4_mapped if ipaddr.ipv4?
+#      ipaddr = ipaddr.ipv4_mapped if ipaddr.ipv4?
+      ipaddr = ipaddr.native
+
       @peer_uuid = [ipaddr.to_s, local_id]
 
       init_class_spec_feature
@@ -111,10 +114,10 @@ module DeepConnect
     end
 
     #
-    # export root ´ØÏ¢¥á¥½¥Ã¥É
+    # export root é–¢é€£ãƒ¡ã‚½ãƒƒãƒ‰
     #
     def init_export_feature
-      # export¤·¤Æ¤¤¤ë¥ª¥Ö¥¸¥§¥¯¥È
+      # exportã—ã¦ã„ã‚‹ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆ
       @export_roots_mutex = Mutex.new
       @export_roots = {}
     end
@@ -158,12 +161,12 @@ module DeepConnect
     end
 
     #
-    # import ´ØÏ¢¥á¥½¥Ã¥É
+    # import é–¢é€£ãƒ¡ã‚½ãƒƒãƒ‰
     #
     DISABLE_GC = true
 
     def init_import_feature
-      # import¤·¤Æ¤¤¤ë¥ª¥Ö¥¸¥§¥¯¥È
+      # importã—ã¦ã„ã‚‹ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆ
 
       # peer_id => ref_id
       @import_reference = {}

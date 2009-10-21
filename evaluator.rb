@@ -1,3 +1,4 @@
+# encoding: UTF-8
 #
 #   evaluator.rb - 
 #   	$Release Version: $
@@ -32,6 +33,9 @@ module DeepConnect
 	unless event.kind_of?(Event::NoReply)
 	  session.accept event.reply(ret)
 	end
+#      rescue SygnalException
+#	puts "Info: catch"
+#	
       rescue SystemExit
 	raise
       rescue Exception
@@ -63,7 +67,7 @@ module DeepConnect
 	      callback_req.result
 	    end
 	  rescue
-	    # ¤³¤³ÆâÉô¥¨¥é¡¼¤¸¤ã¤Ê¤¤¤Ê¤¡...
+	    # ã“ã“å†…éƒ¨ã‚¨ãƒ©ãƒ¼ã˜ã‚ƒãªã„ãªã...
 	    if DEBUG
 	      puts "INFO: BLOCK YIELD EXCEPTION:"
 	      puts  "\t#{$!}"
@@ -82,7 +86,7 @@ module DeepConnect
 
     def evaluate_block_yield(session, ev)
       if @organizer.shallow_connect?
-	# yield ¤¬µö¤µ¤ì¤Æ¤¤¤ë¤«¥Á¥§¥Ã¥¯
+	# yield ãŒè¨±ã•ã‚Œã¦ã„ã‚‹ã‹ãƒã‚§ãƒƒã‚¯
       end
       begin
 	args = ev.args

@@ -1,22 +1,23 @@
+# encoding: UTF-8
 
 require "e2mmap"
 
 module DeepConnect
   extend Exception2MessageMapper
 
-  def_exception :IllegalReference, "ÉÔÀµ¤Ê¥ê¥Õ¥¡¥ì¥ó¥¹»²¾È¤Ç¤¹"
+  def_exception :IllegalReference, "ä¸æ­£ãªãƒªãƒ•ã‚¡ãƒ¬ãƒ³ã‚¹å‚ç…§ã§ã™(id=%x, method=%s)"
 
   def_exception :NoInterfaceMethod, "No interface method(%s.%s)"
 
   def_exception :NoServiceError, "No such service(%s)"
-  def_exception :CantSerializable, "%s¤Ï¥·¥ê¥¢¥é¥¤¥º¤Ç¤­¤Ş¤»¤ó"
-  def_exception :CantDup, "%s¤Ïdup¤Ç¤­¤Ş¤»¤ó"
-  def_exception :CantDeepCopy, "%s¤Ïdeep copy¤Ç¤­¤Ş¤»¤ó"
+  def_exception :CantSerializable, "%sã¯ã‚·ãƒªã‚¢ãƒ©ã‚¤ã‚ºã§ãã¾ã›ã‚“"
+  def_exception :CantDup, "%sã¯dupã§ãã¾ã›ã‚“"
+  def_exception :CantDeepCopy, "%sã¯deep copyã§ãã¾ã›ã‚“"
 
   def_exception :SessionServiceStopped, "Session service stopped"
-  def_exception :DisconnectClient, "%s¤ÎÀÜÂ³¤¬ÀÚ¤ì¤Ş¤·¤¿"
-  def_exception :ConnectCancel, "%s¤ÎÀÜÂ³¤òµñÈİ¤·¤Ş¤·¤¿"
-  def_exception :ConnectionRefused, "%s¤Ø¤ÎÀÜÂ³¤¬µñÈİ¤µ¤ì¤Ş¤·¤¿"
+  def_exception :DisconnectClient, "%sã®æ¥ç¶šãŒåˆ‡ã‚Œã¾ã—ãŸ"
+  def_exception :ConnectCancel, "%sã®æ¥ç¶šã‚’æ‹’å¦ã—ã¾ã—ãŸ"
+  def_exception :ConnectionRefused, "%sã¸ã®æ¥ç¶šãŒæ‹’å¦ã•ã‚Œã¾ã—ãŸ"
 
   def_exception :InternalError, "DeepConnect internal error(%s)"
   def_exception :ProtocolError, "Protocol error!!"

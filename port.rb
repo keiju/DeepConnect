@@ -1,3 +1,4 @@
+# encoding: UTF-8
 #
 #   port.rb - 
 #   	$Release Version: $
@@ -25,7 +26,6 @@ module DeepConnect
     end
 
     def close
-p "CLOSE"
       @io.close
     end
 
@@ -51,7 +51,7 @@ p "CLOSE"
 #      bin = read(sz)
       a = Marshal.load(@io)
       begin
-	# ¤³¤³¤Ç, ¥Í¥Ã¥È¥ï¡¼¥¯ÄÌ¿®È¯À¸¤¹¤ë²ÄÇ½À­¤¢¤ê.
+	# Ä³Ä³Ä‡, ÅÅƒÅˆÅ¯|Å¯ÄŒ??8Ä¹Ä«??-Ä¢Äª.
 	ev = Event.materialize(@session, a.first, *a)
       rescue
 	p $!, $@
@@ -65,9 +65,15 @@ p "CLOSE"
 #      puts "IMPORT: start0" 
       sz = read(PACK_N_SIZE).unpack("N").first
       bin = read(sz)
-      a = Marshal.load(bin)
       begin
-	# ¤³¤³¤Ç, ¥Í¥Ã¥È¥ï¡¼¥¯ÄÌ¿®È¯À¸¤¹¤ë²ÄÇ½À­¤¢¤ê.
+	a = Marshal.load(bin)
+      rescue
+	p bin
+	p $!, $@
+	raise
+      end
+      begin
+	# ã“ã“ã§, ãƒãƒƒãƒˆãƒ¯ãƒ¼ã‚¯é€šä¿¡ç™ºç”Ÿã™ã‚‹å¯èƒ½æ€§ã‚ã‚Š.
 	ev = Event.materialize(@session, a.first, *a)
       rescue
 	p $!, $@
@@ -120,8 +126,8 @@ p "CLOSE"
 	fail EOFError, "socket closed" unless packet
 #	DC::Raise ProtocolError unless packet.size == n
 	packet
-      rescue Errno::ECONNRESET
-	puts "WARN: readÃæ¤Ë[#{peeraddr.join(', ')}]¤ÎÀÜÂ³¤¬ÀÚ¤ì¤Ş¤·¤¿"
+      rescue Errno::ECONNRESET, EOFError
+	puts "WARN: readä¸­ã«[#{peeraddr.join(', ')}]ã®æ¥ç¶šãŒåˆ‡ã‚Œã¾ã—ãŸ"
 	DC::Raise DisconnectClient, peeraddr
       end
     end
@@ -131,7 +137,7 @@ p "CLOSE"
 	@io.write(packet)
 #	@io.flush
       rescue Errno::ECONNRESET
-	puts "WARN: writeÃæ¤Ë[#{peeraddr.join(', ')}]¤ÎÀÜÂ³¤¬ÀÚ¤ì¤Ş¤·¤¿"
+	puts "WARN: writeä¸­ã«[#{peeraddr.join(', ')}]ã®æ¥ç¶šãŒåˆ‡ã‚Œã¾ã—ãŸ"
 	DC::Raise DisconnectClient, peeraddr
       end
     end

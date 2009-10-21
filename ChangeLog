@@ -1,154 +1,163 @@
+2009-10-02  Keiju Ishitsuka  <keiju@emperor2.pendome>
+
+	* DeepSpace@initialize: ipv4ã®ã¿ã®ãƒã‚·ãƒ³å¯¾å¿œ
+
+2008-09-17  Keiju Ishitsuka  <keiju@emperor2.pendome>
+
+	* Reference#==, equal?, hash: ãƒ­ãƒ¼ã‚«ãƒ«å®Ÿè¡Œã«å¤‰æ›´
+	* Organizer#deep_space, connect_deep_space_with_port,
+	  disconnect_deep_space, id2obj: æ’ä»–åˆ¶å¾¡
+	* DeepSpace: DISABLE_GC å¯¾å¿œ
+
 2008-09-09  Keiju Ishitsuka  <keiju@emperor2.pendome>
 
-	* Reference#inspect: ¥µ¡¼¥Ó¥¹Ää»ßÃæ¤Î½èÍı
+	* Reference#inspect: ã‚µãƒ¼ãƒ“ã‚¹åœæ­¢ä¸­ã®å‡¦ç†
 
 2008-09-02  Keiju Ishitsuka  <keiju@emperor2.pendome>
 
-	* Session#start: Îã³°È¯À¸»ş¤Î½èÍı
+	* Session#start: ä¾‹å¤–ç™ºç”Ÿæ™‚ã®å‡¦ç†
 	* Accepter#stop: ditto.
-	* Reference#inspect: ¥µ¡¼¥Ó¥¹Ää»ßÃæ¤Î½èÍı
+	* Reference#inspect: ã‚µãƒ¼ãƒ“ã‚¹åœæ­¢ä¸­ã®å‡¦ç†
 	* Organizer#stop: ditto.
 	* Organizer#when_connected: ditto.
-	* evaluator: SystemExit¤Î¼è¤ê°·¤¤
-	* DeepConnect#when_disconnected: ÄÉ²Ã
+	* evaluator: SystemExitã®å–ã‚Šæ‰±ã„
+	* DeepConnect#when_disconnected: è¿½åŠ 
 
 	* when_disconnected
 	
-	* deep-space: @export_roots ¤ÎÇÓÂ¾À©¸æÄÉ²Ã
+	* deep-space: @export_roots ã®æ’ä»–åˆ¶å¾¡è¿½åŠ 
 	* deep-space#deregister_roots_to_peer:
-	    ¤¹¤Ç¤ËÅĞÏ¿¤µ¤ì¤Æ¤¤¤ë¤È¤­¤Ï, ÅĞÏ¿¤ò¥ê¥¯¥¨¥¹¥È¤·¤Ê¤¤
+	    ã™ã§ã«ç™»éŒ²ã•ã‚Œã¦ã„ã‚‹ã¨ãã¯, ç™»éŒ²ã‚’ãƒªã‚¯ã‚¨ã‚¹ãƒˆã—ãªã„
 
 2008-08-26  Keiju Ishitsuka  <keiju@emperor2.pendome>
 
-	* to_** ¥·¥ê¡¼¥º¤Î¥á¥½¥Ã¥É¥¹¥Ú¥Ã¥¯¤òÄÉ²Ã
-	* Reference#method_missing ¤Î to_** ¤ÎÆÃÊÌ°·¤¤¤Îºï½ü
+	* to_** ã‚·ãƒªãƒ¼ã‚ºã®ãƒ¡ã‚½ãƒƒãƒ‰ã‚¹ãƒšãƒƒã‚¯ã‚’è¿½åŠ 
+	* Reference#method_missing ã® to_** ã®ç‰¹åˆ¥æ‰±ã„ã®å‰Šé™¤
 
-	* GC¼ş¤ê¤Î¥Ğ¥°½¤Àµ
+	* GCå‘¨ã‚Šã®ãƒã‚°ä¿®æ­£
 
-	* deep-space ¤Î referctoring
-	* ¥á¥Ã¥»¡¼¥¸``!'' ¤ÎÂĞ±ş(Ruby1.9)
+	* deep-space ã® referctoring
+	* ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸``!'' ã®å¯¾å¿œ(Ruby1.9)
 
 2008-08-22  Keiju Ishitsuka  <keiju@emperor2.pendome>
 
-	* to_splat ÂĞ±ş
+	* to_splat å¯¾å¿œ
 	
-	* Reference#inspect: É½¼¨ÌäÂê²ò¾Ã
+	* Reference#inspect: è¡¨ç¤ºå•é¡Œè§£æ¶ˆ
 
-	* Module#===: ºÆÄêµÁ
+	* Module#===: å†å®šç¾©
 
 	* new reference
-	  - ¤Ç¤­¤ë¤À¤±¥Ç¥ì¥²¡¼¥È¤¹¤ëÈÇ
+	  - ã§ãã‚‹ã ã‘ãƒ‡ãƒ¬ã‚²ãƒ¼ãƒˆã™ã‚‹ç‰ˆ
 	* block args 
-	  - ¥Ğ¥°¤¬¤¢¤Ã¤¿
+	  - ãƒã‚°ãŒã‚ã£ãŸ
 
 2008-08-21  Keiju Ishitsuka  <keiju@emperor2.pendome>
 
-	* Future: Ruby 1.9 ÂĞ±ş
-	  - delegator ¤Î¿¶¤ëÉñ¤¤¤¬°ã¤¦
+	* Future: Ruby 1.9 å¯¾å¿œ
+	  - delegator ã®æŒ¯ã‚‹èˆã„ãŒé•ã†
 
 2008-08-15  Keiju Ishitsuka  <keiju@emperor2.pendome>
 
-	* Session: ÉÔÉ¬Í×¤Ê¥¤¥ó¥¹¥¿¥ó¥¹ÊÑ¿ôºï½ü
+	* Session: ä¸å¿…è¦ãªã‚¤ãƒ³ã‚¹ã‚¿ãƒ³ã‚¹å¤‰æ•°å‰Šé™¤
 
-	* Organizer.id2obj ¤Ç¤Î IllegalObject ÌäÂê²ò¾Ã
-	* block_yield¤Î¥Ğ¥°²ò¾Ã
+	* Organizer.id2obj ã§ã® IllegalObject å•é¡Œè§£æ¶ˆ
+	* block_yieldã®ãƒã‚°è§£æ¶ˆ
 
 2008-08-08  Keiju Ishitsuka  <keiju@emperor2.pendome>
 
-	* ÀÜÂ³»ş¤Î¥×¥í¥È¥³¥ëÊÑ¹¹
-	* session¸ÄÊÌ»ØÄê
-	  + connect»ş¥³¡¼¥ë¥Ğ¥Ã¥¯(when_connect_proc)
+	* æ¥ç¶šæ™‚ã®ãƒ—ãƒ­ãƒˆã‚³ãƒ«å¤‰æ›´
+	* sessionå€‹åˆ¥æŒ‡å®š
+	  + connectæ™‚ã‚³ãƒ¼ãƒ«ãƒãƒƒã‚¯(when_connect_proc)
 	
 	* Reference.release
-	* reference¤ÎÉÔÀµ¥¢¥¯¥»¥¹¥Á¥§¥Ã¥¯
+	* referenceã®ä¸æ­£ã‚¢ã‚¯ã‚»ã‚¹ãƒã‚§ãƒƒã‚¯
 
 2008-08-07  Keiju Ishitsuka  <keiju@emperor2.pendome>
 
-	* block yield ²şÊÑÈÇ
+	* block yield æ”¹å¤‰ç‰ˆ
 
 2008-08-01  Keiju Ishitsuka  <keiju@emperor2.pendome>
 
-	* ¥¤¥Æ¥ì¡¼¥¿Ãæ¤Ç¥¹¥ì¥Ã¥É¤ò¼Â¹Ô¤·¤Ê¤«¤Çyield¤µ¤ì¤ë¤ÈNG ¤Ë¤Ê¤ëÌäÂê¤ò
-	  ¼è¤ê¤¢¤¨¤º²ò·è
-	* ParamSpec.param_specs ¤Î¥Ğ¥°½¤Àµ
+	* ã‚¤ãƒ†ãƒ¬ãƒ¼ã‚¿ä¸­ã§ã‚¹ãƒ¬ãƒƒãƒ‰ã‚’å®Ÿè¡Œã—ãªã‹ã§yieldã•ã‚Œã‚‹ã¨NG ã«ãªã‚‹å•é¡Œã‚’
+	  å–ã‚Šã‚ãˆãšè§£æ±º
+	* ParamSpec.param_specs ã®ãƒã‚°ä¿®æ­£
 
 2008-07-29  Keiju Ishitsuka  <keiju@emperor2.pendome>
 
 	* performance up
-	  + ¥×¥í¥È¥³¥ëÊÑ¹¹(PaketId¤ò»ÈÍÑ¤·¤Ê¤¯¤·¤¿)
-	  + Event#results ¤Î»ÅÍÍÊÑ¹¹/Queue¤«¤éConditionVariable¤Ø
-	  + Port#read¤Ç¥¨¥é¡¼¥Á¥§¥Ã¥¯¤ò¾¯¤Ê¤¯¤·¤¿.
-	  + ClassSpecSpace#mspec¤Î¥­¥ã¥Ã¥·¥å¤Î¥­¡¼¤òÊÑ¹¹
+	  + ãƒ—ãƒ­ãƒˆã‚³ãƒ«å¤‰æ›´(PaketIdã‚’ä½¿ç”¨ã—ãªãã—ãŸ)
+	  + Event#results ã®ä»•æ§˜å¤‰æ›´/Queueã‹ã‚‰ConditionVariableã¸
+	  + Port#readã§ã‚¨ãƒ©ãƒ¼ãƒã‚§ãƒƒã‚¯ã‚’å°‘ãªãã—ãŸ.
+	  + ClassSpecSpace#mspecã®ã‚­ãƒ£ãƒƒã‚·ãƒ¥ã®ã‚­ãƒ¼ã‚’å¤‰æ›´
 
-	* shallow connect µ¡Ç½
-	* keep alive ¤Î ÌäÂê²ò¾Ã
-	* DeepConnect::DConnect ¤ò DeepConnect::DeepConnect ¤Ë²şÌ¾
+	* shallow connect æ©Ÿèƒ½
+	* keep alive ã® å•é¡Œè§£æ¶ˆ
+	* DeepConnect::DConnect ã‚’ DeepConnect::DeepConnect ã«æ”¹å
 
 2008-07-24  Keiju Ishitsuka  <keiju@emperor2.pendome>
 
 	* future class
-	* ´Ê°×Ê¬»¶GC¤Î¥Ñ¥Õ¥©¡¼¥Ş¥ó¥¹¥¢¥Ã¥×(¥Ğ¥Ã¥Á²½)
+	* ç°¡æ˜“åˆ†æ•£GCã®ãƒ‘ãƒ•ã‚©ãƒ¼ãƒãƒ³ã‚¹ã‚¢ãƒƒãƒ—(ãƒãƒƒãƒåŒ–)
 
 2008-07-23  Keiju Ishitsuka  <keiju@emperor2.pendome>
 
-	* KeepAlive ¤Î¥Ğ¥°¥Õ¥£¥Ã¥¯¥¹
+	* KeepAlive ã®ãƒã‚°ãƒ•ã‚£ãƒƒã‚¯ã‚¹
 
-	* KeepAlive: Áê¼ê¤¬À¸¤­¤Æ¤¤¤ë¤«¤òÄê´üÅª¤Ë³ÎÇ§
-	* cron.rb: Äê´üÅª¼Â¹Ô¥µ¡¼¥Ó¥¹(monitor¤«¤é¤Î²şÌ¾/µ¡Ç½ÄÉ²Ã)
+	* KeepAlive: ç›¸æ‰‹ãŒç”Ÿãã¦ã„ã‚‹ã‹ã‚’å®šæœŸçš„ã«ç¢ºèª
+	* cron.rb: å®šæœŸçš„å®Ÿè¡Œã‚µãƒ¼ãƒ“ã‚¹(monitorã‹ã‚‰ã®æ”¹å/æ©Ÿèƒ½è¿½åŠ )
 
 2008-07-19  Keiju Ishitsuka  <keiju@emperor2.pendome>
 
-	* ¥»¥Ã¥·¥ç¥óÀÚÃÇ¤Î½èÍıÄÉ²Ã
-	* ¥¯¥é¥¤¥¢¥ó¥È¤ÎÀÚÃÇ»ş¤Îsession¤Î½èÍıÄÉ²Ã
-	* SessionReply¤ÎÎã³°È¯À¸»ş¤Î¥Ğ¥°½¤Àµ
-	* Îã³°¥á¥Ã¥»¡¼¥¸¤ÎÅı¹ç
-	* monitorµ¡Ç½¤ÎÄÉ²Ã
+	* ã‚»ãƒƒã‚·ãƒ§ãƒ³åˆ‡æ–­ã®å‡¦ç†è¿½åŠ 
+	* ã‚¯ãƒ©ã‚¤ã‚¢ãƒ³ãƒˆã®åˆ‡æ–­æ™‚ã®sessionã®å‡¦ç†è¿½åŠ 
+	* SessionReplyã®ä¾‹å¤–ç™ºç”Ÿæ™‚ã®ãƒã‚°ä¿®æ­£
+	* ä¾‹å¤–ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ã®çµ±åˆ
+	* monitoræ©Ÿèƒ½ã®è¿½åŠ 
 
 2008-07-17  Keiju Ishitsuka  <keiju@emperor2.pendome>
 
-	* iterator¤Î½ªÎ»½èÍı
-	  + ÆâÉô¤ÇÎã³°¤¬È¯À¸¤·¤¿¤È¤­¤Î½èÍı¤¬¥¤¥Ş¥¤¥Á
+	* iteratorã®çµ‚äº†å‡¦ç†
+	  + å†…éƒ¨ã§ä¾‹å¤–ãŒç™ºç”Ÿã—ãŸã¨ãã®å‡¦ç†ãŒã‚¤ãƒã‚¤ãƒ
 
-	* block°ú¿ô¼ş¤ê¤Î¥Ğ¥°(¤¤¤äÌäÂêÅÀ?)¤Î½¤Àµ
-	* ´ÖÀÜ»²¾È»ş¤Îpeer¤¬127.0.0.1¤Î¾ì¹ç¤ÎºÆÀÜÂ³½èÍı¤Î¥Ğ¥°½¤Àµ
+	* blockå¼•æ•°å‘¨ã‚Šã®ãƒã‚°(ã„ã‚„å•é¡Œç‚¹?)ã®ä¿®æ­£
+	* é–“æ¥å‚ç…§æ™‚ã®peerãŒ127.0.0.1ã®å ´åˆã®å†æ¥ç¶šå‡¦ç†ã®ãƒã‚°ä¿®æ­£
 
 2008-07-15  Keiju Ishitsuka  <keiju@emperor2.pendome>
 
 	* Object#deep_connect_dup
 	* Object#deep_connect_deep_copy
-	* Object#deep_connect_serialize_val ¤Î¥Ğ¥°½¤Àµ
+	* Object#deep_connect_serialize_val ã®ãƒã‚°ä¿®æ­£
 	
-	* Object ¤ò VAL ²ÄÇ½¤Ë¤·¤¿.
-	* DEFAULT_MUTAL_CLASSES ¤ò DEFAULT_IMMUTABLE_CLASSES ¤Ë²şÌ¾
-	* DEFAULT_MUTAL_CLASSES¤Ë MatchData ¤òÄÉ²Ã
+	* Object ã‚’ VAL å¯èƒ½ã«ã—ãŸ.
+	* DEFAULT_MUTAL_CLASSES ã‚’ DEFAULT_IMMUTABLE_CLASSES ã«æ”¹å
+	* DEFAULT_MUTAL_CLASSESã« MatchData ã‚’è¿½åŠ 
 	
-	* ÁÈ¤ß¹ş¤ß¥¯¥é¥¹¤Î methd spec ÀßÄê
-	* materialize_val¤Î¥Ğ¥°½¤Àµ
-	* DEFAULT_MUTAL_CLASSES¤Ë Regexp, Time ¤òÄÉ²Ã
+	* çµ„ã¿è¾¼ã¿ã‚¯ãƒ©ã‚¹ã® methd spec è¨­å®š
+	* materialize_valã®ãƒã‚°ä¿®æ­£
+	* DEFAULT_MUTAL_CLASSESã« Regexp, Time ã‚’è¿½åŠ 
 
 2008-07-14  Keiju Ishitsuka  <keiju@emperor2.pendome>
-	* MethodSpec.spec¤Î¥Ğ¥°½¤Àµ
+	* MethodSpec.specã®ãƒã‚°ä¿®æ­£
 
-	* materialize_val¤Î¥Ğ¥°½¤Àµ
-	* VAL == Hash¤Î¥Ğ¥°½¤Àµ
+	* materialize_valã®ãƒã‚°ä¿®æ­£
+	* VAL == Hashã®ãƒã‚°ä¿®æ­£
 
 2008-07-13  Keiju Ishitsuka  <keiju@emperor2.pendome>
 
 	* Reference#=~
 	* Reference#===
-	* def_single_method_spec¼ş¤ê¤Î¥Ğ¥°½¤Àµ
-	* DEFAULT_MUTAL_CLASSES¤Ë Range ¤òÄÉ²Ã
+	* def_single_method_specå‘¨ã‚Šã®ãƒã‚°ä¿®æ­£
+	* DEFAULT_MUTAL_CLASSESã« Range ã‚’è¿½åŠ 
 
 2008-07-11  Keiju Ishitsuka  <keiju@emperor2.pendome>
-
-	* method-spec¤Î·Ñ¾µ¤ÎÌäÂê
+	* method-specã®ç¶™æ‰¿ã®å•é¡Œ
 	  => class-spec-space
 
 2008-07-08  Keiju Ishitsuka  <keiju@emperor2.pendome>
-
-	* protorypeÀë¸À (Marshal»ØÄêµ¡Ç½)
-	  + ¥Ö¥í¥Ã¥¯¸Æ¤Ó½Ğ¤·¤ÎÌá¤êÃÍ
-	* mspec.type¤¬¤¤¤Ş¤¤¤Á
+	* protorypeå®£è¨€ (MarshalæŒ‡å®šæ©Ÿèƒ½)
+	  + ãƒ–ãƒ­ãƒƒã‚¯å‘¼ã³å‡ºã—ã®æˆ»ã‚Šå€¤
+	* mspec.typeãŒã„ã¾ã„ã¡
 
 2008-07-07  Keiju Ishitsuka  <keiju@emperor2.pendome>
 
@@ -156,42 +165,40 @@
 
 2008-07-01  Keiju Ishitsuka  <keiju@emperor2.pendome>
 
-	* v0.2.01-008.fairy-003-fairy-v0.2.1-002 ¤È¤Î¥Ş¡¼¥¸
-	* fairy v0.2.1-002 ÂĞ±ş
+	* v0.2.01-008.fairy-003-fairy-v0.2.1-002 ã¨ã®ãƒãƒ¼ã‚¸
+	* fairy v0.2.1-002 å¯¾å¿œ
 	
-	* Session->ObjectSpace+SessionÊ¬Î¥
+	* Session->ObjectSpace+Sessionåˆ†é›¢
 	* DeepSpace#import/export
-	* WeakRef¼ş¤ê¤ÎÉÔ¶ñ¹ç½¤Àµ
+	* WeakRefå‘¨ã‚Šã®ä¸å…·åˆä¿®æ­£
 
 2008-06-30  Keiju Ishitsuka  <keiju@emperor2.pendome>
 
-	* Reference#id ÄÉ²Ã
-	* DeepConnect#local_id ÄÉ²Ã
-	* Accepter¤òÉÔÄê¥İ¡¼¥ÈÈÖ¹æ¤Ë¤Ç¤­¤ë¤è¤¦¤Ë¤·¤¿.
+	* Reference#id è¿½åŠ 
+	* DeepConnect#local_id è¿½åŠ 
+	* Accepterã‚’ä¸å®šãƒãƒ¼ãƒˆç•ªå·ã«ã§ãã‚‹ã‚ˆã†ã«ã—ãŸ.
 
 2008-06-27  Keiju Ishitsuka  <keiju@emperor2.pendome>
 
-	* ´Ê°×Ê¬»¶GC
+	* ç°¡æ˜“åˆ†æ•£GC
 
 2008-06-26  Keiju Ishitsuka  <keiju@ishitsuka.com>
 
-	* ¥ê¥Õ¥¡¥ì¥ó¥¹¼ş¤ê¤Î¥Ğ¥°½¤Àµ
-	* blockºÆ¼ÂÁõ
-	* ´ÖÀÜ¥ê¥Õ¥¡¥ì¥ó¥¹¤ÎÀÜÂ³½èÍı
+	* ãƒªãƒ•ã‚¡ãƒ¬ãƒ³ã‚¹å‘¨ã‚Šã®ãƒã‚°ä¿®æ­£
+	* blockå†å®Ÿè£…
+	* é–“æ¥ãƒªãƒ•ã‚¡ãƒ¬ãƒ³ã‚¹ã®æ¥ç¶šå‡¦ç†
 	
 2008-06-25  Keiju Ishitsuka  <keiju@ishitsuka.com>
 
-	* Îã³°¤ÎÄÌÃÎ
+	* ä¾‹å¤–ã®é€šçŸ¥
 
 2008-06-24  Keiju Ishitsuka  <keiju@ishitsuka.com>
 
-	* ¥İ¡¼¥ÈÈÖ¹æ¤òacceptor¤Î¤â¤Î¤Ë¤·¤¿.
-	* ¥¤¥Æ¥ì¡¼¥¿¤¬Æ°ºî¤¹¤ë¤è¤¦¤Ë¤·¤¿.
+	* ãƒãƒ¼ãƒˆç•ªå·ã‚’acceptorã®ã‚‚ã®ã«ã—ãŸ.
+	* ã‚¤ãƒ†ãƒ¬ãƒ¼ã‚¿ãŒå‹•ä½œã™ã‚‹ã‚ˆã†ã«ã—ãŸ.
 
 2008-06-23  Keiju Ishitsuka  <keiju@ishitsuka.com>
 
-	* DeepConnect ºÇ½éÈÇ
-
-	
+	* DeepConnect æœ€åˆç‰ˆ
 	
 

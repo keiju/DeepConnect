@@ -13,7 +13,7 @@
 $DEBUG = 1
 require "tracer"
 
-require "deep-connect"
+require "deep-connect/deep-connect"
 
 Thread.abort_on_exception=true
 STDOUT.sync
@@ -84,7 +84,7 @@ when "4.4"
   end
 
 
-# ruby1.9¤Ç¤Ï¥µ¥İ¡¼¥È¤µ¤ì¤Ê¤¯¤Ê¤Ã¤¿.
+# ruby1.9Ä‡ÄÅµÅ|ÅˆÄµ?ÄŠÄ¯ÄŠÄƒÄ¿.
 # when "4.4"
 #   r = deepspace.get_service("TEST1")
 #   a = 0
@@ -474,7 +474,7 @@ when "13.2"
   sleep 1
 
 when "13.3"
-  # ¥¹¥ê¡¼¥×Ãæ¤Ë¥µ¡¼¥Ğ¡¼¤òÀÚÃÇ¤¹¤ë¥Æ¥¹¥È
+  # Å¹Åª|Å—Ã¦Ä‹Åµ|Å|Ä²Ã‡Ä¹Ä«Å†Å¹Åˆ
   foo = deepspace.import("foo")
   sleep 100
   foo.foo
@@ -578,6 +578,14 @@ when "22", "*"
   v = deepspace.import("TEST.20")
   p.call v
 
+when "30"
+
+  ref = deepspace.import("TEST30")
+  begin 
+    ref.foo
+  rescue DeepConnect::PeerSideException
+    
+  end
 
 end
 

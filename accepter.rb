@@ -1,4 +1,5 @@
-#
+# encoding: UTF-8
+# 
 #   accepter.rb - 
 #   	$Release Version: $
 #   	$Revision: 1.1 $
@@ -38,20 +39,20 @@ module DeepConnect
 	    port = Port.new(sock)
 	    begin
 	      unless (ev = port.import).kind_of?(Event::InitSessionEvent)
-		puts "WARN: ÀÜÂ³½é´ü²½¥¨¥é¡¼: [#{port.peeraddr}]"
+		puts "WARN: æ¥ç¶šåˆæœŸåŒ–ã‚¨ãƒ©ãƒ¼: [#{port.peeraddr}]"
 	      end
 	      begin
 		@organizer.connect_deep_space_with_port port, ev.local_id
 	      rescue ConnectCancel
-		puts "INFO: ¥¯¥é¥¤¥¢¥ó¥È(#{ev.local_id}¤«¤é¤ÎÀÜÂ³¤òµñÈİ¤·¤Ş¤·¤¿."
+		puts "INFO: ã‚¯ãƒ©ã‚¤ã‚¢ãƒ³ãƒˆ(#{ev.local_id}ã‹ã‚‰ã®æ¥ç¶šã‚’æ‹’å¦ã—ã¾ã—ãŸ."
 	      rescue ConnectionRefused
-		puts "WARN: ¥¯¥é¥¤¥¢¥ó¥È(#{ev.local_id}¤Ø¤ÎÀÜÂ³¤¬µñÈİ¤µ¤ì¤Ş¤·¤¿"
+		puts "WARN: ã‚¯ãƒ©ã‚¤ã‚¢ãƒ³ãƒˆ(#{ev.local_id}ã¸ã®æ¥ç¶šãŒæ‹’å¦ã•ã‚Œã¾ã—ãŸ"
 	      rescue ProtocolError, IOError
-		puts "WARN: ÀÜÂ³½é´ü²½¥¨¥é¡¼: [#{port.peeraddr}]"
+		puts "WARN: æ¥ç¶šåˆæœŸåŒ–ã‚¨ãƒ©ãƒ¼: [#{port.peeraddr}]"
 
 	      end
 	    rescue EOFError
-	      puts "WARN: ÀÜÂ³½é´ü²½Ãæ¤Ë[#{port.peeraddr}]¤È¤ÎÀÜÂ³¤¬ÀÚ¤ì¤Ş¤·¤¿"
+	      puts "WARN: æ¥ç¶šåˆæœŸåŒ–ä¸­ã«[#{port.peeraddr}]ã¨ã®æ¥ç¶šãŒåˆ‡ã‚Œã¾ã—ãŸ"
 	    end
 	  end
 	end

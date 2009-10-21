@@ -1,3 +1,4 @@
+# encoding: UTF-8
 #
 #   deep-space.rb - 
 #   	$Release Version: $
@@ -34,7 +35,9 @@ module DeepConnect
 
       addr = port.peeraddr[3]
       ipaddr = IPAddr.new(addr)
-      ipaddr = ipaddr.ipv4_mapped if ipaddr.ipv4?
+#      ipaddr = ipaddr.ipv4_mapped if ipaddr.ipv4?
+      ipaddr = ipaddr.native
+
       @peer_uuid = [ipaddr.to_s, local_id]
 
       init_class_spec_feature
@@ -111,10 +114,10 @@ module DeepConnect
     end
 
     #
-    # export root ´ØÏ¢¥á¥½¥Ã¥É
+    # export root é–¢é€£ãƒ¡ã‚½ãƒƒãƒ‰
     #
     def init_export_feature
-      # export¤·¤Æ¤¤¤ë¥ª¥Ö¥¸¥§¥¯¥È
+      # exportã—ã¦ã„ã‚‹ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆ
       @export_roots_mutex = Mutex.new
       @export_roots = {}
     end
@@ -135,7 +138,8 @@ module DeepConnect
     
     def root(id)
       @export_roots_mutex.synchronize do
-	@export_roots.fetch(id){IllegalObject.new}
+	#@export_roots.fetch(id){IllegalObject.new}
+	@export_roots.fetch(id){:__DEEPCONNECT_NO_VALUE__}
       end
     end
     alias export_root root
@@ -158,11 +162,12 @@ module DeepConnect
     end
 
     #
-    # import ´ØÏ¢¥á¥½¥Ã¥É
+    # import é–¢é€£ãƒ¡ã‚½ãƒƒãƒ‰
     #
-    def init_import_feature
-      # import¤·¤Æ¤¤¤ë¥ª¥Ö¥¸¥§¥¯¥È
+    DISABLE_GC = true
 
+    def init_import_feature
+      # importã—ã¦ã„ã‚‹ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆ
       # peer_id => ref_id
       @import_reference = {}
       @rev_import_reference = {}
@@ -188,12 +193,30 @@ module DeepConnect
       end
     end
 
+    def import_reference_for_disable_gc(peer_id)
+      @import_reference_mutex.synchronize do
+	@import_reference[peer_id]
+      end
+    end
+
     def register_import_reference(ref)
       @import_reference_mutex.synchronize do
 	@import_reference[ref.peer_id] = ref.object_id
 	@rev_import_reference[ref.object_id] = ref.peer_id
       end
       ObjectSpace.define_finalizer(ref, deregister_import_reference_proc)
+    end
+
+    def register_import_reference_for_disable_gc(ref)
+      @import_reference_mutex.synchronize do
+	@import_reference[ref.peer_id] = ref
+#	@rev_import_reference[ref.object_id] = ref
+      end
+    end
+
+    if DISABLE_GC
+      alias import_reference import_reference_for_disable_gc
+      alias register_import_reference register_import_reference_for_disable_gc
     end
 
     def deregister_import_reference_id(peer_id)
@@ -244,8 +267,12 @@ module DeepConnect
   end
 
   class IllegalObject
+    def initialize(id)
+      @id = id
+    end
+
     def send(*opts)
-      DC.Raise IllegalReference
+      DC.Raise IllegalReference, @id, opts.first
     end
     alias __send__ send
     alias __public_send__ send

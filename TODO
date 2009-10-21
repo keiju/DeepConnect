@@ -1,77 +1,78 @@
 					  -*- indented-text -*-
--- ��λ
-* ���ܥ�ե����
-* no method error ���㳰����
-* block�Ƽ���
-* ���ܥ�ե���󥹤���³����
-* �ʰ�ʬ��GC
-* ���饤�����(�۾�)���ǻ��ν���
-* Session->ObjectSpace+SessionʬΥ
+<<<<<<< HEAD
+-- 完了
+* 間接リファレンス
+* no method error 等例外処理
+* block再実装
+* 間接リファレンスの接続処理
+* 簡易分散GC
+* クライアント(異常)切断時の処理
+* Session->ObjectSpace+Session分離
 * DeepSpace#import/export
 * IteratorCallBackRequest
-* protorype��� (Marshal���굡ǽ)
-  + �֥��å��ƤӽФ��������
-* mspec.type�����ޤ���
-* method-spec�ηѾ�������
+* protorype宣言 (Marshal指定機能)
+  + ブロック呼び出しの戻り値
+* mspec.typeがいまいち
+* method-specの継承の問題
   => class-spec-space
-* VAL���饹�γ�ĥ
+* VALクラスの拡張
 * Object#deep_connect_dup
 * Object#deep_connect_deep_copy
-* �֥��å����������� arity ��Ȥ��Фɤ��ˤ��ʤ�?
-* �������ǻ���session�ν���
-* KeepAlive: ��꤬�����Ƥ��뤫�����Ū�˳�ǧ
-* �ʰ�ʬ��GC�Υѥե����ޥ󥹥��å�(�Хå���)
+* ブロック引数の問題 arity を使えばどうにかなる?
+* 相手の切断時のsessionの処理
+* KeepAlive: 相手が生きているかを定期的に確認
+* 簡易分散GCのパフォーマンスアップ(バッチ化)
 * future type
 * shallow-connect
-* �ѥե����ޥ󥹥��å�
-  + �ץ��ȥ����ѹ�(PaketId����Ѥ��ʤ�����)
-  + Event#results �λ����ѹ�/Queue����ConditionVariable��
-  + Port#read�ǥ��顼�����å��򾯤ʤ�����.
-  + ClassSpecSpace#mspec�Υ���å���Υ������ѹ�
-* ���ƥ졼����ǥ���åɤ�¹Ԥ��ʤ���yield������NG
-* �ѥե����ޥ󥹥��å� ����2
-  + event��args�����*args���ѹ�
+* パフォーマンスアップ
+  + プロトコル変更(PaketIdを使用しなくした)
+  + Event#results の仕様変更/QueueからConditionVariableへ
+  + Port#readでエラーチェックを少なくした.
+  + ClassSpecSpace#mspecのキャッシュのキーを変更
+* イテレータ中でスレッドを実行しなかでyieldされるとNG
+* パフォーマンスアップ その2
+  + eventのargs周りの*argsの変更
 * Reference.release
-* reference�������������������å�
-* session���̻���
-  + connect��������Хå�
-* fairy��ư��ʤ�
+* referenceの不正アクセスチェック
+* session個別指定
+  + connect時コールバック
+* fairyで動作しない
 
--- �������塼��
-* shallow-connect �ɲ�
-  + class������
-  + session���̻���(connect��������Хå�)
-     - sessionñ��method-spec
-     - sessionñ��export
+-- スケジュール
+* shallow-connect 追加
+  + class一括指定
+  + session個別指定(connect時コールバック)
+     - session単位method-spec
+     - session単位export
 
-* Event��materialize���� �б�����Event���饹���ʤ��ä��Ȥ��ν���
+* Eventのmaterialize時に 対応するEventクラスがなかったときの処理
 
-* �㳰���ä��뤳�Ȥ�����...
-  + �Ƹ��Ԥ�
+* 例外が消えることがある...
+  + 再現待ち
 
---- ����
+--- 識別
 
-* shallow-connect �ɲ�
-  + �ǽ�shallow-mode�ǲ���������, deep-mode �Ȥ����Τ⤢��?
+* shallow-connect 追加
+  + 最初shallow-modeで何かした後, deep-mode というのもあり?
 
-* �ѥե����ޥ󥹥��å�
-  + ClassSpec�μ¥��饹��
-  + Event���󥯥饹��
+* パフォーマンスアップ
+  + ClassSpecの実クラス化
+  + Eventの非クラス化
 
-* DISPLAY_* ��Ϣ��ޤȤ��
+* DISPLAY_* 関連をまとめる
 
-* ����immutable���饹
-  + �ѹ����˥�����Хå�����
+* 疑似immutableクラス
+  + 変更時にコールバックする
 
 * ACL
 
-* �᥽�åɥ��ڥå�
-  + VOID�� = FUTURE��?
+* メソッドスペック
+  + VOID型 = FUTURE型?
   + instance_eval
   + module_eval
 
-* ��⡼�ȥ��饹���饹���֥�������
-  + ��⡼�ȥ����ѡ����饹
+* リモートクラスクラスオブジェクト
+  + リモートスーパークラス
     class Foo < RemoteSuperClass
 	...
     end

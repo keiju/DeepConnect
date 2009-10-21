@@ -1,3 +1,4 @@
+# encoding: UTF-8
 #
 #   session.rb - 
 #   	$Release Version: $
@@ -32,7 +33,6 @@ module DeepConnect
 
       @waiting = Hash.new
       @waiting_mutex = Mutex.new
-      
       @next_request_event_id = 0
       @next_request_event_id_mutex = Mutex.new
 
@@ -59,14 +59,14 @@ module DeepConnect
 	    ev = @port.import
 	    @last_keep_alive = @organizer.tick
 	  rescue EOFError, DC::DisconnectClient
-	    # EOFError: ¥¯¥é¥¤¥¢¥ó¥È¤¬ÊÄ¤¸¤Æ¤¤¤¿¾ì¹ç
-	    # DisconnectClient: ÄÌ¿®Ãæ¤Ë¥¯¥é¥¤¥¢¥ó¥ÈÀÜÂ³¤¬ÀÚ¤ì¤¿
+	    # EOFError: ã‚¯ãƒ©ã‚¤ã‚¢ãƒ³ãƒˆãŒé–‰ã˜ã¦ã„ãŸå ´åˆ
+	    # DisconnectClient: é€šä¿¡ä¸­ã«ã‚¯ãƒ©ã‚¤ã‚¢ãƒ³ãƒˆæŽ¥ç¶šãŒåˆ‡ã‚ŒãŸ
 	    Thread.start do
 	      @organizer.disconnect_deep_space(@deep_space, :SESSION_CLOSED)
 	    end
 	    Thread.stop
 	  rescue DC::ProtocolError
-	    # ²¿¤é¤«¤Î¾ã³²¤Î¤¿¤á¤Ë¥×¥í¥È¥³¥ë¤¬Àµ¾ï¤¸¤ã¤Ê¤¯¤Ê¤Ã¤¿
+	    # ä½•ã‚‰ã‹ã®éšœå®³ã®ãŸã‚ã«ãƒ—ãƒ­ãƒˆã‚³ãƒ«ãŒæ­£å¸¸ã˜ã‚ƒãªããªã£ãŸ
 	  end
 	  if @status == :SERVICING
 	    receive(ev)
@@ -81,14 +81,14 @@ module DeepConnect
 	  ev = @export_queue.pop
 	  if @status == :SERVICING
 	    begin
-	      # exportÃæ¤Ëexport¤¬È¯À¸¤¹¤ë¤È¥Ç¥Ã¥É¥í¥Ã¥¯¤Ë¤Ê¤ë
-	      # thread¤¬Íß¤·¤¤¤«?
+	      # exportä¸­ã«exportãŒç™ºç”Ÿã™ã‚‹ã¨ãƒ‡ãƒƒãƒ‰ãƒ­ãƒƒã‚¯ã«ãªã‚‹
+	      # threadãŒæ¬²ã—ã„ã‹?
 #	      Thread.start do
 		@port.export(ev)
 #	      end
 	    rescue Errno::EPIPE, DC::DisconnectClient
-	      # EPIPE: ¥¯¥é¥¤¥¢¥ó¥È¤¬½ªÎ»¤·¤Æ¤¤¤ë
-	      # DisconnectClient: ÄÌ¿®Ãæ¤Ë¥¯¥é¥¤¥¢¥ó¥ÈÀÜÂ³¤¬ÀÚ¤ì¤¿
+	      # EPIPE: ã‚¯ãƒ©ã‚¤ã‚¢ãƒ³ãƒˆãŒçµ‚äº†ã—ã¦ã„ã‚‹
+	      # DisconnectClient: é€šä¿¡ä¸­ã«ã‚¯ãƒ©ã‚¤ã‚¢ãƒ³ãƒˆæŽ¥ç¶šãŒåˆ‡ã‚ŒãŸ
 	      Thread.start do
 		@organizer.disconnect_deep_space(@deep_space, :SESSION_CLOSED)
 	      end
@@ -103,7 +103,9 @@ module DeepConnect
     end
 
     def stop_service(*opts)
-      puts "INFO: STOP_SERVICE: Session: #{self.peer_uuid} #{opts.join(' ')} "
+      unless DISABLE_INFO
+	puts "INFO: STOP_SERVICE: Session: #{self.peer_uuid} #{opts.join(' ')} "
+      end
       org_status = @status
       @status = :SERVICE_STOP
       
@@ -135,7 +137,7 @@ module DeepConnect
       @port.close
     end
 
-    # peer¤«¤é¤Î¼õ¼è¤ê
+    # peerã‹ã‚‰ã®å—å–ã‚Š
     def receive(ev)
       #Thread.start do
       if ev.request?
@@ -155,19 +157,19 @@ module DeepConnect
 	  req = @waiting.delete(ev.seq)
 	end
 	unless req
-	  DC.InternalError "ÂÐ±þ¤¹¤ë request event¤¬¤¢¤ê¤Þ¤»¤ó(#{ev.inspect})"
+	  DC.InternalError "å¯¾å¿œã™ã‚‹ request eventãŒã‚ã‚Šã¾ã›ã‚“(#{ev.inspect})"
 	end
 	req.result = ev
       end
       #end
     end
 
-    # ¥¤¥Ù¥ó¥È¤Î¼õ¤±¼è¤ê
+    # ã‚¤ãƒ™ãƒ³ãƒˆã®å—ã‘å–ã‚Š
     def accept(ev)
       @export_queue.push ev
     end
 
-    # ¥¤¥Ù¥ó¥È¤ÎÀ¸À®/Á÷¿®
+    # ã‚¤ãƒ™ãƒ³ãƒˆã®ç”Ÿæˆ/é€ä¿¡
     def send_to(ref, method, args=[], &block)
       unless @status == :SERVICING
 	DC.Raise SessionServiceStopped
@@ -193,7 +195,7 @@ module DeepConnect
       ev
     end
 
-    # ¥¤¥Ù¥ó¥ÈID¼èÆÀ
+    # ã‚¤ãƒ™ãƒ³ãƒˆIDå–å¾—
     def next_request_event_id
       @next_request_event_id_mutex.synchronize do
 	@next_request_event_id += 1
@@ -240,7 +242,7 @@ module DeepConnect
     Organizer.def_interface(self, :get_service_impl)
 
     def register_root_to_peer(id)
-      # Æ±´ü¤ò¼è¤ë¤¿¤á¤Ëno_recv¤ÏNG
+      # åŒæœŸã‚’å–ã‚‹ãŸã‚ã«no_recvã¯NG
       send_peer_session(:register_root, id)
     end
 
@@ -286,7 +288,7 @@ module DeepConnect
 
     def keep_alive
       now = @organizer.tick
-      if now > @last_keep_alive + KEEP_ALIVE_INTERVAL*2
+      if now > @last_keep_alive + KEEP_ALIVE_INTERVAL*10
 	puts "KEEP ALIVE: session #{self} is dead." if DISPLAY_KEEP_ALIVE
 	false
       else

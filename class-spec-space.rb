@@ -1,3 +1,4 @@
+# encoding: UTF-8
 
 require "thread"
 require "e2mmap"
@@ -165,7 +166,7 @@ module DeepConnect
   class MethodSpec
     extend Exception2MessageMapper
 
-    def_exception :UnrecognizedError, "¥Ñ¡¼¥º¤Ç¤­¤Ş¤»¤ó(%s)"
+    def_exception :UnrecognizedError, "ãƒ‘ãƒ¼ã‚ºã§ãã¾ã›ã‚“(%s)"
 
     # method(arg_spec, ..., *arg_spec)
     # ret_spec, ... method()
@@ -175,10 +176,10 @@ module DeepConnect
     # ret_spec, ... method() block_ret, ... {arg_spec, ...}
     # ret_spec, ... method(arg_spec, ..., *arg_spec) block_ret, ...  {arg_spec, ...}
 
-    # *****method ¤¬µ­¹æ¤Î»ş¤Ç¤­¤Æ¤Ê¤¤
+    # *****method ãŒè¨˜å·ã®æ™‚ã§ãã¦ãªã„
 
     ARG_SPEC = ["DEFAULT", "REF", "VAL", "DVAL"]
-    # VAL¤¬¤Ç¤­¤ë¤Î¤Ï, Array, Hash ¤Î¤ß, Struct¤ÏÁê¼ê¤Ë¤âÆ±°ì¥¯¥é¥¹¤¬¤¢¤ì¤Ğ²ÄÇ½
+    # VALãŒã§ãã‚‹ã®ã¯, Array, Hash ã®ã¿, Structã¯ç›¸æ‰‹ã«ã‚‚åŒä¸€ã‚¯ãƒ©ã‚¹ãŒã‚ã‚Œã°å¯èƒ½
 
     def self.spec(spec)
       mspec = MethodSpec.new
@@ -188,7 +189,7 @@ module DeepConnect
       when Hash
 	mspec.direct_setting(spec)
       else
-	raise "¥¹¥Ú¥Ã¥¯»ØÄê¤ÏÊ¸»úÎó¤â¤·¤¯¤Ï¥­¡¼¥ï¡¼¥É»ØÄê¤Ç¤¹"
+	raise "ã‚¹ãƒšãƒƒã‚¯æŒ‡å®šã¯æ–‡å­—åˆ—ã‚‚ã—ãã¯ã‚­ãƒ¼ãƒ¯ãƒ¼ãƒ‰æŒ‡å®šã§ã™"
       end
       mspec
     end
@@ -478,7 +479,7 @@ module DeepConnect
 	  MethodSpec.Raise UnrecognizedError, tk2 + " in " +spec
 	end
       else
-	# ¥Ñ¥é¥á¡¼¥¿¤Ê¤·
+	# ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿ãªã—
       end
     end
 
@@ -487,7 +488,7 @@ module DeepConnect
       tk = tokener.peek
       unless tk == TkLBRACE
 	if @block_rets
-	  MethodSpec.Raise UnrecognizedError, "¥Ö¥í¥Ã¥¯ÄêµÁ¤Ç¤Ï`{'¤¬É¬Í×¤Ç¤¹(#{tk.to_s}, #{spec})"
+	  MethodSpec.Raise UnrecognizedError, "ãƒ–ãƒ­ãƒƒã‚¯å®šç¾©ã§ã¯`{'ãŒå¿…è¦ã§ã™(#{tk.to_s}, #{spec})"
 	else
 	  return
 	end
@@ -515,7 +516,7 @@ module DeepConnect
 	  MethodSpec.Raise UnrecognizedError, tk2 +" in " +spec
 	end
       else
-	# ¥Ñ¥é¥á¡¼¥¿¤Ê¤·
+	# ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿ãªã—
       end
     end
 
@@ -540,17 +541,17 @@ module DeepConnect
 	    args.push ParamSpec.identifier(token)
 	    break
 	  else
-	    MethodSpec.Raise UnrecognizedError, "ÉÔÀµ¤ÊÊ¸»ú#{tk2}¤¬Æş¤Ã¤Æ¤¤¤Ş¤¹"
+	    MethodSpec.Raise UnrecognizedError, "ä¸æ­£ãªæ–‡å­—#{tk2}ãŒå…¥ã£ã¦ã„ã¾ã™"
 	  end
 	when TkMULT
 	  case token2 = tokener.next
 	  when nil
-	    MethodSpec.Raise UnrecognizedError, "*¤Ç½ª¤ï¤Ã¤Æ¤¤¤Ş¤¹"
+	    MethodSpec.Raise UnrecognizedError, "*ã§çµ‚ã‚ã£ã¦ã„ã¾ã™"
 	  when TkIdentifier
 	    args.push  ParamSpec.identifier(token2, :mult)
 	    break
 	  else
-	    MethodSpec.Raise UnrecognizedError, "*¤Î¸å¤Ë#{token2}¤¬Æş¤Ã¤Æ¤¤¤Ş¤¹"
+	    MethodSpec.Raise UnrecognizedError, "*ã®å¾Œã«#{token2}ãŒå…¥ã£ã¦ã„ã¾ã™"
 	  end
 	else # TkRPAREN, TkRBRACE
 	  tokener.unget token

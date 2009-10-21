@@ -14,7 +14,7 @@
 
 require "tracer"
 
-require "deep-connect"
+require "deep-connect/deep-connect"
 
 Thread.abort_on_exception=true
 
@@ -209,7 +209,7 @@ when "8"
     def foo(i)
       i+=1
       if i == 1000
-	raise "•–•√•Ø•»•Ï°º•π•∆•π•»"
+	raise "≈ê≈É≈Ø≈à≈¨|≈π≈Ü≈π≈à"
       end
       foo(i)
     end
@@ -479,7 +479,14 @@ when "20"
   
   dc.export("TEST.20", v)
 
-    
+when "30"
+  class Foo
+    def foo
+      sleep 100
+    end
+  end
+
+  dc.export("TEST30", Foo.new)
 end
 
 sleep 1000

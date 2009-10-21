@@ -45,6 +45,22 @@ p "CLOSE"
       @session = session
     end
 
+    def import2
+#      puts "IMPORT: start0" 
+#      sz = read(PACK_N_SIZE).unpack("N").first
+#      bin = read(sz)
+      a = Marshal.load(@io)
+      begin
+	# ここで, ネットワーク通信発生する可能性あり.
+	ev = Event.materialize(@session, a.first, *a)
+      rescue
+	p $!, $@
+	raise
+      end
+      puts "IMPORT: #{ev.inspect}" if DC::MESSAGE_DISPLAY
+      ev
+    end
+
     def import
 #      puts "IMPORT: start0" 
       sz = read(PACK_N_SIZE).unpack("N").first
@@ -59,6 +75,16 @@ p "CLOSE"
       end
       puts "IMPORT: #{ev.inspect}" if DC::MESSAGE_DISPLAY
       ev
+    end
+
+    def export2(ev)
+      puts "EXPORT: #{ev.inspect}" if DC::MESSAGE_DISPLAY
+      bin = Marshal.dump(ev.serialize, @io)
+#      size = bin.size
+
+#      packet = [size].pack("N")+bin
+#      write(packet)
+      puts "EXPORT: finsh" if DC::MESSAGE_DISPLAY
     end
 
     def export(ev)

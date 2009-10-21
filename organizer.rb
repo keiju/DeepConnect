@@ -176,7 +176,7 @@ module DeepConnect
     def disconnect_deep_space(deep_space, *opts)
       @deep_spaces.delete(deep_space.peer_uuid)
       deep_space.disconnect(*opts)
-      @when_disconnected_proc.call(deep_space, opts)
+      @when_disconnect_proc.call(deep_space, opts)
     end
 
     def when_connected(&block)

@@ -1,0 +1,44 @@
+#!/usr/local/bin/ruby
+#
+#   git-tags - 
+#   	$Release Version: $
+#   	$Revision: 1.1 $
+#   	$Date: 1997/08/08 00:57:08 $
+#   	by Keiju ISHITSUKA
+#
+# --
+#
+#   
+#
+
+@RCS_ID='-$Id:  $-'
+
+VERSION_FILE = "version.rb"
+
+tag = ARGV[0]
+unless /^v([0-9.]+-[0-9]+)(-.*)?$/ =~ tag
+  raise "バージョン形式が間違っています(#{tag})"
+end
+
+ver = $1
+rest = $2
+if rest =~ /^-dev(-[0-9]+)?/
+  ver += "-dev"
+  ver += $1 if $1
+end
+
+File.open(VERSION_FILE, "w") do |io|
+  io << "#\n"
+  io << "# Don't modified this file.\n"
+  io << "# This file is auto generation. \n"
+  io << "#\n"
+  io << "module DeepConnect\n"
+  io << "    VERSION = \"#{ver}\"\n"
+  io << "end\n"
+  io << "\n"
+end
+
+system("git commit -m 'version: #{ver}' #{VERSION_FILE}")
+
+system("git tag #{ARGV[0]}")
+

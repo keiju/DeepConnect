@@ -1,3 +1,8 @@
+2009-10-23  Keiju Ishitsuka  <keiju@emperor2.pendome>
+
+	* Makefile: 追加
+	* version.rb: 追加
+
 2009-10-23  Keiju Ishitsuka  <keiju@ishitsuka.com>
 
 	* DeepSpace#disconnect: ソケットを正しくクローズするようにした.

@@ -1,23 +1,27 @@
-2009-10-21  Keiju Ishitsuka  <keiju@emperor2.pendome>
+2009-10-23  Keiju Ishitsuka  <keiju@ishitsuka.com>
+
+	* DeepSpace#disconnect: ソケットを正しくクローズするようにした.
+
+2009-10-21  Keiju Ishitsuka  <keiju@ishitsuka.com>
 
 	* fairy-trunkとマージ
 
-2009-10-02  Keiju Ishitsuka  <keiju@emperor2.pendome>
+2009-10-02  Keiju Ishitsuka  <keiju@ishitsuka.com>
 
-	* DeepSpace@initialize: ipv4のみのマシン対応
+	* DeepSpace#initialize: ipv4のみのマシン対応
 
-2008-09-17  Keiju Ishitsuka  <keiju@emperor2.pendome>
+2008-09-17  Keiju Ishitsuka  <keiju@ishitsuka.com>
 
 	* Reference#==, equal?, hash: ローカル実行に変更
 	* Organizer#deep_space, connect_deep_space_with_port,
 	  disconnect_deep_space, id2obj: 排他制御
 	* DeepSpace: DISABLE_GC 対応
 
-2008-09-09  Keiju Ishitsuka  <keiju@emperor2.pendome>
+2008-09-09  Keiju Ishitsuka  <keiju@ishitsuka.com>
 
 	* Reference#inspect: サービス停止中の処理
 
-2008-09-02  Keiju Ishitsuka  <keiju@emperor2.pendome>
+2008-09-02  Keiju Ishitsuka  <keiju@ishitsuka.com>
 
 	* Session#start: 例外発生時の処理
 	* Accepter#stop: ditto.
@@ -33,7 +37,7 @@
 	* deep-space#deregister_roots_to_peer:
 	    すでに登録されているときは, 登録をリクエストしない
 
-2008-08-26  Keiju Ishitsuka  <keiju@emperor2.pendome>
+2008-08-26  Keiju Ishitsuka  <keiju@ishitsuka.com>
 
 	* to_** シリーズのメソッドスペックを追加
 	* Reference#method_missing の to_** の特別扱いの削除
@@ -43,7 +47,7 @@
 	* deep-space の referctoring
 	* メッセージ``!'' の対応(Ruby1.9)
 
-2008-08-22  Keiju Ishitsuka  <keiju@emperor2.pendome>
+2008-08-22  Keiju Ishitsuka  <keiju@ishitsuka.com>
 
 	* to_splat 対応
 	
@@ -56,19 +60,19 @@
 	* block args 
 	  - バグがあった
 
-2008-08-21  Keiju Ishitsuka  <keiju@emperor2.pendome>
+2008-08-21  Keiju Ishitsuka  <keiju@ishitsuka.com>
 
 	* Future: Ruby 1.9 対応
 	  - delegator の振る舞いが違う
 
-2008-08-15  Keiju Ishitsuka  <keiju@emperor2.pendome>
+2008-08-15  Keiju Ishitsuka  <keiju@ishitsuka.com>
 
 	* Session: 不必要なインスタンス変数削除
 
 	* Organizer.id2obj での IllegalObject 問題解消
 	* block_yieldのバグ解消
 
-2008-08-08  Keiju Ishitsuka  <keiju@emperor2.pendome>
+2008-08-08  Keiju Ishitsuka  <keiju@ishitsuka.com>
 
 	* 接続時のプロトコル変更
 	* session個別指定
@@ -77,17 +81,17 @@
 	* Reference.release
 	* referenceの不正アクセスチェック
 
-2008-08-07  Keiju Ishitsuka  <keiju@emperor2.pendome>
+2008-08-07  Keiju Ishitsuka  <keiju@ishitsuka.com>
 
 	* block yield 改変版
 
-2008-08-01  Keiju Ishitsuka  <keiju@emperor2.pendome>
+2008-08-01  Keiju Ishitsuka  <keiju@ishitsuka.com>
 
 	* イテレータ中でスレッドを実行しなかでyieldされるとNG になる問題を
 	  取りあえず解決
 	* ParamSpec.param_specs のバグ修正
 
-2008-07-29  Keiju Ishitsuka  <keiju@emperor2.pendome>
+2008-07-29  Keiju Ishitsuka  <keiju@ishitsuka.com>
 
 	* performance up
 	  + プロトコル変更(PaketIdを使用しなくした)
@@ -99,19 +103,19 @@
 	* keep alive の 問題解消
 	* DeepConnect::DConnect を DeepConnect::DeepConnect に改名
 
-2008-07-24  Keiju Ishitsuka  <keiju@emperor2.pendome>
+2008-07-24  Keiju Ishitsuka  <keiju@ishitsuka.com>
 
 	* future class
 	* 簡易分散GCのパフォーマンスアップ(バッチ化)
 
-2008-07-23  Keiju Ishitsuka  <keiju@emperor2.pendome>
+2008-07-23  Keiju Ishitsuka  <keiju@ishitsuka.com>
 
 	* KeepAlive のバグフィックス
 
 	* KeepAlive: 相手が生きているかを定期的に確認
 	* cron.rb: 定期的実行サービス(monitorからの改名/機能追加)
 
-2008-07-19  Keiju Ishitsuka  <keiju@emperor2.pendome>
+2008-07-19  Keiju Ishitsuka  <keiju@ishitsuka.com>
 
 	* セッション切断の処理追加
 	* クライアントの切断時のsessionの処理追加
@@ -119,7 +123,7 @@
 	* 例外メッセージの統合
 	* monitor機能の追加
 
-2008-07-17  Keiju Ishitsuka  <keiju@emperor2.pendome>
+2008-07-17  Keiju Ishitsuka  <keiju@ishitsuka.com>
 
 	* iteratorの終了処理
 	  + 内部で例外が発生したときの処理がイマイチ
@@ -127,7 +131,7 @@
 	* block引数周りのバグ(いや問題点?)の修正
 	* 間接参照時のpeerが127.0.0.1の場合の再接続処理のバグ修正
 
-2008-07-15  Keiju Ishitsuka  <keiju@emperor2.pendome>
+2008-07-15  Keiju Ishitsuka  <keiju@ishitsuka.com>
 
 	* Object#deep_connect_dup
 	* Object#deep_connect_deep_copy
@@ -141,33 +145,33 @@
 	* materialize_valのバグ修正
 	* DEFAULT_MUTAL_CLASSESに Regexp, Time を追加
 
-2008-07-14  Keiju Ishitsuka  <keiju@emperor2.pendome>
+2008-07-14  Keiju Ishitsuka  <keiju@ishitsuka.com>
 	* MethodSpec.specのバグ修正
 
 	* materialize_valのバグ修正
 	* VAL == Hashのバグ修正
 
-2008-07-13  Keiju Ishitsuka  <keiju@emperor2.pendome>
+2008-07-13  Keiju Ishitsuka  <keiju@ishitsuka.com>
 
 	* Reference#=~
 	* Reference#===
 	* def_single_method_spec周りのバグ修正
 	* DEFAULT_MUTAL_CLASSESに Range を追加
 
-2008-07-11  Keiju Ishitsuka  <keiju@emperor2.pendome>
+2008-07-11  Keiju Ishitsuka  <keiju@ishitsuka.com>
 	* method-specの継承の問題
 	  => class-spec-space
 
-2008-07-08  Keiju Ishitsuka  <keiju@emperor2.pendome>
+2008-07-08  Keiju Ishitsuka  <keiju@ishitsuka.com>
 	* protorype宣言 (Marshal指定機能)
 	  + ブロック呼び出しの戻り値
 	* mspec.typeがいまいち
 
-2008-07-07  Keiju Ishitsuka  <keiju@emperor2.pendome>
+2008-07-07  Keiju Ishitsuka  <keiju@ishitsuka.com>
 
 	* IteratorCallBackRequest
 
-2008-07-01  Keiju Ishitsuka  <keiju@emperor2.pendome>
+2008-07-01  Keiju Ishitsuka  <keiju@ishitsuka.com>
 
 	* v0.2.01-008.fairy-003-fairy-v0.2.1-002 とのマージ
 	* fairy v0.2.1-002 対応
@@ -176,13 +180,13 @@
 	* DeepSpace#import/export
 	* WeakRef周りの不具合修正
 
-2008-06-30  Keiju Ishitsuka  <keiju@emperor2.pendome>
+2008-06-30  Keiju Ishitsuka  <keiju@ishitsuka.com>
 
 	* Reference#id 追加
 	* DeepConnect#local_id 追加
 	* Accepterを不定ポート番号にできるようにした.
 
-2008-06-27  Keiju Ishitsuka  <keiju@emperor2.pendome>
+2008-06-27  Keiju Ishitsuka  <keiju@ishitsuka.com>
 
 	* 簡易分散GC
 

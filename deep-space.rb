@@ -70,8 +70,8 @@ module DeepConnect
       @session.stop_service(*opts)
       if !opts.include?(:SESSION_CLOSED) && !opts.include?(:REQUEST_FROM_PEER)
 	@session.send_disconnect
-	@session.stop
       end
+      @session.stop
 
       @deregister_reference_thread.exit if org_status == :SERVICING
       @import_reference = nil

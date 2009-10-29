@@ -134,7 +134,7 @@ module DeepConnect
 	  deep_space
 	rescue ConnectionRefused, Errno::ECONNREFUSED
 	  puts "WARN: クライアント(#{peer_id}への接続が拒否されました"
-	  raise
+	  return DeepSpaceNoConnection.new(peer_id)
 	end
       end
     end

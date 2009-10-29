@@ -266,6 +266,28 @@ module DeepConnect
     
   end
 
+  class DeepSpaceNoConnection
+    def initialize(peer_id)
+      @peer_id = peer_id
+    end
+
+    def session
+      DC::Raise ConnectionRefused, peer_id
+    end
+    def register_import_reference(r)
+      nil
+    end
+
+    def import_reference(r)
+      nil
+    end
+
+    def register_root_to_peer(object_id)
+      # do nothing
+    end
+
+  end
+
   class IllegalObject
     def initialize(id)
       @id = id

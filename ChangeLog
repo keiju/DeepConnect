@@ -1,3 +1,10 @@
+2009-10-29  Keiju Ishitsuka  <keiju@emperor2.pendome>
+
+	* deep-space.rb: DeepSpaceNoConnection追加
+	
+	* Organizer#deep_space: 自動接続時にConnectionRefusedだった時の処
+	  理を変更
+
 2009-10-23  Keiju Ishitsuka  <keiju@emperor2.pendome>
 
 	* Makefile: 追加

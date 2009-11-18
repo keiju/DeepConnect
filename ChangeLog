@@ -1,3 +1,7 @@
+2009-11-18  Keiju Ishitsuka  <keiju@emperor2.pendome>
+
+	* deep-space.rb: DeepSpaceNoConnection#peer_id 追加
+
 2009-10-29  Keiju Ishitsuka  <keiju@emperor2.pendome>
 
 	* deep-space.rb: DeepSpaceNoConnection追加

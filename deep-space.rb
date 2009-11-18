@@ -271,8 +271,11 @@ module DeepConnect
       @peer_id = peer_id
     end
 
+    attr_reader :peer_id
+    alias peer_id peer_uuid
+
     def session
-      DC::Raise ConnectionRefused, peer_id
+      DC::Raise ConnectionRefused, @peer_id
     end
     def register_import_reference(r)
       nil

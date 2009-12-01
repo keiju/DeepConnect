@@ -134,7 +134,11 @@ module DeepConnect
     end
 
     def stop(*opts)
-      @port.close
+      begin
+	@port.close
+      rescue IOError
+	puts "WARN: #{$!}"
+      end
     end
 
     # peerからの受取り

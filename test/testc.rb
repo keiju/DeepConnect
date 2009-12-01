@@ -474,7 +474,7 @@ when "13.2"
   sleep 1
 
 when "13.3"
-  # ŹŪ|ŗæċŵ|Ő|ĲÇĹīņŹň
+  # ŹŪ|ŗæċŵ|Ő|ĲÇĹīņŹ�
   foo = deepspace.import("foo")
   sleep 100
   foo.foo
@@ -586,6 +586,11 @@ when "30"
   rescue DeepConnect::PeerSideException
     
   end
+
+when "31"
+
+  ref = deepspace.import("TEST")
+  ref.bbbbbb
 
 end
 

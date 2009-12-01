@@ -272,7 +272,7 @@ module DeepConnect
     end
 
     attr_reader :peer_id
-    alias peer_id peer_uuid
+    alias peer_uuid peer_id
 
     def session
       DC::Raise ConnectionRefused, @peer_id

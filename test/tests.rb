@@ -209,7 +209,7 @@ when "8"
     def foo(i)
       i+=1
       if i == 1000
-	raise "ŐŃůňŬ|ŹņŹň"
+	raise "foo"
       end
       foo(i)
     end

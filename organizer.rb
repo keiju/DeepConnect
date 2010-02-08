@@ -11,8 +11,9 @@
 #   
 #
 require "forwardable"
-
 require "monitor"
+require "resolv"
+require "ipaddr"
 
 require "deep-connect/class-spec-space"
 
@@ -106,13 +107,38 @@ module DeepConnect
       @accepter.stop
     end
 
+    IPADDR_REGEXP = /(::ffff:)?([0-9]+\.){3}[0-9]+|[0-9a-f]+:([0-9a-f]*:)[0-9a-f]*/
     # client sesssion開始
-    def open_deep_space(ipaddr, port)
-      sock = TCPSocket.new(ipaddr, port)
-      port = Port.new(sock)
-      init_session_ev = Event::InitSessionEvent.new(local_id)
-      port.export init_session_ev
-      connect_deep_space_with_port(port)
+    def open_deep_space(host, port)
+
+      @deep_spaces_mon.synchronize do
+	ipaddr = nil
+	if IPADDR_REGEXP !~ host
+	  Resolv.each_address(host) do |addr|
+	    ipaddr = IPAddr.new(addr)
+	    ipaddr = ipaddr.native.to_s
+
+	    peer_id = [ipaddr, port]
+	    if deep_space = @deep_spaces[peer_id]
+	      return deep_space
+	    end
+	  end
+	else
+	  ipaddr = IPAddr.new(host)
+	  ipaddr = ipaddr.native.to_s
+
+	  peer_id = [ipaddr, port]
+	  if deep_space = @deep_spaces[peer_id]
+	    return deep_space
+	  end
+	end
+
+	sock = TCPSocket.new(ipaddr, port)
+	port = Port.new(sock)
+	init_session_ev = Event::InitSessionEvent.new(local_id)
+	port.export init_session_ev
+	connect_deep_space_with_port(port)
+      end
     end
     alias open_deepspace open_deep_space
 

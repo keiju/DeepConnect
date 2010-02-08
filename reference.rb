@@ -260,6 +260,8 @@ module DeepConnect
 	@peer_id == obj.peer_id
     end
 
+    alias eql? ==
+
     def equal?(obj)
       self.object_id == obj.object_id
     end

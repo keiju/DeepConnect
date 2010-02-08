@@ -1,3 +1,11 @@
+2010-02-09  Keiju Ishitsuka  <keiju@emperor2.pendome>
+
+	* organizer.rb: Organizer#open_deep_space: すでにDeepSpaceがオープ
+	 ンされている場合の処理追加
+	* port.rb: Port#export 例外処理追加
+	* reference.rb: Reference#eql? 追加
+	* session.rb: デバッグメッセージ変更
+
 2009-12-01  Keiju Ishitsuka  <keiju@emperor2.pendome>
 
 	* deep-space.rb: DeepSpaceNoConnection#peer_uuid 追加

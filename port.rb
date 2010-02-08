@@ -95,7 +95,14 @@ module DeepConnect
 
     def export(ev)
       puts "EXPORT: #{ev.inspect}" if DC::MESSAGE_DISPLAY
-      bin = Marshal.dump(ev.serialize)
+      begin
+	bin = Marshal.dump(ev.serialize)
+      rescue
+	puts "Exception Rised: #{$!}"
+	puts $@
+	p ev.serialize
+	raise
+      end
       size = bin.size
 
       packet = [size].pack("N")+bin

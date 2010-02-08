@@ -296,7 +296,10 @@ module DeepConnect
 	puts "KEEP ALIVE: session #{self} is dead." if DISPLAY_KEEP_ALIVE
 	false
       else
-	puts "KEEP ALIVE: send #{self} to keep alive." if DISPLAY_KEEP_ALIVE
+	if DISPLAY_KEEP_ALIVE
+	  puts "KEEP ALIVE: session #{self} is alive(INT: #{now - @last_keep_alive})."
+	  puts "KEEP ALIVE: send #{self} to keep alive."
+	end
 	send_peer_session_no_recv(:recv_keep_alive)
 	true
       end

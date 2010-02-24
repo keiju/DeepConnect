@@ -175,13 +175,20 @@ module DeepConnect
 #       if TO_METHODS.include?(method)
 # 	return self.dc_dup.send(method)
 #       end
-      if iterator?
-	@deep_space.session.send_to(self, method, args, &block)
-      else
-	@deep_space.session.send_to(self, method, args)
+      begin
+	if iterator?
+	  @deep_space.session.send_to(self, method, args, &block)
+	else
+	  @deep_space.session.send_to(self, method, args)
+	end
+      rescue NoMethodError
+	super
       end
     end
 
+    def asynchronus_send_with_callback(method, *args, &callback)
+      @deep_space.session.asyncronus_send_to(self, method, args, callback)
+    end
     
 #     def peer_to_s
 #       @deep_space.session.send_to(self, :to_s)
@@ -243,6 +250,10 @@ module DeepConnect
     end
 
     def respond_to?(m, include_private = false)
+#       m = m.intern
+#       if m != :to_ary && super
+#  	return true
+#       end
       return true if super
       return @deep_space.session.send_to(self, :respond_to?, [m, include_private])
     end
@@ -305,11 +316,16 @@ module DeepConnect
 #       Reference.materialize(
 #     end
 
-#     def to_ary
-#       if respond_to?(:to_ary)
-# 	self.dc_dup.to_ary
-#       end
-#     end
+#      def to_ary
+#        if respond_to?(:to_ary)
+# 	 p "AAAAAAA"
+# 	 self.dc_dup.to_ary
+# 	 p "BBBBBBBB"
+#        else
+# #	 raise NoMethodError.new("undefined method `to_ary' for #{self}@@@", :to_ary)
+# 	 raise NoMethodError, "to_ary"
+#        end
+#      end
 
 #     def to_str
 #       if respond_to?(:to_str)

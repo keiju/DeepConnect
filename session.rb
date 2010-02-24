@@ -199,6 +199,18 @@ module DeepConnect
       ev
     end
 
+    def asyncronus_send_to(ref, method, args=[], callback=nil)
+      unless @status == :SERVICING
+	DC.Raise SessionServiceStopped
+      end
+      ev = Event::AsyncronusRequest.request(self, ref, method, args, callback)
+      @waiting_mutex.synchronize do
+	@waiting[ev.seq] = ev
+      end
+      @export_queue.push ev
+      nil
+    end
+
     # イベントID取得
     def next_request_event_id
       @next_request_event_id_mutex.synchronize do

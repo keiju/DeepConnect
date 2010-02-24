@@ -19,7 +19,7 @@ Thread.abort_on_exception=true
 STDOUT.sync
 
 #Tracer.on
-dc = DeepConnect.start(65534)
+dc = DeepConnect.start()
 deepspace = dc.open_deep_space("localhost", 65535)
 #deepspace = dc.open_deep_space("gentoo", 65535)
 
@@ -474,8 +474,7 @@ when "13.2"
   sleep 1
 
 when "13.3"
-  # ŹŪ|ŗæċŵ|Ő|ĲÇĹīņŹ�
-  foo = deepspace.import("foo")
+  # ŹŪ|ŗæċŵ|Ő|ĲÇĹīņŹŊ  foo = deepspace.import("foo")
   sleep 100
   foo.foo
 
@@ -592,6 +591,21 @@ when "31"
   ref = deepspace.import("TEST")
   ref.bbbbbb
 
+when "32", "asyncronus_send"
+  ref = deepspace.import("TEST1")
+  ref.asynchronus_send_with_callback(:[], 1){|ret, exp| p ret}
+  p "sended"
+
+
+when "32.1"
+  ref = deepspace.import("TEST1")
+  ref.asynchronus_send_with_callback(:foo){|ret, exp| puts "ee"; p ret; p exp}
+  p "sended"
+
+when "32.2"
+  ref = deepspace.import("TEST1")
+  ref.foo
+
 end
 
-sleep 1
+sleep 100

@@ -137,12 +137,7 @@ module DeepConnect
       def result
 	result_event
 	if @result.exp
-	  bt = @result.exp.backtrace
-	  bt.push "-- peer side --"
-	  bt.push *caller(0)
-	  bt = bt.select{|e| /deep-connect/ !~ e} unless DC::DEBUG
-	  
-	  raise PeerSideException, @result.exp, bt
+	  raise create_exception
 	end
 	@result.result
       end
@@ -158,6 +153,23 @@ module DeepConnect
       def inspect
 	sprintf "#<#{self.class}, session=#{@session}, seq=#{@seq}, receiver=#{@receiver}, method=#{@method.id2name}, args=#{@args.collect{|e| e.to_s}.join(', ')}>"
       end
+
+      def create_exception
+	exp = nil
+	begin
+	  exp = @result.exp.dc_dup
+	rescue
+	  exp = PeerSideException.new(@result.exp)
+	end
+
+	bt = @result.exp.backtrace
+	bt.push "-- peer side --"
+	bt.push *caller(0)
+	bt = bt.select{|e| /deep-connect/ !~ e} unless DC::DEBUG
+	exp.set_backtrace(bt)
+	exp
+      end
+
     end
 
     class RequestWithBlock < Request
@@ -269,6 +281,44 @@ module DeepConnect
 
       def reply_class
 	IteratorCallBackReply
+      end
+    end
+
+    class AsyncronusRequest<Request
+      def AsyncronusRequest.request(session, receiver, method, args, callback)
+	req = new(session, receiver, method, args, callback)
+	req.init_req
+	req
+      end
+
+      def AsyncronusRequest.receipt(session, seq, receiver, method, args)
+	rec = new(session, receiver, method, args)
+	rec.set_seq(seq)
+	rec
+      end
+
+
+      def initialize(session, receiver, method, args, callback = nil)
+	super(session, receiver, method, args)
+	@callback = callback
+      end
+
+      def reply_class
+	AsyncronusReply
+      end
+      
+      def result=(ev)
+	@result = ev
+	if @callback
+	  Thread.start do
+	    if ev.exp
+	      exp = create_exception
+	      @callback.call(nil, exp)
+	    else
+	      @callback.call(ev.result, nil)
+	    end
+	  end
+	end
       end
     end
     
@@ -414,6 +464,8 @@ module DeepConnect
 
     class IteratorCallBackReplyBreak<IteratorCallBackReply; end
     class IteratorReplyFinish < Reply; end
+
+    class AsyncronusReply<Reply; end
 
     class SessionReply < Reply
       def SessionReply.materialize_sub(session, type, klass, seq, receiver, method, ret, exp = nil)

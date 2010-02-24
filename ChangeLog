@@ -1,3 +1,11 @@
+2010-02-24  Keiju Ishitsuka  <keiju@emperor2.pendome>
+
+	* AsyncronusRequest, AsyncronusReply: 非同期メッセージ呼び出し追加
+	* Reference#asynchronus_send_with_callback,
+	  Session#asyncronus_send_to: callback付き非同期呼び出し追加
+	* Request#result, Request#create_exception: 例外生成を統合
+	* Referrence#method_missing: NoMethodErrorの振る舞い変更(to_ary問題)
+
 2010-02-09  Keiju Ishitsuka  <keiju@emperor2.pendome>
 
 	* organizer.rb: Organizer#open_deep_space: すでにDeepSpaceがオープ

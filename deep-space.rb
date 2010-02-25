@@ -78,8 +78,8 @@ module DeepConnect
       @export_roots = nil
     end
 
-    def import(name)
-      @session.get_service(name)
+    def import(name, waitp = false)
+      @session.get_service(name, waitp)
     end
     alias get_service import 
 

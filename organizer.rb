@@ -56,6 +56,8 @@ module DeepConnect
       @evaluator = Evaluator.new(self)
 
       @services = {}
+      @services_mx = Mutex.new
+      @services_cv = ConditionVariable.new
 
       @deep_spaces = {}
       @deep_spaces_mon = Monitor.new
@@ -240,15 +242,24 @@ module DeepConnect
 
     # services
     def register_service(name, obj)
-      @services[name] = obj
+      @services_mx.synchronize do
+	@services[name] = obj
+	@services_cv.broadcast
+      end
     end
     alias export register_service
 
-    def service(name)
-      unless @services.key?(name)
-	return :DEEPCONNECT_NO_SUCH_SERVICE
+    def service(name, waitp = false)
+      @services_mx.synchronize do
+	while @services.key?(name)
+	  if waitp
+	    @services_cv.wait(@services_mx)
+	  else
+	    return :DEEPCONNECT_NO_SUCH_SERVICE 
+	  end
+	end
+	@services[name]
       end
-      @services[name]
     end
     alias import service
 

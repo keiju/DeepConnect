@@ -245,15 +245,15 @@ module DeepConnect
     Organizer.def_interface(self, :recv_disconnect)
 
 
-    def get_service(name)
-      if (sv = send_peer_session(:get_service, name)) == :DEEPCONNECT_NO_SUCH_SERVICE
+    def get_service(name, waitp = false)
+      if (sv = send_peer_session(:get_service, name, waitp)) == :DEEPCONNECT_NO_SUCH_SERVICE
 	DC.Raise NoServiceError, name
       end
       sv
     end
 
-    def get_service_impl(name)
-      @organizer.service(name)
+    def get_service_impl(name, waitp = false)
+      @organizer.service(name, waitp)
     end
     Organizer.def_interface(self, :get_service_impl)
 

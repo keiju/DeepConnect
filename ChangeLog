@@ -1,12 +1,18 @@
-2010-02-24  Keiju Ishitsuka  <keiju@emperor2.pendome>
+2010-02-25  Keiju Ishitsuka  <keiju@ishitsuka.com>
+
+	* deep-fork.rb: DeepFork追加
+
+2010-02-24  Keiju Ishitsuka  <keiju@ishitsuka.com>
 
 	* AsyncronusRequest, AsyncronusReply: 非同期メッセージ呼び出し追加
 	* Reference#asynchronus_send_with_callback,
 	  Session#asyncronus_send_to: callback付き非同期呼び出し追加
 	* Request#result, Request#create_exception: 例外生成を統合
 	* Referrence#method_missing: NoMethodErrorの振る舞い変更(to_ary問題)
+	* Request#create_exception: 例外の扱いを変更(こっちにもそのクラス
+	  がある場合はその例外クラスにすることにした)
 
-2010-02-09  Keiju Ishitsuka  <keiju@emperor2.pendome>
+2010-02-09  Keiju Ishitsuka  <keiju@ishitsuka.com>
 
 	* organizer.rb: Organizer#open_deep_space: すでにDeepSpaceがオープ
 	 ンされている場合の処理追加
@@ -14,21 +20,21 @@
 	* reference.rb: Reference#eql? 追加
 	* session.rb: デバッグメッセージ変更
 
-2009-12-01  Keiju Ishitsuka  <keiju@emperor2.pendome>
+2009-12-01  Keiju Ishitsuka  <keiju@ishitsuka.com>
 
 	* deep-space.rb: DeepSpaceNoConnection#peer_uuid 追加
 
-2009-11-18  Keiju Ishitsuka  <keiju@emperor2.pendome>
+2009-11-18  Keiju Ishitsuka  <keiju@ishitsuka.com>
 
 	* deep-space.rb: DeepSpaceNoConnection#peer_id 追加
 
-2009-10-29  Keiju Ishitsuka  <keiju@emperor2.pendome>
+2009-10-29  Keiju Ishitsuka  <keiju@ishitsuka.com>
 
 	* deep-space.rb: DeepSpaceNoConnection追加
 	* Organizer#deep_space: 自動接続時にConnectionRefusedだった時の処
 	  理を変更
 
-2009-10-23  Keiju Ishitsuka  <keiju@emperor2.pendome>
+2009-10-23  Keiju Ishitsuka  <keiju@ishitsuka.com>
 
 	* Makefile: 追加
 	* version.rb: 追加

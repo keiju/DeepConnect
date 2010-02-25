@@ -63,6 +63,7 @@ module DeepConnect
     def_delegator :@organizer, :release_object
 
     def_delegator :@organizer, :local_id
+
   end
 
   def DC.start(service = nil)
@@ -84,7 +85,6 @@ module DeepConnect
   def DC.def_single_interface(*opts)
     Organizer.def_single_interface(*opts)
   end
-
 end
 
 require "deep-connect/serialize"

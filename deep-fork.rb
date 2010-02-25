@@ -21,7 +21,7 @@ module DeepConnect
 
 	ObjectSpace.each_object(IO) do |io|
 	  begin
-	    unless ionos.include?(io.fineno)
+	    unless ionos.include?(io.fileno)
 	      io.close
 	    end
 	  rescue

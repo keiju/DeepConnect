@@ -1,5 +1,7 @@
 2010-02-25  Keiju Ishitsuka  <keiju@emperor2.pendome>
 
+	* deep-fork.rb: DeepFork#initialize ちょっとバグがあった
+
 	* organizer.rb: Organizer#serviceバグがあった.
 
 	* organizer.rb, deep-space.rb, session.rb: DeepSpace#importにwait

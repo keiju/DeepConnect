@@ -251,7 +251,7 @@ module DeepConnect
 
     def service(name, waitp = false)
       @services_mx.synchronize do
-	while @services.key?(name)
+	until @services.key?(name)
 	  if waitp
 	    @services_cv.wait(@services_mx)
 	  else

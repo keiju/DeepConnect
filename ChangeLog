@@ -1,5 +1,7 @@
 2010-02-25  Keiju Ishitsuka  <keiju@emperor2.pendome>
 
+	* organizer.rb: Organizer#serviceバグがあった.
+
 	* organizer.rb, deep-space.rb, session.rb: DeepSpace#importにwait
 	 フラグ追加
 

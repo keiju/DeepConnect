@@ -181,8 +181,8 @@ module DeepConnect
 	else
 	  @deep_space.session.send_to(self, method, args)
 	end
-      rescue NoMethodError
-	super
+#      rescue NoMethodError
+#	super
       end
     end
 

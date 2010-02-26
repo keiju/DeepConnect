@@ -1,3 +1,7 @@
+2010-02-26  Keiju Ishitsuka  <keiju@emperor2.pendome>
+
+	* reference.rb: Reference#method_missing: NoMethodErrorの扱いを変えた.
+
 2010-02-25  Keiju Ishitsuka  <keiju@emperor2.pendome>
 
 	* deep-fork.rb: DeepFork#initialize ちょっとバグがあった

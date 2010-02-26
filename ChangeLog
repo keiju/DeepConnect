@@ -1,5 +1,7 @@
 2010-02-26  Keiju Ishitsuka  <keiju@emperor2.pendome>
 
+	* Makefile: pull-from-fairy追加
+
 	* reference.rb: Reference#method_missing: NoMethodErrorの扱いを変えた.
 
 2010-02-25  Keiju Ishitsuka  <keiju@emperor2.pendome>

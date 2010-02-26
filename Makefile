@@ -9,6 +9,9 @@ tag-%:
 	echo "Make tag $*"
 	tools/git-tag $*
 
+pull-from-fairy:
+	git pull /home/keiju/public/a.research/fairy/git/deep-connect
+
 #push:	
 #	git push ssh://git-keiju@www.sota.me/var/www/html/fairy/fairy.git
 

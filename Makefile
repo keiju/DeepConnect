@@ -12,6 +12,10 @@ tag-%:
 pull-from-fairy:
 	git pull /home/keiju/public/a.research/fairy/git/deep-connect
 
+pull-from-giant:
+	git pull ssh://giant/home/keiju/var/src/var.lib/ruby/deep-connect
+
+
 #push:	
 #	git push ssh://git-keiju@www.sota.me/var/www/html/fairy/fairy.git
 

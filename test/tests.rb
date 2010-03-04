@@ -28,6 +28,7 @@ dc.export("TEST1", [1, 2, 3])
 dc.export("TEST2", ["foo", "bar", "baz"])
 dc.export("TEST3", Array)
 dc.export("TEST22", Object.new)
+dc.export("TEST4", [["foo"], ["bar"], ["baz"]])
 
 case ARGV[0]
 when "5", "S2"
@@ -487,6 +488,27 @@ when "30"
   end
 
   dc.export("TEST30", Foo.new)
+
+when "33"
+  DeepConnect.def_method_spec(Array, "DVAL each(VAL){DVAL}")
+
+when "33.1"
+  class Foo
+    def each(&block)
+      block.call ["foo"], ["bar"]
+    end
+  end
+  dc.export("TEST33", Foo.new)
+  
+when "33.1.1"
+  class Foo
+    def each(&block)
+      block.call ["foo"], ["bar"]
+    end
+    DeepConnect.def_method_spec(self, "DVAL each(DVAL){DVAL, DVAL}")
+  end
+  dc.export("TEST33", Foo.new)
+
 end
 
 sleep 1000

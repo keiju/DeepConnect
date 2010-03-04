@@ -51,7 +51,19 @@ when "3"
 
 when "4"
   r = deepspace.get_service("TEST1")
-  r.each{|e| puts "TEST1: #{e}"}
+  r.each{|e| puts "TEST1: #{e}"
+    sleep 5
+  }
+when "4.0.1"
+  r = deepspace.get_service("TEST4")
+  r.each{|e| puts "TEST1: #{e}"
+    sleep 5
+  }
+  puts "GG"
+  sleep 5
+  puts "EE"
+
+
 when "4.1"
   r = deepspace.get_service("TEST1")
   r.each{|e| puts "TEST1: #{e}"; next; 1}
@@ -474,7 +486,7 @@ when "13.2"
   sleep 1
 
 when "13.3"
-  # ŹŪ|ŗæċŵ|Ő|ĲÇĹīņŹŊ  foo = deepspace.import("foo")
+  # foo = deepspace.import("foo")
   sleep 100
   foo.foo
 
@@ -605,6 +617,26 @@ when "32.1"
 when "32.2"
   ref = deepspace.import("TEST1")
   ref.foo
+
+when "33"
+  r = deepspace.get_service("TEST4")
+  r.each{|e| puts "TEST1: #{e}"
+    sleep 5
+  }
+  puts "GG"
+  sleep 5
+  puts "EE"
+
+when "33.1"
+  r = deepspace.get_service("TEST33")
+  r.each{|e| puts "TEST33: #{e}"
+    sleep 5
+    ["ZZZ"]
+  }
+  puts "GG"
+  sleep 5
+  puts "EE"
+
 
 end
 

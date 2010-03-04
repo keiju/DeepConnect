@@ -60,6 +60,9 @@ module DeepConnect
 
     def_delegator :@organizer, :export
     def_delegator :@organizer, :register_service
+
+    def_delegator :@organizer, :export_mq
+
     def_delegator :@organizer, :release_object
 
     def_delegator :@organizer, :local_id

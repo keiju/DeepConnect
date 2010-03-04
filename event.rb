@@ -321,6 +321,31 @@ module DeepConnect
 	end
       end
     end
+
+    class MQRequest<IteratorRequest
+      def MQRequest.request(session, receiver, method, args, callback)
+	req = new(session, receiver, method, args, callback)
+	req.init_req
+	req
+      end
+
+      def MQRequest.receipt(session, seq, receiver, method, args, callback)
+	rec = new(session, receiver, method, args, callback)
+	rec.set_seq(seq)
+	rec
+      end
+
+
+      def initialize(session, receiver, method, args, callback = nil)
+	super(session, receiver, method, args, callback)
+	@callback = callback
+      end
+      attr_reader :callback
+
+      def reply_class
+	MQReply
+      end
+    end
     
     class SessionRequest < Request
       def SessionRequest.request(session, method, args=[])
@@ -466,6 +491,8 @@ module DeepConnect
     class IteratorReplyFinish < Reply; end
 
     class AsyncronusReply<Reply; end
+
+    class MQReply<Reply;end
 
     class SessionReply < Reply
       def SessionReply.materialize_sub(session, type, klass, seq, receiver, method, ret, exp = nil)

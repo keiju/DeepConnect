@@ -43,7 +43,6 @@ require "deep-connect/event"
 require "deep-connect/cron"
 require "deep-connect/exceptions"
 
-
 trap("SIGPIPE", "IGNORE")
 
 module DeepConnect
@@ -58,6 +57,10 @@ module DeepConnect
       @services = {}
       @services_mx = Mutex.new
       @services_cv = ConditionVariable.new
+
+      @messageqs = {}
+      @messageqs_mx = Mutex.new
+      @messageqs_cv = ConditionVariable.new
 
       @deep_spaces = {}
       @deep_spaces_mon = Monitor.new
@@ -263,6 +266,27 @@ module DeepConnect
     end
     alias import service
 
+    # MQ
+    def export_mq(name)
+      @messageqs_mx.synchronize do
+        @messageqs[name] = DeepMQ::SV.new(self)
+      end
+    end
+    alias register_mq export_mq
+
+    def get_mq(name, waitp = false)
+      @messageqs_mx.synchronize do
+        until @messageqs.key?(name)
+          if waitp
+            @messageqs_cv.wait(@messageqs_mx)
+          else
+            return nil
+          end
+        end
+        @messageqs[name]
+      end
+    end
+
     def release_object(obj)
       for id, dspace in @deep_spaces.dup
 	dspace.release_object(obj)
@@ -351,3 +375,6 @@ module DeepConnect
 
   end
 end
+
+require "deep-connect/deep-mq"
+

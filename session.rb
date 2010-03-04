@@ -143,18 +143,15 @@ module DeepConnect
 
     # peerからの受取り
     def receive(ev)
-      #Thread.start do
-      if ev.request?
-	Thread.start do
-	  case ev
- 	  when Event::IteratorCallBackRequest
-	    @organizer.evaluator.evaluate_block_yield(self, ev)
- 	  when Event::IteratorRequest
- 	    @organizer.evaluator.evaluate_iterator_request(self, ev)
-	  else
-	    @organizer.evaluator.evaluate_request(self, ev)
-	  end
-	end
+      case ev
+      when Event::MQRequest
+        ev.receiver.enq(self, ev)
+      when Event::IteratorCallBackRequest
+        Thread.start{@organizer.evaluator.evaluate_block_yield(self, ev)}
+      when Event::IteratorRequest
+        Thread.start{@organizer.evaluator.evaluate_iterator_request(self, ev)}
+      when Event::Request
+        Thread.start{@organizer.evaluator.evaluate_request(self, ev)}
       else
 	req = nil
 	@waiting_mutex.synchronize do
@@ -165,7 +162,6 @@ module DeepConnect
 	end
 	req.result = ev
       end
-      #end
     end
 
     # イベントの受け取り
@@ -199,7 +195,7 @@ module DeepConnect
       ev
     end
 
-    def asyncronus_send_to(ref, method, args=[], callback=nil)
+    def asynchronus_send_to(ref, method, args=[], callback=nil)
       unless @status == :SERVICING
 	DC.Raise SessionServiceStopped
       end
@@ -209,6 +205,19 @@ module DeepConnect
       end
       @export_queue.push ev
       nil
+    end
+    alias asyncronus_send_to asynchronus_send_to
+
+    def mq_send_to(ref, method, args=[], callback=nil)
+      unless @status == :SERVICING
+	DC.Raise SessionServiceStopped
+      end
+      ev = Event::MQRequest.request(self, ref, method, args, callback)
+      @waiting_mutex.synchronize do
+	@waiting[ev.seq] = ev
+      end
+      @export_queue.push ev
+      ev.result
     end
 
     # イベントID取得
@@ -256,6 +265,19 @@ module DeepConnect
       @organizer.service(name, waitp)
     end
     Organizer.def_interface(self, :get_service_impl)
+
+    def import_mq(name, waitp = false)
+      unless sv = send_peer_session(:import_mq, name, waitp)
+        DC.Raise NoServiceError, name
+      end
+      sv
+    end
+
+    def import_mq_impl(name, waitp = false)
+      @organizer.get_mq(name, waitp)
+    end
+    Organizer.def_interface(self, :import_mq_impl)
+
 
     def register_root_to_peer(id)
       # 同期を取るためにno_recvはNG

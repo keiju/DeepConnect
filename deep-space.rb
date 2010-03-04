@@ -83,6 +83,12 @@ module DeepConnect
     end
     alias get_service import 
 
+    def import_mq(name, waitp = false)
+      sv = @session.import_mq(name)
+      DeepMQ::CL.new(sv)
+    end
+    alias get_mq import_mq
+
     #
     # class spec feature
     #

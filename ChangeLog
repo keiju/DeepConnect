@@ -1,3 +1,10 @@
+2010-03-04  Keiju Ishitsuka  <keiju@giant>
+
+	* Makefile: pull-from-emperor追加
+	
+	* deep-connect.rb, organizer.rb, deep-space.rb, session.rb,
+	  evaluator.rb, event.rb: DeepMQ追加
+
 2010-02-26  Keiju Ishitsuka  <keiju@emperor2.pendome>
 
 	* Makefile: pull-from-fairy追加

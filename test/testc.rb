@@ -1,3 +1,4 @@
+# encoding: UTF-8
 #
 #   testc.rb - 
 #   	$Release Version: $
@@ -84,7 +85,6 @@ when "4.4"
   end
 
 
-# ruby1.9ćďŵŝ|ňĵ?ĊįĊăĿ.
 # when "4.4"
 #   r = deepspace.get_service("TEST1")
 #   a = 0
@@ -474,7 +474,6 @@ when "13.2"
   sleep 1
 
 when "13.3"
-  # ŹŪ|ŗæċŵ|Ő|ĲÇĹīņŹŊ  foo = deepspace.import("foo")
   sleep 100
   foo.foo
 
@@ -605,6 +604,37 @@ when "32.1"
 when "32.2"
   ref = deepspace.import("TEST1")
   ref.foo
+
+when "33", "MQ"
+  ref = deepspace.import("TEST1")
+
+  mq = deepspace.import_mq("MQ")
+  p mq
+  puts "A0"
+  mq.push(ref, :[], 1){|ret, exp| sleep 1; puts "ret=#{ret.inspect} exp=#{exp.inspect}"}
+  puts "A1"
+
+
+when "33.1"
+  mq = deepspace.import_mq("MQ")
+  ref = deepspace.import("TEST1")
+
+  puts "A0"
+  10000.times do |i|
+    mq.push(ref, :[], 1){|ret, exp| puts "#{i}: ret=#{ret.inspect} exp=#{exp.inspect}"}
+  end
+  puts "A1"
+
+when "33.2"
+  mq = deepspace.import_mq("MQ")
+  ref = deepspace.import("TEST33")
+
+  puts "A0"
+  10.times do |i|
+    puts "enq: #{i}"
+    mq.push(ref, :req){|ret, exp| puts "#{i}: ret=#{ret.inspect} exp=#{exp.inspect}"}
+  end
+  puts "A1"
 
 end
 

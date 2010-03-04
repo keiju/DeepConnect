@@ -487,6 +487,16 @@ when "30"
   end
 
   dc.export("TEST30", Foo.new)
+
+when "33", "MQ"
+  class Foo
+    def req
+      sleep 1
+    end
+  end
+  dc.export("TEST33", Foo.new)
+  dc.export_mq("MQ")
+
 end
 
 sleep 1000

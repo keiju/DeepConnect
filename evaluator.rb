@@ -120,5 +120,26 @@ module DeepConnect
 	session.accept e = ev.reply(ret, exp)
       end
     end
+
+    def evaluate_mq_request(session, event, callback)
+      begin
+	if @organizer.shallow_connect?
+	  if !(mspec = Organizer::method_spec(event.receiver, event.method)) or
+	      !mspec.interface?
+	    DC.Raise NoInterfaceMethod, event.receiver.class, event.method
+	  end
+	end
+	ret = event.receiver.send(event.method, *event.args)
+	if callback 
+	  callback.call(ret, nil)
+	end
+      rescue SystemExit
+	raise
+      rescue Exception
+	if callback
+          callback.call(ret, $!)
+	end
+      end
+    end
   end
 end

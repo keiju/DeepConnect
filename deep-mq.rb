@@ -62,7 +62,7 @@ module DeepConnect
       def push(ref, method, *arg, &callback)
         @sv.deep_space.session.mq_send_to(@sv, :push, [ref, method, *arg], callback)
       end
-      Organizer::def_method_spec(SV, "REF push(REF, DVAL, VAL)")
+      Organizer::def_method_spec(SV, "push(DEFAULT, DEFAULT, VAL)")
     end
   end
 end

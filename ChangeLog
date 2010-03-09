@@ -1,3 +1,7 @@
+2010-03-09  Keiju Ishitsuka  <keiju@giant>
+
+	* DeepMQ::SV#pushのmethod_specを変更
+
 2010-03-04  Keiju Ishitsuka  <keiju@giant>
 
 	* Makefile: pull-from-emperor追加

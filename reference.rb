@@ -153,6 +153,7 @@ module DeepConnect
     end
     
     attr_reader :deep_space
+    alias deepspace deep_space
     attr_reader :csid
     attr_reader :peer_id
      

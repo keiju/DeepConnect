@@ -39,6 +39,10 @@ module DeepConnect
       rescue SystemExit
 	raise
       rescue Exception
+#p event.receiver.class
+#p event.method
+#p $!
+#p $@
 	unless event.kind_of?(Event::NoReply)
 	  session.accept event.reply(ret, $!)
 	end
@@ -131,13 +135,19 @@ module DeepConnect
 	end
 	ret = event.receiver.send(event.method, *event.args)
 	if callback 
-	  callback.call(ret, nil)
+	  callback.asynchronus_send(:call, ret, nil)
+	  callback.release
 	end
       rescue SystemExit
 	raise
       rescue Exception
 	if callback
-          callback.call(ret, $!)
+p event.receiver.class
+p event.method
+p $!
+p $@
+          callback.asynchronus_send(:call, ret, $!)
+	  callback.release
 	end
       end
     end

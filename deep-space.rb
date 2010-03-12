@@ -84,7 +84,7 @@ module DeepConnect
     alias get_service import 
 
     def import_mq(name, waitp = false)
-      sv = @session.import_mq(name)
+      sv = @session.import_mq(name, waitp)
       DeepMQ::CL.new(sv)
     end
     alias get_mq import_mq
@@ -135,8 +135,15 @@ module DeepConnect
     end
 
     def set_root(root)
+#if root.kind_of?(Proc)
+#  puts "SET_ROOT: #{root}\n #{caller(0)}"
+#end
       @export_roots_mutex.synchronize do
-	@export_roots[root.object_id] = root
+	if pair = @export_roots[root.object_id]
+	  pair[1] += 1
+	else
+	  @export_roots[root.object_id] = [root, 1]
+	end
 	root.object_id
       end
     end
@@ -144,8 +151,9 @@ module DeepConnect
     
     def root(id)
       @export_roots_mutex.synchronize do
-	#@export_roots.fetch(id){IllegalObject.new}
-	@export_roots.fetch(id){:__DEEPCONNECT_NO_VALUE__}
+	pair = @export_roots.fetch(id){return IllegalObject.new(id)}
+	pair.first
+	#@export_roots.fetch(id){:__DEEPCONNECT_NO_VALUE__}
       end
     end
     alias export_root root
@@ -153,16 +161,40 @@ module DeepConnect
     def register_root_from_other_session(id)
       obj = @organizer.id2obj(id)
       @export_roots_mutex.synchronize do
-	@export_roots[id] = obj
+	if pair = @export_roots[id]
+	  pair[1] += 1
+	else
+	  @export_roots[id] = [obj, 1]
+	end
       end
       obj
     end
 
-    def delete_roots(ids)
-      puts "GC: delete root: #{ids.join(' ')}" if DISPLAY_GC
+    def delete_roots(pairs)
       @export_roots_mutex.synchronize do
-	for id in ids
-	  @export_roots.delete(id)
+	pairs.each_slice(2) do |id, refcount|
+	  if pair = @export_roots[id]
+#	    puts "#{$$}: GC: #{id} #{refcount} #{pair.first.class} #{pair.last}"
+
+	    if (pair[1] -= refcount) == 0
+	      obj = @export_roots.delete(id)
+	      if DISPLAY_GC
+		puts "#{$$}: GC: delete root: #{id} #{obj.first.to_s}"
+	      end
+	    else
+	      if DISPLAY_GC
+		puts "#{$$}: GC: derefcount root: #{id} #{pair.first.to_s} #{pair[1]}"
+		if pair.first.kind_of?(Exception)
+		  p pair.first
+		  p pair.first.backtrace
+		end
+	      end
+	    end
+	  else
+	    if DISPLAY_GC
+	      puts "#{$$}: GC: warn already deleted root: #{id.inspect}"
+	    end
+	  end
 	end
       end
     end
@@ -179,19 +211,42 @@ module DeepConnect
       @rev_import_reference = {}
 
       @import_reference_mutex = Mutex.new
-      @deregister_reference_queue = Queue.new
+      @import_reference_cv = ConditionVariable.new
+      @deregister_reference_queue = []
+
+      @deregister_thread = nil
     end
 
     def import_reference(peer_id)
-      @import_reference_mutex.synchronize do
-	if rid = @import_reference[peer_id]
-	  begin
-	    ObjectSpace._id2ref(rid)
-	  rescue
-	    ref_id = @import_reference.delete(peer_id)
-	    @rev_import_reference.delete(ref_id)
-	    @deregister_reference_queue.push peer_id
+      status = GC.disable
+      begin
+	@import_reference_mutex.synchronize do
+	  if pair = @import_reference[peer_id]
+	    begin
+	      ObjectSpace._id2ref(pair.first)
+	    rescue
+	      ref_id = @import_reference.delete(peer_id)
+	      @rev_import_reference.delete(ref_id)
+	      @deregister_reference_queue.concat [peer_id, 1]
+	      return nil
+	    end
+	  else
 	    nil
+	  end
+	end
+      ensure
+	GC.enable unless status
+      end
+    end
+
+    def import_reference_for_disable_gc(peer_id)
+      @import_reference_mutex.synchronize do
+	if pair = @import_reference[peer_id]
+	  begin
+	    ObjectSpace._id2ref(pair.first)
+	  rescue
+	    @import_reference.delete(peer_id)
+	    return nil
 	  end
 	else
 	  nil
@@ -199,24 +254,30 @@ module DeepConnect
       end
     end
 
-    def import_reference_for_disable_gc(peer_id)
-      @import_reference_mutex.synchronize do
-	@import_reference[peer_id]
-      end
-    end
-
     def register_import_reference(ref)
-      @import_reference_mutex.synchronize do
-	@import_reference[ref.peer_id] = ref.object_id
-	@rev_import_reference[ref.object_id] = ref.peer_id
+      status = GC.disable
+      begin
+	@import_reference_mutex.synchronize do
+	  if pair = @import_reference[ref.peer_id]
+	    pair[1] += 1
+	  else
+	    @import_reference[ref.peer_id] = [ref.object_id, 1]
+	    @rev_import_reference[ref.object_id] = ref.peer_id
+	  end
+	end
+	ObjectSpace.define_finalizer(ref, deregister_import_reference_proc)
+      ensure
+	GC.enable unless status
       end
-      ObjectSpace.define_finalizer(ref, deregister_import_reference_proc)
     end
 
     def register_import_reference_for_disable_gc(ref)
       @import_reference_mutex.synchronize do
-	@import_reference[ref.peer_id] = ref
-#	@rev_import_reference[ref.object_id] = ref
+	if pair = @import_reference[ref.peer_id]
+	  pair[1] += 1
+	else
+	  @import_reference[ref.peer_id] = [ref.object_id, 1]
+	end
       end
     end
 
@@ -226,28 +287,33 @@ module DeepConnect
     end
 
     def deregister_import_reference_id(peer_id)
-      @import_reference_mutex.synchronize do
-	ref_id = @import_reference.delete(peer_id)
-	@rev_import_reference.delete(ref_id)
+      status = GC.disable
+      begin
+	@import_reference_mutex.synchronize do
+	  pair = @import_reference.delete(peer_id)
+	  @rev_import_reference.delete(pair.first)
+	  @deregister_reference_queue.concat [peer_id, pair.last]
+	end
+      ensure
+	GC.enable unless status
+	@deregister_thread.wakeup
       end
-      @deregister_reference_queue.push peer_id
     end
 
     def deregister_import_reference_proc
       proc do |ref_id|
 	if @status == :SERVICING
-	  @import_reference_mutex.synchronize do
-	    puts "GC: gced id: #{ref_id}" if DISPLAY_GC
-	    peer_id = @rev_import_reference.delete(ref_id)
-	    @import_reference.delete(peer_id)
-	  end
-	  @deregister_reference_queue.push peer_id
+	  puts "#{$$}: GC: gced id: #{ref_id}" if DISPLAY_GC
+	  peer_id = @rev_import_reference.delete(ref_id)
+	  pair = @import_reference.delete(peer_id)
+	  @deregister_reference_queue.concat [peer_id, pair.last]
+	  @deregister_thread.wakeup
 	end
       end
     end
 
-    def start_deregister_reference
-      Thread.start do
+    def start_deregister_reference_org
+      @deregister_thread  = Thread.start {
 	ids = []
 	while ids.push @deregister_reference_queue.pop
 	  begin
@@ -256,7 +322,32 @@ module DeepConnect
 	    deregister_roots_to_peer(ids) if @status == :SERVICING
 	  end
 	end
-      end
+      }
+    end
+
+    def start_deregister_reference
+      @deregister_thread  = Thread.start {
+	ids = []
+	loop do
+	  Thread.stop
+	  Thread.exit unless @status == :SERVICING
+
+	  ids = []
+	  @import_reference_mutex.synchronize do
+	    status = GC.disable
+	    begin
+	      ids = @deregister_reference_queue.dup
+	      @deregister_reference_queue.clear
+	    ensure
+	      GC.enable unless status
+	    end
+	  end
+	  unless ids.empty?
+	    deregister_roots_to_peer(ids) 
+	  end
+	  sleep 1
+	end
+      }
     end
 
     def register_root_to_peer(id)
@@ -266,7 +357,7 @@ module DeepConnect
     end
 
     def deregister_roots_to_peer(ids)
-      puts "GC: send deregister id: #{ids.join(' ')}" if DISPLAY_GC
+      puts "#{$$}: GC: send deregister id: #{ids.join(' ')}" if DISPLAY_GC
       @session.deregister_root_to_peer(ids)
     end
     

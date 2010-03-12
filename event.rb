@@ -429,13 +429,15 @@ module DeepConnect
 	
 	if @exp
 	  [self.class, @seq, 
-	    Reference.serialize(@session.deep_space, @receiver),
+#	    Reference.serialize(@session.deep_space, @receiver),
+	    nil,
 	    @method,
 	    sel_result,
 	    Reference.serialize(@session.deep_space, @exp)]
 	else
 	  [self.class, @seq, 
-	    Reference.serialize(@session.deep_space, @receiver),
+#	    Reference.serialize(@session.deep_space, @receiver),
+	    nil,
 	    @method,
 	    sel_result]
 	end
@@ -474,13 +476,15 @@ module DeepConnect
 	
 	if @exp
 	  [self.class, @seq, 
-	    Reference.serialize(@session.deep_space, @receiver),
+#	    Reference.serialize(@session.deep_space, @receiver),
+	    nil,
 	    @method,
 	    sel_result,
 	    Reference.serialize(@session.deep_space, @exp)]
 	else
 	  [self.class, @seq, 
-	    Reference.serialize(@session.deep_space, @receiver),
+#	    Reference.serialize(@session.deep_space, @receiver),
+	    nil,
 	    @method,
 	    sel_result]
 	end

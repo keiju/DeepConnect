@@ -296,8 +296,8 @@ module DeepConnect
     def id2obj(id)
       @deep_spaces_mon.synchronize do
 	for peer_id, s in @deep_spaces
-#	if o = s.root(id) and !o.kind_of?(IllegalObject)
-	  if o = s.root(id) and o != :__DEEPCONNECT_NO_VALUE__
+	  if o = s.root(id) and !o.kind_of?(IllegalObject)
+#	  if o = s.root(id) and o != :__DEEPCONNECT_NO_VALUE__
 	    return o
 	  end
 	end
@@ -317,6 +317,9 @@ module DeepConnect
       FalseClass,
       Symbol,
       Fixnum,
+      Bignum,
+      Range,
+      Rational
     ]
 
     @@DEFAULT_IMMUTABLE_CLASSES = [

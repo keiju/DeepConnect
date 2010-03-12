@@ -69,7 +69,7 @@ module DeepConnect
 	    
 	  [value.__deep_connect_real_class, value.csid, value.peer_id, uuid]
 	end
-      elsif Organizer::absolute_immutable_classes.include?(value)
+      elsif Organizer::absolute_immutable_classes.include?(value.class)
 	[value.__deep_connect_real_class, value.__deep_connect_real_class.name, value]
       else 
 	case spec
@@ -183,6 +183,8 @@ module DeepConnect
 	  @deep_space.session.send_to(self, method, args)
 	end
 #      rescue NoMethodError
+#	p $@
+#	p $!
 #	super
       end
     end
@@ -190,6 +192,7 @@ module DeepConnect
     def asynchronus_send_with_callback(method, *args, &callback)
       @deep_space.session.asyncronus_send_to(self, method, args, callback)
     end
+    alias asynchronus_send asynchronus_send_with_callback
     
 #     def peer_to_s
 #       @deep_space.session.send_to(self, :to_s)

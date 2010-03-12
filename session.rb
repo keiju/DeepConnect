@@ -84,7 +84,7 @@ module DeepConnect
 	      # export中にexportが発生するとデッドロックになる
 	      # threadが欲しいか?
 #	      Thread.start do
-		@port.export(ev)
+	      @port.export(ev)
 #	      end
 	    rescue Errno::EPIPE, DC::DisconnectClient
 	      # EPIPE: クライアントが終了している
@@ -145,7 +145,8 @@ module DeepConnect
     def receive(ev)
       case ev
       when Event::MQRequest
-        ev.receiver.enq(self, ev)
+#	Thread.start{ev.receiver.enq(self, ev)}
+	ev.receiver.enq(self, ev)
       when Event::IteratorCallBackRequest
         Thread.start{@organizer.evaluator.evaluate_block_yield(self, ev)}
       when Event::IteratorRequest

@@ -1,3 +1,26 @@
+2010-03-12  Keiju Ishitsuka  <keiju@emperor2.pendome>
+
+	* DeepMQ::SV#pushのmethod_specを再変更
+	* DeepSpace#import_mq: 待つオプションを追加
+	
+	* DeepSpace#set_root, root, register_root_from_other_session,
+	  delete_roots, import_reference, import_reference_for_disable_gc,
+	  register_import_reference,
+	  register_import_reference_for_disable_gc,
+	  deregister_import_reference_id, deregister_import_reference_proc: 
+	  分散GCでリファレンスカウント方式への変更に伴う対応
+	* DeepSpace#init_import_feature, import_reference,
+	  register_import_reference, deregister_import_reference_id,
+	  deregister_import_reference_proc, start_deregister_reference: GCと
+	  の排他制御の対応に伴う変更
+	* Reply#selialize,IteratorCallBackReply#selialize: 無用なset_root
+	  が分散GCを妨げていた.
+	* Organizer#id2obj: リファレンス先がないときIllegalObjectを返すよ
+	  うにしたことによる対応.
+	* organizer@@ABSOLUTE_IMMUTABLE_CLASSES: immutableなクラスを追加
+	* Reference#asynchronus_send: asynchronus_send_with_callbackの
+	  aliasにした
+
 2010-03-09  Keiju Ishitsuka  <keiju@giant>
 
 	* DeepMQ::SV#pushのmethod_specを変更

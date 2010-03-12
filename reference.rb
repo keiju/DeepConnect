@@ -162,9 +162,7 @@ module DeepConnect
     end
 
     def release
-      peer_id = @peer_id
-#      @peer_id = :__DEEPCONNECT__RELEASED__
-      @deep_space.deregister_import_reference_id(peer_id)
+      @deep_space.deregister_import_reference_id(self)
     end
 
 #    TO_METHODS = [:to_ary, :to_str, :to_int, :to_regexp]

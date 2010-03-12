@@ -242,12 +242,7 @@ module DeepConnect
     def import_reference_for_disable_gc(peer_id)
       @import_reference_mutex.synchronize do
 	if pair = @import_reference[peer_id]
-	  begin
-	    ObjectSpace._id2ref(pair.first)
-	  rescue
-	    @import_reference.delete(peer_id)
-	    return nil
-	  end
+	  pair.first
 	else
 	  nil
 	end
@@ -276,28 +271,42 @@ module DeepConnect
 	if pair = @import_reference[ref.peer_id]
 	  pair[1] += 1
 	else
-	  @import_reference[ref.peer_id] = [ref.object_id, 1]
+	  @import_reference[ref.peer_id] = [ref, 1]
 	end
       end
     end
 
-    if DISABLE_GC
-      alias import_reference import_reference_for_disable_gc
-      alias register_import_reference register_import_reference_for_disable_gc
-    end
-
-    def deregister_import_reference_id(peer_id)
+    def deregister_import_reference(ref)
       status = GC.disable
       begin
 	@import_reference_mutex.synchronize do
-	  pair = @import_reference.delete(peer_id)
+	  pair = @import_reference.delete(ref.peer_id)
 	  @rev_import_reference.delete(pair.first)
-	  @deregister_reference_queue.concat [peer_id, pair.last]
+	  @deregister_reference_queue.concat [ref.peer_id, pair.last]
 	end
       ensure
 	GC.enable unless status
 	@deregister_thread.wakeup
       end
+    end
+
+    def deregister_import_reference_for_disable_gc(ref)
+      status = GC.disable
+      begin
+	@import_reference_mutex.synchronize do
+	  pair = @import_reference.delete(ref.peer_id)
+	  @deregister_reference_queue.concat [ref.peer_id, pair.last]
+	end
+      ensure
+	GC.enable unless status
+	@deregister_thread.wakeup
+      end
+    end
+ 
+    if DISABLE_GC
+      alias import_reference import_reference_for_disable_gc
+      alias register_import_reference register_import_reference_for_disable_gc
+      alias deregister_import_reference deregister_import_reference_for_disable_gc
     end
 
     def deregister_import_reference_proc

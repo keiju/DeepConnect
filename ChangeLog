@@ -1,8 +1,15 @@
 2010-03-12  Keiju Ishitsuka  <keiju@emperor2.pendome>
 
+	* DeepSpace#{import_reference_for_disable_gc,
+	  register_import_reference_for_disable_gc,
+	  deregister_import_reference_for_disable_gc}: DISABLE_GC時のレファ
+	  レンスカウント方式にちゃんと対応していなかった
+	* DeepSpace#{deregister_import_reference, deregister_import_reference_for_disable_gc}: object_idからrefを渡すように変更し, メソッド名を変更した.
+	* Reference#release: 上記の変更に対する変更
+	
+
 	* DeepMQ::SV#pushのmethod_specを再変更
 	* DeepSpace#import_mq: 待つオプションを追加
-	
 	* DeepSpace#set_root, root, register_root_from_other_session,
 	  delete_roots, import_reference, import_reference_for_disable_gc,
 	  register_import_reference,

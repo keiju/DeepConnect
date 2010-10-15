@@ -162,7 +162,7 @@ module DeepConnect
     end
 
     def release
-      @deep_space.deregister_import_reference(self)
+      @deep_space.deregister_import_reference_id(self)
     end
 
 #    TO_METHODS = [:to_ary, :to_str, :to_int, :to_regexp]

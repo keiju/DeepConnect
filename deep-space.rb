@@ -58,7 +58,7 @@ module DeepConnect
     def connect
       @session.start
 
-      @deregister_reference_thread = start_deregister_reference
+#      @deregister_reference_thread = start_deregister_reference
 
       @status = :SERVICING
     end
@@ -73,7 +73,7 @@ module DeepConnect
       end
       @session.stop
 
-      @deregister_reference_thread.exit if org_status == :SERVICING
+#      @deregister_reference_thread.exit if org_status == :SERVICING
       @import_reference = nil
       @export_roots = nil
     end
@@ -171,8 +171,8 @@ module DeepConnect
     end
 
     def delete_roots(pairs)
-      @export_roots_mutex.synchronize do
-	pairs.each_slice(2) do |id, refcount|
+      pairs.each_slice(2) do |id, refcount|
+	@export_roots_mutex.synchronize do
 	  if pair = @export_roots[id]
 #	    puts "#{$$}: GC: #{id} #{refcount} #{pair.first.class} #{pair.last}"
 
@@ -212,9 +212,11 @@ module DeepConnect
 
       @import_reference_mutex = Mutex.new
       @import_reference_cv = ConditionVariable.new
-      @deregister_reference_queue = []
 
-      @deregister_thread = nil
+      @deregister_references = []
+      @deregister_references_mx = Mutex.new
+
+#      @deregister_thread = nil
     end
 
     def import_reference(peer_id)
@@ -227,7 +229,9 @@ module DeepConnect
 	    rescue
 	      ref_id = @import_reference.delete(peer_id)
 	      @rev_import_reference.delete(ref_id)
-	      @deregister_reference_queue.concat [peer_id, 1]
+	      @deregister_references_mx.synchronize do
+		@deregister_references.concat [peer_id, 1]
+	      end
 	      return nil
 	    end
 	  else
@@ -282,11 +286,12 @@ module DeepConnect
 	@import_reference_mutex.synchronize do
 	  pair = @import_reference.delete(ref.peer_id)
 	  @rev_import_reference.delete(pair.first)
-	  @deregister_reference_queue.concat [ref.peer_id, pair.last]
+	  @deregister_references_mx.synchronize do
+	    @deregister_references.concat [ref.peer_id, pair.last]
+	  end
 	end
       ensure
 	GC.enable unless status
-	@deregister_thread.wakeup
       end
     end
 
@@ -295,11 +300,12 @@ module DeepConnect
       begin
 	@import_reference_mutex.synchronize do
 	  pair = @import_reference.delete(ref.peer_id)
-	  @deregister_reference_queue.concat [ref.peer_id, pair.last]
+	  @deregister_references_mx.synchronize do
+	    @deregister_references.concat [ref.peer_id, pair.last]
+	  end
 	end
       ensure
 	GC.enable unless status
-	@deregister_thread.wakeup
       end
     end
  
@@ -315,48 +321,29 @@ module DeepConnect
 	  puts "#{$$}: GC: gced id: #{ref_id}" if DISPLAY_GC
 	  peer_id = @rev_import_reference.delete(ref_id)
 	  pair = @import_reference.delete(peer_id)
-	  @deregister_reference_queue.concat [peer_id, pair.last]
-	  @deregister_thread.wakeup
+	  @deregister_references.concat [peer_id, pair.last]
 	end
       end
     end
 
-    def start_deregister_reference_org
-      @deregister_thread  = Thread.start {
-	ids = []
-	while ids.push @deregister_reference_queue.pop
-	  begin
-	    while ids.push @deregister_reference_queue.pop(true); end
-	  rescue ThreadError
-	    deregister_roots_to_peer(ids) if @status == :SERVICING
-	  end
-	end
-      }
-    end
+    def start_gc
+      return unless @status == :SERVICING
 
-    def start_deregister_reference
-      @deregister_thread  = Thread.start {
-	ids = []
-	loop do
-	  Thread.stop
-	  Thread.exit unless @status == :SERVICING
+      ids = []
+      @deregister_references_mx.synchronize do
+	status = GC.disable
+	begin
+	  return if @deregister_references.empty?
 
-	  ids = []
-	  @import_reference_mutex.synchronize do
-	    status = GC.disable
-	    begin
-	      ids = @deregister_reference_queue.dup
-	      @deregister_reference_queue.clear
-	    ensure
-	      GC.enable unless status
-	    end
-	  end
-	  unless ids.empty?
-	    deregister_roots_to_peer(ids) 
-	  end
-	  sleep 1
+	  ids = @deregister_references.dup
+	  @deregister_references.clear
+	ensure
+	  GC.enable unless status
 	end
-      }
+      end
+      unless ids.empty?
+	deregister_roots_to_peer(ids) 
+      end
     end
 
     def register_root_to_peer(id)

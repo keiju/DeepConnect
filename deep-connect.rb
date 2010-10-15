@@ -29,7 +29,7 @@ module DeepConnect
   DISPLAY_KEEP_ALIVE = false
 
   DEBUG_REFERENCE = false
-  DISPLAY_GC = false
+  DISPLAY_GC = true
 
   DISABLE_INFO = false
 

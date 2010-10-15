@@ -68,6 +68,8 @@ module DeepConnect
 
       @cron = Cron.new(self)
 
+      start_gc
+
       @when_connect_proc = proc{true}
       @when_disconnect_proc = proc{}
 
@@ -242,6 +244,19 @@ module DeepConnect
       end
     end
 
+    #
+    def start_gc
+      Thread.start do
+	loop do
+	  sleep 10
+
+	  for peer_id, deepspace in @deep_spaces.dup
+	    deepspace.start_gc
+	  end
+	end
+      end
+    end
+
 
     # services
     def register_service(name, obj)
@@ -294,6 +309,15 @@ module DeepConnect
     end
 
     def id2obj(id)
+      begin
+	ObjectSpace._id2ref(id)
+      rescue
+	puts "WARN: deep_spaceにid(=#{id})をobject_idとするオブジェクトが登録されていません."
+	return IllegalObject.new(id)
+      end
+    end
+ 
+    def id2obj2(id)
       @deep_spaces_mon.synchronize do
 	for peer_id, s in @deep_spaces
 	  if o = s.root(id) and !o.kind_of?(IllegalObject)

@@ -1,4 +1,10 @@
-2010-10-21  Keiju Ishitsuka  <keiju@emperor2.pendome>
+Fri Oct 22 00:53:26 2010  Keiju Ishitsuka  <keiju@ishitsuka.com>
+
+	* * deep-connect.rb, class-spec-space.rb, cron.rb, deep-space.rb,
+	  evaluator.rb, event.rb, organizer.rb, port.rb, reference.rb,
+	  session.rb: DeepConnect::Conf作成に伴う変更.
+
+2010-10-21  Keiju Ishitsuka  <keiju@ishitsuka.com>
 
 	* Makefile: ディレクトリ構成変更に伴う修正
 	* Makefile, tools/git-tag: ディレクトリ構成変更に伴う修正
@@ -6,11 +12,11 @@
 	* Obsolatesd/* を構成管理下から削除
 	* ディレクトリ構成変更(その2)
 
-2010-10-15  Keiju Ishitsuka  <keiju@emperor2.pendome>
+2010-10-15  Keiju Ishitsuka  <keiju@ishitsuka.com>
 
 	* ディレクトリ構成変更(その1)
 
-2010-03-12  Keiju Ishitsuka  <keiju@emperor2.pendome>
+2010-03-12  Keiju Ishitsuka  <keiju@ishitsuka.com>
 
 	* DeepSpace#{import_reference_for_disable_gc,
 	  register_import_reference_for_disable_gc,
@@ -41,24 +47,24 @@
 	* Reference#asynchronus_send: asynchronus_send_with_callbackの
 	  aliasにした
 
-2010-03-09  Keiju Ishitsuka  <keiju@giant>
+2010-03-09  Keiju Ishitsuka  <keiju@ishitsuka.com>
 
 	* DeepMQ::SV#pushのmethod_specを変更
 
-2010-03-04  Keiju Ishitsuka  <keiju@giant>
+2010-03-04  Keiju Ishitsuka  <keiju@ishitsuka.com>
 
 	* Makefile: pull-from-emperor追加
 	
 	* deep-connect.rb, organizer.rb, deep-space.rb, session.rb,
 	  evaluator.rb, event.rb: DeepMQ追加
 
-2010-02-26  Keiju Ishitsuka  <keiju@emperor2.pendome>
+2010-02-26  Keiju Ishitsuka  <keiju@ishitsuka.com>
 
 	* Makefile: pull-from-fairy追加
 
 	* reference.rb: Reference#method_missing: NoMethodErrorの扱いを変えた.
 
-2010-02-25  Keiju Ishitsuka  <keiju@emperor2.pendome>
+2010-02-25  Keiju Ishitsuka  <keiju@ishitsuka.com>
 
 	* deep-fork.rb: DeepFork#initialize ちょっとバグがあった
 
@@ -320,3 +326,14 @@
 	* DeepConnect 最初版
 	
 
+Local variables:
+add-log-time-format: (lambda ()
+  (let* ((time (current-time))
+	 (system-time-locale "C")
+	 (diff (+ (cadr time) 32400))
+	 (lo (% diff 65536))
+	 (hi (+ (car time) (/ diff 65536))))
+  (format-time-string "%a %b %e %H:%M:%S %Y" (list hi lo) t)))
+indent-tabs-mode: t
+tab-width: 8
+end:

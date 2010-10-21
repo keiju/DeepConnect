@@ -103,7 +103,7 @@ module DeepConnect
     end
 
     def stop_service(*opts)
-      unless DISABLE_INFO
+      unless Conf.DISABLE_INFO
 	puts "INFO: STOP_SERVICE: Session: #{self.peer_uuid} #{opts.join(' ')} "
       end
       org_status = @status
@@ -327,11 +327,11 @@ module DeepConnect
 
     def keep_alive
       now = @organizer.tick
-      if now > @last_keep_alive + KEEP_ALIVE_INTERVAL*10
-	puts "KEEP ALIVE: session #{self} is dead." if DISPLAY_KEEP_ALIVE
+      if now > @last_keep_alive + Conf.KEEP_ALIVE_INTERVAL*10
+	puts "KEEP ALIVE: session #{self} is dead." if Conf.DISPLAY_KEEP_ALIVE
 	false
       else
-	if DISPLAY_KEEP_ALIVE
+	if Conf.DISPLAY_KEEP_ALIVE
 	  puts "KEEP ALIVE: session #{self} is alive(INT: #{now - @last_keep_alive})."
 	  puts "KEEP ALIVE: send #{self} to keep alive."
 	end
@@ -341,7 +341,7 @@ module DeepConnect
     end
 
     def recv_keep_alive_impl
-      puts "RECV_KEEP_ALIVE"  if DISPLAY_KEEP_ALIVE
+      puts "RECV_KEEP_ALIVE"  if Conf.DISPLAY_KEEP_ALIVE
       @last_keep_alive = @organizer.tick
     end
     Organizer.def_interface(self, :recv_keep_alive_impl)

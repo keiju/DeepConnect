@@ -187,7 +187,7 @@ module DeepConnect
 	  disconnect_deep_space(old, :SESSION_CLOSED)
 	end
 	unless @when_connect_proc.call deep_space, port
-	  puts "CONNECT Canceld DeepSpace: #{deep_space.peer_uuid}" if $DEBUG
+	  puts "CONNECT Canceld DeepSpace: #{deep_space.peer_uuid}" if Conf.DEBUG
 	  connect_ev = Event::ConnectResult.new(false)
 	  port.export connect_ev
 
@@ -209,7 +209,7 @@ module DeepConnect
 
 	@deep_spaces[deep_space.peer_uuid] = deep_space
 
-	puts "CONNECT DeepSpace: #{deep_space.peer_uuid}" if $DEBUG
+	puts "CONNECT DeepSpace: #{deep_space.peer_uuid}" if Conf.DEBUG
 	deep_space.connect
 	deep_space
       end
@@ -234,7 +234,7 @@ module DeepConnect
 
     #
     def keep_alive
-      puts "KEEP ALIVE: Start" if DISPLAY_KEEP_ALIVE
+      puts "KEEP ALIVE: Start" if Conf.DISPLAY_KEEP_ALIVE
       for uuid, deep_space in @deep_spaces.dup
 	unless deep_space.session.keep_alive
 	  disconnect_deep_space(deep_space, :SESSION_CLOSED)

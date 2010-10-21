@@ -72,7 +72,7 @@ module DeepConnect
 	    end
 	  rescue
 	    # ここ内部エラーじゃないなぁ...
-	    if DEBUG
+	    if Conf.DEBUG
 	      puts "INFO: BLOCK YIELD EXCEPTION:"
 	      puts  "\t#{$!}"
 	      $@.each{|l| puts "\t#{l}"}

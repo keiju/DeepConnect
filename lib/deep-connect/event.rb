@@ -165,7 +165,7 @@ module DeepConnect
 	bt = @result.exp.backtrace
 	bt.push "-- peer side --"
 	bt.push *caller(0)
-	bt = bt.select{|e| /deep-connect/ !~ e} unless DC::DEBUG
+	bt = bt.select{|e| /deep-connect/ !~ e} unless Conf.DEBUG
 	exp.set_backtrace(bt)
 	exp
       end

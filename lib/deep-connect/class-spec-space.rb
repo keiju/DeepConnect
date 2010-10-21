@@ -42,7 +42,7 @@ module DeepConnect
     end
 
     def method_spec(ref_or_obj, method)
-      puts "method_spec(#{ref_or_obj}, #{method})" if DISPLAY_METHOD_SPEC
+      puts "method_spec(#{ref_or_obj}, #{method})" if Conf.DISPLAY_METHOD_SPEC
       if ref_or_obj.__deep_connect_reference?
 	csid = ref_or_obj.csid
       else

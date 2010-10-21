@@ -57,7 +57,7 @@ module DeepConnect
 	p $!, $@
 	raise
       end
-      puts "IMPORT: #{ev.inspect}" if DC::MESSAGE_DISPLAY
+      puts "IMPORT: #{ev.inspect}" if Conf.MESSAGE_DISPLAY
       ev
     end
 
@@ -79,22 +79,22 @@ module DeepConnect
 	p $!, $@
 	raise
       end
-      puts "IMPORT: #{ev.inspect}" if DC::MESSAGE_DISPLAY
+      puts "IMPORT: #{ev.inspect}" if Conf.MESSAGE_DISPLAY
       ev
     end
 
     def export2(ev)
-      puts "EXPORT: #{ev.inspect}" if DC::MESSAGE_DISPLAY
+      puts "EXPORT: #{ev.inspect}" if Conf.MESSAGE_DISPLAY
       bin = Marshal.dump(ev.serialize, @io)
 #      size = bin.size
 
 #      packet = [size].pack("N")+bin
 #      write(packet)
-      puts "EXPORT: finsh" if DC::MESSAGE_DISPLAY
+      puts "EXPORT: finsh" if Conf.MESSAGE_DISPLAY
     end
 
     def export(ev)
-      puts "EXPORT: #{ev.inspect}" if DC::MESSAGE_DISPLAY
+      puts "EXPORT: #{ev.inspect}" if Conf.MESSAGE_DISPLAY
       begin
 	bin = Marshal.dump(ev.serialize)
       rescue
@@ -107,7 +107,7 @@ module DeepConnect
 
       packet = [size].pack("N")+bin
       write(packet)
-      puts "EXPORT: finsh" if DC::MESSAGE_DISPLAY
+      puts "EXPORT: finsh" if Conf.MESSAGE_DISPLAY
     end
 
 #     def import
@@ -115,12 +115,12 @@ module DeepConnect
 #       bin = read(sz).unpack("a#{sz}")
 #       a = Marshal.load(bin.first)
 #       ev = Event.materialize(@session, a.first, *a)
-#       puts "IMPORT: #{ev.inspect}" if DC::MESSAGE_DISPLAY
+#       puts "IMPORT: #{ev.inspect}" if Conf.MESSAGE_DISPLAY
 #       ev
 #     end
 
 #     def export(ev)
-#       puts "EXPORT: #{ev.inspect}" if DC::MESSAGE_DISPLAY
+#       puts "EXPORT: #{ev.inspect}" if Conf.MESSAGE_DISPLAY
 #       s = Marshal.dump(ev.serialize)
 #       size = s.size
 #       packet = [size, s].pack("Na#{size}")

@@ -1,5 +1,6 @@
 2010-10-21  Keiju Ishitsuka  <keiju@emperor2.pendome>
 
+	* Makefile: ディレクトリ構成変更に伴う修正
 	* Makefile, tools/git-tag: ディレクトリ構成変更に伴う修正
 	* .gitignore: ちょっと修正
 	* Obsolatesd/* を構成管理下から削除

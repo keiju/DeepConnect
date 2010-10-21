@@ -1,5 +1,7 @@
 2010-10-21  Keiju Ishitsuka  <keiju@emperor2.pendome>
 
+	* .gitignore: ちょっと修正
+	* Obsolatesd/* を構成管理下から削除
 	* ディレクトリ構成変更(その2)
 
 2010-10-15  Keiju Ishitsuka  <keiju@emperor2.pendome>

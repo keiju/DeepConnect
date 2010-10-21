@@ -3,7 +3,7 @@ PACKAGE_NAME = DeepConnect
 SRCS =  Makefile \
 	ChangeLog \
 	TODO \
-	$(wildcard *.rb test/*.rb)
+	$(wildcard lib/*.rb lib/deep-connect/*.rb test/*.rb)
 
 tag-%:
 	echo "Make tag $*"

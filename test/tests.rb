@@ -14,7 +14,7 @@
 
 require "tracer"
 
-require "deep-connect/deep-connect"
+require "deep-connect"
 
 Thread.abort_on_exception=true
 

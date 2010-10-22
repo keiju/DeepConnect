@@ -14,7 +14,7 @@
 $DEBUG = 1
 require "tracer"
 
-require "deep-connect/deep-connect"
+require "deep-connect"
 
 Thread.abort_on_exception=true
 STDOUT.sync
@@ -32,7 +32,7 @@ when "1"
 when "2"
   ref = deepspace.import("TEST1")
 puts "A"
-  puts ref
+  p ref
   p ref[0]
   p ref.push 3
   puts ref.peer_inspect
@@ -669,4 +669,4 @@ when "34.2"
   puts "A1"
 end
 
-sleep 100
+sleep 2

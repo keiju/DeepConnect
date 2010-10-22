@@ -3,11 +3,13 @@ PACKAGE_NAME = DeepConnect
 SRCS =  Makefile \
 	ChangeLog \
 	TODO \
-	$(wildcard *.rb test/*.rb)
+	$(wildcard lib/*.rb lib/deep-connect/*.rb test/*.rb)
 
 tag-%:
 	echo "Make tag $*"
 	tools/git-tag $*
+
+all:
 
 pull-from-fairy:
 	git pull /home/keiju/public/a.research/fairy/git/deep-connect
@@ -34,7 +36,7 @@ TGZ_FILES = $(SRCS)
 
 SNAPSHOT = Snapshot
 
-VERSION = $(shell ruby -r version.rb -e "puts DeepConnect::VERSION")
+VERSION = $(shell ruby -r lib/deep-connect/version.rb -e "puts DeepConnect::VERSION")
 
 TAR_NAME = $(PACKAGE_NAME)-$(VERSION).tgz
 

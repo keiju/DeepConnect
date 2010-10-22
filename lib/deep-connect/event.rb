@@ -1,14 +1,8 @@
 # encoding: UTF-8
 #
 #   event.rb - 
-#   	$Release Version: $
-#   	$Revision: 1.1 $
-#   	$Date: 1997/08/08 00:57:08 $
-#   	by Keiju ISHITSUKA(Penta Advanced Labrabries, Co.,Ltd)
-#
-# --
-#
-#   
+#   	Copyright (C) 1996-2010 Keiju ISHITSUKA
+#				(Penta Advanced Labrabries, Co.,Ltd)
 #
 
 require "deep-connect/class-spec-space"
@@ -165,7 +159,7 @@ module DeepConnect
 	bt = @result.exp.backtrace
 	bt.push "-- peer side --"
 	bt.push *caller(0)
-	bt = bt.select{|e| /deep-connect/ !~ e} unless DC::DEBUG
+	bt = bt.select{|e| /deep-connect/ !~ e} unless Conf.DEBUG
 	exp.set_backtrace(bt)
 	exp
       end

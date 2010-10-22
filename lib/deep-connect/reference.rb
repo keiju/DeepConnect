@@ -1,10 +1,8 @@
 # encoding: UTF-8
 #
 #   reference.rb - 
-#   	$Release Version: $
-#   	$Revision: 1.1 $
-#   	$Date: 1997/08/08 00:57:08 $
-#   	by Keiju ISHITSUKA(Penta Advanced Labrabries, Co.,Ltd)
+#   	Copyright (C) 1996-2010 Keiju ISHITSUKA
+#				(Penta Advanced Labrabries, Co.,Ltd)
 #
 # --
 #
@@ -169,7 +167,7 @@ module DeepConnect
 #    TO_METHODS = [:to_ary, :to_str, :to_int, :to_regexp, :to_splat]
     
     def method_missing(method, *args, &block)
-      puts "SEND MESSAGE: #{self.inspect} #{method.id2name}" if DC::DISPLAY_MESSAGE_TRACE
+      puts "SEND MESSAGE: #{self.inspect} #{method.id2name}" if Conf.DISPLAY_MESSAGE_TRACE
 
 #       if TO_METHODS.include?(method)
 # 	return self.dc_dup.send(method)
@@ -363,7 +361,7 @@ module DeepConnect
 	end
       end
 
-      if DC::DEBUG_REFERENCE
+      if Conf.DEBUG_REFERENCE
 	sprintf("<DC::Ref[deep_space=%s csid=%s id=%x]: %s>", 
 		@deep_space.to_s, 
 		@csid, 

@@ -1,21 +1,13 @@
 # encoding: UTF-8
 #
 #   cron.rb - 
-#   	$Release Version: $
-#   	$Revision: 1.1 $
-#   	$Date: 1997/08/08 00:57:08 $
-#   	by Keiju ISHITSUKA(Penta Advanced Labrabries, Co.,Ltd)
-#
-# --
-#
-#   
+#   	Copyright (C) 1996-2010 Keiju ISHITSUKA
+#				(Penta Advanced Labrabries, Co.,Ltd)
 #
 
 @RCS_ID='-$Id:  $-'
 
 module DeepConnect
-
-  KEEP_ALIVE_INTERVAL = 60
 
   class Cron
 
@@ -23,10 +15,8 @@ module DeepConnect
       [10, proc{|org, cron, t| cron.mon_10sec}],
       [60, proc{|org, cron, t| cron.mon_min}],
       [3060, proc{|org, cron, t| cron.mon_hour}],
-      [KEEP_ALIVE_INTERVAL, proc{|org, cron, t| org.keep_alive}],
+      [Conf.KEEP_ALIVE_INTERVAL, proc{|org, cron, t| org.keep_alive}],
     ]
-
-    MON_INTERVAL = 10
 
     def initialize(organizer)
       @organizer = organizer
@@ -45,8 +35,8 @@ module DeepConnect
     def start
       Thread.start do 
 	loop do
-	  sleep MON_INTERVAL
-	  @timer += MON_INTERVAL
+	  sleep Conf.MON_INTERVAL
+	  @timer += Conf.MON_INTERVAL
 	  
 	  Thread.start do
 	    @mon_mutex.synchronize do
@@ -67,7 +57,7 @@ module DeepConnect
     def mon_10sec
       return if @organizer.deep_spaces.size == 0
 
-      if DISPLAY_MONITOR_MESSAGE
+      if Conf.DISPLAY_MONITOR_MESSAGE
 	str = ""
 	str.concat "Connect DeepSpaces: BEGIN\n"
 	for peer_id, ds in @organizer.deep_spaces.dup
@@ -84,13 +74,13 @@ module DeepConnect
     end
 
     def mon_min
-      if DISPLAY_MONITOR_MESSAGE
+      if Conf.DISPLAY_MONITOR_MESSAGE
 	puts "MON MIN: #{@timer}"
       end
     end
 
     def mon_hour
-      if DISPLAY_MONITOR_MESSAGE
+      if Conf.DISPLAY_MONITOR_MESSAGE
 	puts "MON HOUR: #{@timer}"
       end
     end

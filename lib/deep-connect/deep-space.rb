@@ -1,14 +1,8 @@
 # encoding: UTF-8
 #
 #   deep-space.rb - 
-#   	$Release Version: $
-#   	$Revision: 1.1 $
-#   	$Date: 1997/08/08 00:57:08 $
-#   	by Keiju ISHITSUKA(Penta Advanced Labrabries, Co.,Ltd)
-#
-# --
-#
-#   
+#   	Copyright (C) 1996-2010 Keiju ISHITSUKA
+#				(Penta Advanced Labrabries, Co.,Ltd)
 #
 
 require "thread"
@@ -178,11 +172,11 @@ module DeepConnect
 
 	    if (pair[1] -= refcount) == 0
 	      obj = @export_roots.delete(id)
-	      if DISPLAY_GC
+	      if Conf.DISPLAY_GC
 		puts "#{$$}: GC: delete root: #{id} #{obj.first.to_s}"
 	      end
 	    else
-	      if DISPLAY_GC
+	      if Conf.DISPLAY_GC
 		puts "#{$$}: GC: derefcount root: #{id} #{pair.first.to_s} #{pair[1]}"
 		if pair.first.kind_of?(Exception)
 		  p pair.first
@@ -191,7 +185,7 @@ module DeepConnect
 	      end
 	    end
 	  else
-	    if DISPLAY_GC
+	    if Conf.DISPLAY_GC
 	      puts "#{$$}: GC: warn already deleted root: #{id.inspect}"
 	    end
 	  end
@@ -202,8 +196,6 @@ module DeepConnect
     #
     # import 関連メソッド
     #
-    DISABLE_GC = true
-
     def init_import_feature
       # importしているオブジェクト
       # peer_id => ref_id
@@ -218,6 +210,8 @@ module DeepConnect
     end
 
     def import_reference(peer_id)
+      return import_reference_for_disable_gc(peer_id) unless Conf.ENABLE_GC
+
       status = GC.disable
       begin
 	@import_reference_mutex.synchronize do
@@ -250,6 +244,8 @@ module DeepConnect
     end
 
     def register_import_reference(ref)
+      return register_import_reference_for_disable_gc(ref) unless Conf.ENABLE_GC
+
       status = GC.disable
       begin
 	@import_reference_mutex.synchronize do
@@ -277,6 +273,7 @@ module DeepConnect
     end
 
     def deregister_import_reference(ref)
+      return deregister_import_reference_for_disable_gc(ref) unless Conf.ENABLE_GC
       status = GC.disable
       begin
 	@import_reference_mutex.synchronize do
@@ -303,16 +300,10 @@ module DeepConnect
       end
     end
  
-    if DISABLE_GC
-      alias import_reference import_reference_for_disable_gc
-      alias register_import_reference register_import_reference_for_disable_gc
-      alias deregister_import_reference deregister_import_reference_for_disable_gc
-    end
-
     def deregister_import_reference_proc
       proc do |ref_id|
 	if @status == :SERVICING
-	  puts "#{$$}: GC: gced id: #{ref_id}" if DISPLAY_GC
+	  puts "#{$$}: GC: gced id: #{ref_id}" if Conf.DISPLAY_GC
 	  peer_id = @rev_import_reference.delete(ref_id)
 	  pair = @import_reference.delete(peer_id)
 	  @deregister_reference_queue.concat [peer_id, pair.last]
@@ -366,7 +357,7 @@ module DeepConnect
     end
 
     def deregister_roots_to_peer(ids)
-      puts "#{$$}: GC: send deregister id: #{ids.join(' ')}" if DISPLAY_GC
+      puts "#{$$}: GC: send deregister id: #{ids.join(' ')}" if Conf.DISPLAY_GC
       @session.deregister_root_to_peer(ids)
     end
     

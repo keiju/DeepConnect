@@ -1,4 +1,12 @@
 # encoding: UTF-8
+#
+#   exceptions.rb - 
+#   	Copyright (C) 1996-2010 Keiju ISHITSUKA
+#				(Penta Advanced Labrabries, Co.,Ltd)
+#
+
+@RCS_ID='-$Id:  $-'
+
 
 require "e2mmap"
 

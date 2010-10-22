@@ -1,14 +1,8 @@
 # encoding: UTF-8
 #
 #   evaluator.rb - 
-#   	$Release Version: $
-#   	$Revision: 1.1 $
-#   	$Date: 1997/08/08 00:57:08 $
-#   	by Keiju ISHITSUKA(Penta Advanced Labrabries, Co.,Ltd)
-#
-# --
-#
-#   
+#   	Copyright (C) 1996-2010 Keiju ISHITSUKA
+#				(Penta Advanced Labrabries, Co.,Ltd)
 #
 
 
@@ -72,7 +66,7 @@ module DeepConnect
 	    end
 	  rescue
 	    # ここ内部エラーじゃないなぁ...
-	    if DEBUG
+	    if Conf.DEBUG
 	      puts "INFO: BLOCK YIELD EXCEPTION:"
 	      puts  "\t#{$!}"
 	      $@.each{|l| puts "\t#{l}"}

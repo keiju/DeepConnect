@@ -1,3 +1,12 @@
+# encoding: UTF-8
+#
+#   deep-fork.rb - 
+#   	Copyright (C) 1996-2010 Keiju ISHITSUKA
+#				(Penta Advanced Labrabries, Co.,Ltd)
+#
+
+@RCS_ID='-$Id:  $-'
+
 
 require "thread"
 

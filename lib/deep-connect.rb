@@ -1,40 +1,25 @@
 # encoding: UTF-8
 #
 #   deep-connect.rb - 
-#   	$Release Version: $
-#   	$Revision: 1.1 $
-#   	$Date: 1997/08/08 00:57:08 $
-#   	by Keiju ISHITSUKA(Penta Advanced Labrabries, Co.,Ltd)
-#
-# --
-#
-#   
+#   	Copyright (C) 1996-2010 Keiju ISHITSUKA
+#				(Penta Advanced Labrabries, Co.,Ltd)
 #
 
 require "forwardable"
 
-require "deep-connect/organizer"
+require "deep-connect/conf"
 
 module DeepConnect
   @RCS_ID='-$Id:  $-'
 
   # DC is a internal using short cut of DeepConnect .
   DC = DeepConnect
+  Conf = Config.new
+end
 
-  DISPLAY_MESSAGE_TRACE = false
-  MESSAGE_DISPLAY = false
-  DEBUG = false
-  DISPLAY_METHOD_SPEC = false
-  DISPLAY_MONITOR_MESSAGE = false
-  DISPLAY_KEEP_ALIVE = false
+require "deep-connect/organizer"
 
-  DEBUG_REFERENCE = false
-  DISPLAY_GC = false
-
-  DISABLE_INFO = false
-
-#  KEEP_ALIVE_INTERVAL = 60
-
+module DeepConnect
   class DeepConnect
     extend Forwardable
 

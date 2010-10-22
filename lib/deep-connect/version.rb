@@ -3,6 +3,6 @@
 # This file is auto generation. 
 #
 module DeepConnect
-    VERSION = "0.4.04-003"
+    VERSION = "0.4.06-002"
 end
 

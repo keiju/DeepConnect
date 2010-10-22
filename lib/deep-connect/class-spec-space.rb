@@ -1,4 +1,9 @@
 # encoding: UTF-8
+#
+#   class-spec-space.rb - 
+#   	Copyright (C) 1996-2010 Keiju ISHITSUKA
+#				(Penta Advanced Labrabries, Co.,Ltd)
+#
 
 require "thread"
 require "e2mmap"

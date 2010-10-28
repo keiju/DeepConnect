@@ -1,4 +1,8 @@
-Fri Oct 22 16:39:36 2010  Keiju Ishitsuka  <keiju@emperor2.pendome>
+Thu Oct 28 22:01:34 2010  Keiju Ishitsuka  <keiju@ishitsuka.com>
+
+	* deep-connect.gemspec, .gitignore: gem対応
+
+Fri Oct 22 16:39:36 2010  Keiju Ishitsuka  <keiju@ishitsuka.com>
 
 	* *.rb: コピーライト追加
 

@@ -1,0 +1,254 @@
+<?xml version="1.0" ?>
+<!DOCTYPE html 
+  PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>doc/deep-connect.rd</title>
+</head>
+<body>
+<p>分散オブジェクトシステム DeepConnect</p>
+<h2><a name="label-0" id="label-0">["DeepConnect とは?"]</a></h2><!-- RDLabel: "DeepConnect とは?" -->
+<ul>
+<li>分散オブジェクトシステムを実現するためのフレームワーク</li>
+<li>fairyで採用</li>
+</ul>
+<h2><a name="label-1" id="label-1">["DeepConnect ってなにしてくれるの?"]</a></h2><!-- RDLabel: "DeepConnect ってなにしてくれるの?" -->
+<p>ネットワーク越し、または、別のプロセス空間上のオブジェクトに対し、</p>
+<ul>
+<li>メッセージを送ったり、その結果を得ることができる機能を提供</li>
+<li>シンタックスが重要
+<ul>
+<li>remote_obj.message(arg1,...)</li>
+<li>つまり、Rubyのメッセージ呼び出しの形式がそのまま使える</li>
+</ul></li>
+<li>もっと分かりやすく言えば、
+<ul>
+<li>drb の親戚です(^^;;</li>
+</ul></li>
+</ul>
+<h2><a name="label-2" id="label-2">["歴史"]</a></h2><!-- RDLabel: "歴史" -->
+<ul>
+<li>1996.11.18 [ruby-list: 1361] で初投稿</li>
+<li>1997.01.31 [ruby-list: 2009] が最後の投稿
+<ul>
+<li>たぶん、モチベーションが下がった...</li>
+</ul></li>
+<li>1999.07.14 drb 登場
+<ul>
+<li>そのころソースをいじった形跡があるので、少しやる気が出たらしい (^^;;</li>
+</ul></li>
+<li>2001.06ごろ 別のコンセプトでまた考えている</li>
+<li>2008.06.22 fairy で適用開始
+<ul>
+<li>DeepConnect と命名</li>
+<li>ほとんど修正なしで動作。たぶん、1999年の時点で動作していたのだろう。</li>
+</ul></li>
+<li>2010.10.22 githubに公開</li>
+<li>2010.10.28 rubygems.org に公開</li>
+</ul>
+<h2><a name="label-3" id="label-3">["DeepConnect入門 - イメージ"]</a></h2><!-- RDLabel: "DeepConnect入門 - イメージ" -->
+<h2><a name="label-4" id="label-4">["DeepConnect入門 - (1)"]</a></h2><!-- RDLabel: "DeepConnect入門 - (1)" -->
+<ul>
+<li>サーバー側（受けて側）
+<ul>
+<li>dc = DeepConnect::start(port)</li>
+<li># サービス開始</li>
+<li>dc.export("name", obj)</li>
+<li># obj を name で参照できるように宣言</li>
+<li>dc.export("RemoteArray", Array)</li>
+<li># クラスでもexportできる</li>
+</ul></li>
+</ul>
+<h2><a name="label-5" id="label-5">["DeepConnect入門 - (2)"]</a></h2><!-- RDLabel: "DeepConnect入門 - (2)" -->
+<ul>
+<li>クライアント側（リクエスト出す側）
+<ul>
+<li>dc = DeepConnect::start</li>
+<li>ds = dc.open_deepspace(相手addr, 相手port)</li>
+<li># 相手(のDeepSpace)と接続</li>
+<li>remote_obj = deepspace.import("name")</li>
+<li># リモートオブジェクト(の参照)を取得。取っ掛かりのオブジェクトはimportする必要がある。 </li>
+<li>RemoteArray = deepspace.import("RemoteArray")</li>
+<li># クラスも同様に取得可能</li>
+</ul></li>
+</ul>
+<h2><a name="label-6" id="label-6">["DeepConnect入門 -- (3)"]</a></h2><!-- RDLabel: "DeepConnect入門 &shy;&shy; (3)" -->
+<ul>
+<li>あとは、だいたい普通にRubyのプログラムを組めばよい。
+<ul>
+<li>ret = remote_obj.req</li>
+<li># 戻り値もリモートオブジェクト（の参照）</li>
+<li>remote_ary = RemoteArray.new</li>
+<li># サーバー側に配列が作られる。その参照を取得。</li>
+<li>remote_ary.push “foo”</li>
+<li># さらにリモートオブジェクトにメッセージを送れる</li>
+</ul></li>
+</ul>
+<h2><a name="label-7" id="label-7">["特徴"]</a></h2><!-- RDLabel: "特徴" -->
+<ul>
+<li>メソッドは参照渡し</li>
+<li>メソッドスペック</li>
+<li>Future型</li>
+<li>分散GC</li>
+<li>自動接続</li>
+<li>ShallowConnectモード </li>
+</ul>
+<h2><a name="label-8" id="label-8">["特徴 - メソッドは参照渡し"]</a></h2><!-- RDLabel: "特徴 - メソッドは参照渡し" -->
+<ul>
+<li>メソッドの引数も戻り値も参照渡し</li>
+<li>オブジェクト指向なんだから当たり前</li>
+<li>これによって既存プログラムの分散化が簡単に実現可能になる</li>
+<li>どのオブジェクトをどこに置くかを考えるだけでよくなる</li>
+<li>リモートオブジェクトとローカルのオブジェクトを区別なく利用可能になる</li>
+<li>参照渡しであれば、基本的にコードの修正は必要ない</li>
+<li>値(コピー)渡しはそうはいかない。</li>
+</ul>
+<h2><a name="label-9" id="label-9">["特徴 - メソッドは参照渡し"]</a></h2><!-- RDLabel: "特徴 - メソッドは参照渡し" -->
+<ul>
+<li><p>fairyのmapの実装</p>
+<pre>def basic_each(&amp;block)
+  @map_proc =BBlock.new(@block_source, @context, self)
+  @input.each do |e|
+    block.call @map_proc.yield(e)
+  end
+end</pre></li>
+<li>@inputが前段のフィルタになっている。これが、リモートのオブジェクト
+  の場合もあるし、ローカルのオブジェクトの可能性もある。</li>
+<li>このように、リモート/ローカルのオブジェクトを区別なく使えることに
+  より、オブジェクトの分散配置が自由に行えるようになる。これには、ク
+  ラスをexportできるのが有効</li>
+</ul>
+<h2><a name="label-10" id="label-10">["特徴 - メソッドは参照渡し"]</a></h2><!-- RDLabel: "特徴 - メソッドは参照渡し" -->
+<ul>
+<li>ただし、
+<ul>
+<li>Immutable なものと - これはよいとして</li>
+<li>String は値（コピー）渡し - こちらは、、、
+<ul>
+<li>パフォーマンスを考えると。。。こういう選択になりました。</li>
+<li>文字列の場合、オブジェクトとして扱うよりは値がほしいことが多いの
+      で、実用上はそれほど影響はない</li>
+</ul></li>
+</ul></li>
+<li>さらに、
+<ul>
+<li>オブジェクトとしてよりも、その値がほしい場合
+<ul>
+<li>文字列は典型的な場合。</li>
+<li>パフォーマンスを考えると、その他のオブジェクトでも、そういったこ
+      とがないわけではない</li>
+</ul></li>
+<li>組み込みのメソッドの中にはリファレンスでは困ることが多い
+<ul>
+<li>例) Array#&amp; 
+<ul>
+<li>remote_ary &amp; ary</li>
+<li>このばあい、Array#&amp;　はリファレンスオブジェクトとして理解し、
+	リモートオブジェクトとして扱ってくれない。</li>
+</ul></li>
+</ul></li>
+</ul></li>
+</ul>
+<h2><a name="label-11" id="label-11">["特徴 - メソッドスペック"]</a></h2><!-- RDLabel: "特徴 - メソッドスペック" -->
+<ul>
+<li>メソッドに対し、MethodSpecを指定することによりその問題を回避
+<ul>
+<li>メソッド単位で参照以外を渡すことも可能になる。指定できるのは3種:
+<ul>
+<li>REF, VAL, DVAL - 参照、シャローコピー、ディープコピー</li>
+</ul></li>
+<li>メソッド引数、戻り値、ブロック引数、ブロック戻り値に指定可能
+<ul>
+<li>def_method_spec(Object, "VAL to_a()")</li>
+<li>def_method_spec(Array, :method=&gt; :==, :args=&gt; "VAL")</li>
+</ul></li>
+<li>組み込みメソッドに関しては、一通り定義済み</li>
+</ul></li>
+<li># クラス単位での指定も出来るが、こちらのほうが便利</li>
+</ul>
+<h2><a name="label-12" id="label-12">["特徴 - Future型"]</a></h2><!-- RDLabel: "特徴 - Future型" -->
+<ul>
+<li>非同期通信を実現するための手段として採用
+<ul>
+<li>メッセージを送った後、そのメッセージの結果を待たずに、実行を継続し、
+    実際に必要になったときに、値があればそれを使い、なければ値が帰るま
+    でまつ。</li>
+</ul></li>
+<li><p>例</p>
+<pre>v = DeepConnect::future{remote.req}
+# 処理を継続、vがFutureオブジェクト
+v.value			# 実際の値の取得
+v.messege		# Delegatorにもなっている</pre></li>
+</ul>
+<h2><a name="label-13" id="label-13">["特徴 - 分散GC"]</a></h2><!-- RDLabel: "特徴 - 分散GC" -->
+<ul>
+<li>他から参照されているオブジェクトは、GCされないようにしている。
+<ul>
+<li>参照されなくなったら、GCの対象となるようになっている</li>
+</ul></li>
+<li>リファレンスカウント方式の分散GCを備えている。
+<ul>
+<li>完全なGCではないのでごみが残ることもある。</li>
+<li>かわりに、明示的なリリースメソッドを用意している</li>
+</ul></li>
+</ul>
+<h2><a name="label-14" id="label-14">["特徴 - 自動的な接続"]</a></h2><!-- RDLabel: "特徴 - 自動的な接続" -->
+<ul>
+<li><p>必要があれば、自動的に接続する</p>
+<ul>
+<li><p>最初の取っ掛かりは、明示的接続が必要</p>
+<p>ds = dc.open_deepspace(相手addr, 相手port)
+remote_obj = deepspace.import("name")</p></li>
+<li>接続のされていない空間のオブジェクトの参照が渡されると自動的にその</li>
+</ul>
+<pre>空間と接続するようになっている。
+* 複数プロセス間で参照のやり取りがある場合に有効</pre></li>
+</ul>
+<h2><a name="label-15" id="label-15">["特徴 - ShallowConnect モード"]</a></h2><!-- RDLabel: "特徴 - ShallowConnect モード" -->
+<ul>
+<li>DeepConnectは、接続先に対してどんなメソッドも呼び出せてしまう。
+<ul>
+<li>DeepConnectの名前の由来</li>
+<li>これはこれで、便利だが、危険なときも</li>
+</ul></li>
+<li>CORBA IDL的な指定ができるモードを用意
+<ul>
+<li>インターフェース宣言されたメソッドだけを利用可能に出来る</li>
+<li>ただし、すべて宣言しなくてはならないので、かなり面倒。</li>
+</ul></li>
+</ul>
+<h2><a name="label-16" id="label-16">["アーキテクチャ"]</a></h2><!-- RDLabel: "アーキテクチャ" -->
+<h2><a name="label-17" id="label-17">["実績"]</a></h2><!-- RDLabel: "実績" -->
+<ul>
+<li>fairyで採用
+<ul>
+<li>かなり激しい分散並列処理システムなので、ヘビーユーザーさまです</li>
+<li>おかげさまで DeepConnect の品質が向上しました(^^;;</li>
+</ul></li>
+<li>fairyローカル版から、fairy分散版への修正は、
+<ul>
+<li>5% ぐらいの修正で動作した。</li>
+<li>ほんとんどがオブジェクトのexport/importの指定ぐらい。</li>
+</ul></li>
+</ul>
+<h2><a name="label-18" id="label-18">["注意事項"]</a></h2><!-- RDLabel: "注意事項" -->
+<ul>
+<li>あまりにも分散を無意識にできてしまうので、注意も必要
+<ul>
+<li>構文上同じでも、ネットワーク通信はやっぱりコストがかかる。
+<ul>
+<li>細かいメッセージは集約が必要</li>
+</ul></li>
+<li>不用意な戻り値。</li>
+</ul></li>
+<li>Array も参照が渡される
+<ul>
+<li>Rubyを理解していれば、だいじょうぶなはずだが、時々忘れることも(^^;;</li>
+<li>参照に対する == は、　equal? になっている。</li>
+<li>Hash等でパフォーマンス上問題になるため。</li>
+</ul></li>
+</ul>
+
+</body>
+</html>

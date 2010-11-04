@@ -15,6 +15,7 @@ Gem::Specification.new do |s|
 #  s.executable = ""
   s.files = ["lib/deep-connect.rb" ]
   s.files.concat Dir.glob("lib/deep-connect/*.rb")
+  s.files.concat ["doc/deep-connect.rd", "doc/deep-connect.html"]
   s.description = <<EOF
 Distributed Object Framework for Ruby.
 EOF

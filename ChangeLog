@@ -1,3 +1,8 @@
+Thu Nov  4 20:50:53 2010  Keiju Ishitsuka  <keiju@ishitsuka.com>
+
+	* doc/deep-connect.{rd,html}: 追加
+	* deep-connect.gemspec: 上記追加に伴う修正
+
 Thu Oct 28 22:01:34 2010  Keiju Ishitsuka  <keiju@ishitsuka.com>
 
 	* deep-connect.gemspec, .gitignore: gem対応

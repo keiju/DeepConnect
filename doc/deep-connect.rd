@@ -1,6 +1,4 @@
-分散オブジェクトシステム DeepConnect
-
-	
+分散オブジェクトフレームワーク DeepConnect
 
 == DeepConnect とは?
 

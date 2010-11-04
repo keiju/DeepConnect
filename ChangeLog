@@ -1,3 +1,8 @@
+Thu Nov  4 21:58:30 2010  Keiju Ishitsuka  <keiju@ishitsuka.com>
+
+	* doc/deep-connect.{rd,html}: ちょっと修正
+	* Makefile: doc/deep-connect.html タグ追加
+
 Thu Nov  4 20:50:53 2010  Keiju Ishitsuka  <keiju@ishitsuka.com>
 
 	* doc/deep-connect.{rd,html}: 追加

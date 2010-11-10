@@ -29,6 +29,7 @@ pull-from-giant:
 #push-tags:	
 #	git push --tags ssh://git-keiju@www.sota.me/var/www/html/fairy/fairy.git
 
+doc: doc/deep-connect.html
 
 doc/deep-connect.html: doc/deep-connect.rd
 	env RUBYLIB= RUBYOPT= rd2 -rrd/rd2html-lib --html-title="DeepConnect"  doc/deep-connect.rd > doc/deep-connect.html

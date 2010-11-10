@@ -1,3 +1,9 @@
+Wed Nov 10 23:55:35 2010  Keiju Ishitsuka  <keiju@ishitsuka.com>
+
+	* Makefile: docタグ追加
+	* deep-connect.gemspec: summary, description変更
+	* doc/deep-connect.{rd,html}: ちょっと充実化した.
+
 Mon Nov  8 18:40:55 2010  Keiju Ishitsuka  <keiju@ishitsuka.com>
 
 	* doc/deep-connect.{rd,html}: ちょっと充実化した.

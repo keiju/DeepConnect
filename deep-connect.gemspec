@@ -6,7 +6,7 @@ Gem::Specification.new do |s|
   s.authors = "Keiju Ishitsuka"
   s.email = "keiju@ishitsuka.com"
   s.platform = Gem::Platform::RUBY
-  s.summary = "Distributed Object Framework for Ruby"
+  s.summary = "Distributed Object Environment for Ruby"
   s.rubyforge_project = s.name
   s.homepage = "http://github.com/keiju/DeepConnect"
   s.version = File.readlines("lib/deep-connect/version.rb").grep(/VERSION/).first.sub(/.*([0-9]+\.[0-9]+\.[0-9]+).*/, "\\1").chomp
@@ -17,7 +17,7 @@ Gem::Specification.new do |s|
   s.files.concat Dir.glob("lib/deep-connect/*.rb")
   s.files.concat ["doc/deep-connect.rd", "doc/deep-connect.html"]
   s.description = <<EOF
-Distributed Object Framework for Ruby.
+Distributed Object Environment for Ruby.
 EOF
 end
 

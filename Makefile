@@ -20,20 +20,28 @@ pull-from-emperor:
 pull-from-giant:
 	git pull ssh://giant/home/keiju/var/src/var.lib/ruby/deep-connect
 
-#push:	
-#	git push ssh://git-keiju@www.sota.me/var/www/html/fairy/fairy.git
+#
+# github
+push:
+	git push
 
-#push-dev:
-#	git push ssh://git-keiju@www.sota.me/var/www/html/fairy/fairy.git refs/heads/dev
+push-tags:
+	git push --tags
 
-#push-tags:	
-#	git push --tags ssh://git-keiju@www.sota.me/var/www/html/fairy/fairy.git
-
+#
 # gem
 gem:	
 	@f=`gem build deep-connect.gemspec | sed -n "s/ *File: *//p"`; \
 	echo gem build: $$f; \
 	mv $$f Packages
+
+last_gem := $(notdir $(lastword $(sort $(wildcard Packages/*.gem))))
+
+push-gem: push-$(last_gem)
+
+push-%.gem: 
+	gem push Packages/$*.gem
+
 #
 #
 # doc

@@ -4,10 +4,8 @@ require "rubygems"
 v = `ruby -Ilib -e 'require "deep-connect/version"; print DeepConnect::VERSION'`
 v, p = v.scan(/^([0-9]+\.[0-9]+\.[0-9]+)-([0-9]+)/).first
 if p.to_i > 1
-  v += ".p"+p
+  v += "."+p
 end
-
-
 
 Gem::Specification.new do |s|
   s.name = "DeepConnect"

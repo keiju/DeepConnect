@@ -1,3 +1,8 @@
+Fri Nov 12 20:05:48 2010  Keiju Ishitsuka  <keiju@ishitsuka.com>
+
+	* Makefile: push, push-tags, push-gemタグ追加
+	* deep-connect.gemspec: バージョン部分再々変更
+
 Fri Nov 12 19:37:21 2010  Keiju Ishitsuka  <keiju@ishitsuka.com>
 
 	* deep-connect.gemspec: バージョン部分変更

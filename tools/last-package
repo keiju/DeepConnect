@@ -1,0 +1,21 @@
+#!/usr/local/bin/ruby-1.9.1
+#
+#   last-package - 
+#   	$Release Version: $
+#   	$Revision: 1.1 $
+#   	$Date: 1997/08/08 00:57:08 $
+#   	Copyright (C) 1996-2010 Keiju ISHITSUKA
+#				(Penta Advanced Labrabries, Co.,Ltd)
+#
+# --
+#
+#   
+#
+
+
+files = Dir.glob(ARGV[0]+"/*.gem")
+v = files.collect{|f| f.scan(/([0-9]+(?:\.[0-9a-zA-Z]+)*)\.gem/).first.first}.sort{|v1, v2| Gem::Version.new(v1) <=> Gem::Version.new(v2)}.last
+puts "DeepConnect-#{v}.gem"
+
+
+

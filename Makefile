@@ -35,12 +35,9 @@ gem:
 	echo gem build: $$f; \
 	mv $$f Packages
 
-last_gem := $(notdir $(lastword $(sort $(wildcard Packages/*.gem))))
-
-push-gem: push-$(last_gem)
-
-push-%.gem: 
-	gem push Packages/$*.gem
+push-gem: 
+	@f=`tools/last-package Packages`; \
+	gem push Packages/$$f
 
 #
 #

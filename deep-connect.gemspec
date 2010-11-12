@@ -1,6 +1,14 @@
 
 require "rubygems"
 
+v = `ruby -Ilib -e 'require "deep-connect/version"; print DeepConnect::VERSION'`
+v, p = v.scan(/^([0-9]+\.[0-9]+\.[0-9]+)-([0-9]+)/).first
+if p.to_i > 1
+  v += "p"+p
+end
+
+
+
 Gem::Specification.new do |s|
   s.name = "DeepConnect"
   s.authors = "Keiju Ishitsuka"
@@ -9,7 +17,7 @@ Gem::Specification.new do |s|
   s.summary = "Distributed Object Environment for Ruby"
   s.rubyforge_project = s.name
   s.homepage = "http://github.com/keiju/DeepConnect"
-  s.version = File.readlines("lib/deep-connect/version.rb").grep(/VERSION/).first.sub(/.*([0-9]+\.[0-9]+\.[0-9]+).*/, "\\1").chomp
+  s.version = v
   s.require_path = "lib"
 #  s.test_file = ""
 #  s.executable = ""

@@ -1,3 +1,7 @@
+Fri Nov 12 19:37:21 2010  Keiju Ishitsuka  <keiju@ishitsuka.com>
+
+	* deep-connect.gemspec: バージョン部分変更
+
 Fri Nov 12 17:57:34 2010  Keiju Ishitsuka  <keiju@ishitsuka.com>
 
 	* Makefile: gemタグ追加

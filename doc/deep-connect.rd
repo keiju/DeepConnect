@@ -146,8 +146,8 @@ Stringに関しては, パフォーマンスの考慮しこういう選択にな
 
 メソッド引数、戻り値、ブロック引数、ブロック戻り値に指定可能になっている.
 
-  def_method_spec(Object, "VAL to_a()")
-  def_method_spec(Array, :method => :==, :args => "VAL")
+  DeepConnect.def_method_spec(Object, "VAL to_a()")
+  DeepConnect.def_method_spec(Array, :method => :==, :args => "VAL")
 
 組み込みメソッドに関しては、一通り定義済みになっていて, 前述の Array#& 
 のような問題は解消している.

@@ -127,8 +127,8 @@ end</pre>
 <li>DVAL - ディープコピー</li>
 </ul>
 <p>メソッド引数、戻り値、ブロック引数、ブロック戻り値に指定可能になっている.</p>
-<pre>def_method_spec(Object, "VAL to_a()")
-def_method_spec(Array, :method =&gt; :==, :args =&gt; "VAL")</pre>
+<pre>DeepConnect.def_method_spec(Object, "VAL to_a()")
+DeepConnect.def_method_spec(Array, :method =&gt; :==, :args =&gt; "VAL")</pre>
 <p>組み込みメソッドに関しては、一通り定義済みになっていて, 前述の Array#&amp; 
 のような問題は解消している.</p>
 <p>実際には, クラス単位での指定も出来るが、MethodSpecを使うほうが便利だ.</p>

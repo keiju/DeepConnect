@@ -16,7 +16,7 @@ module DeepConnect
       @MON_INTERVAL = 10
 
       # debugging attributes.
-      @DISABLE_INFO = false
+      @DISABLE_INFO = true
 
       @DISPLAY_MESSAGE_TRACE = false
       @MESSAGE_DISPLAY = false

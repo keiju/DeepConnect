@@ -119,7 +119,10 @@ module DeepConnect
 	  waiting_events = @waiting.sort{|s1, s2| s1[0] <=> s2[0]}
 	  for seq, ev in waiting_events
 	    begin
-	      p ev
+	      unless Conf.DISABLE_INFO
+		print "WARN: Remain events: "
+		p ev
+	      end
 	      DC.Raise SessionServiceStopped
 	    rescue
 	      ev.result = ev.reply(nil, $!)

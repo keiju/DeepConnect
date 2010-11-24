@@ -132,7 +132,9 @@ module DeepConnect
 #	DC::Raise ProtocolError unless packet.size == n
 	packet
       rescue Errno::ECONNRESET, EOFError
-	puts "WARN: read中に[#{peeraddr.join(', ')}]の接続が切れました"
+	unless Conf.DISABLE_INFO
+	  puts "WARN: read中に[#{peeraddr.join(', ')}]の接続が切れました"
+	end
 	DC::Raise DisconnectClient, peeraddr
       end
     end
@@ -142,7 +144,9 @@ module DeepConnect
 	@io.write(packet)
 #	@io.flush
       rescue Errno::ECONNRESET
-	puts "WARN: write中に[#{peeraddr.join(', ')}]の接続が切れました"
+	unless Conf.DISABLE_INFO
+	  puts "WARN: write中に[#{peeraddr.join(', ')}]の接続が切れました"
+	end
 	DC::Raise DisconnectClient, peeraddr
       end
     end

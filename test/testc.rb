@@ -674,6 +674,15 @@ when "34.2"
 when "35"
   ref = deepspace::TEST35
   p ref
+
+when "35.1"
+  ref = deepspace::Object
+  p ref
+
+when "35.2"
+  ref = deepspace::Foo
+  p ref
+
 end
 
 sleep 2

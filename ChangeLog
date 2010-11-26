@@ -1,3 +1,7 @@
+Sat Nov 27 01:23:34 2010  Keiju Ishitsuka  <keiju@ishitsuka.com>
+
+	* organizer.rb: deepspace::Const機能追加
+
 Fri Nov 26 22:57:26 2010  Keiju Ishitsuka  <keiju@ishitsuka.com>
 
 	* deep-connect.rb, deep-space.rb: ConstSpace機能追加

@@ -237,7 +237,6 @@ module DeepConnect
       end
     end
 
-
     # services
     def register_service(name, obj)
       @services_mx.synchronize do
@@ -250,6 +249,9 @@ module DeepConnect
     def service(name, waitp = false)
       @services_mx.synchronize do
 	until @services.key?(name)
+	  if Object.const_defined?(name)
+	    return Object.const_get(name)
+	  end
 	  if waitp
 	    @services_cv.wait(@services_mx)
 	  else

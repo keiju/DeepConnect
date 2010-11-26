@@ -36,10 +36,6 @@ module DeepConnect
     def_delegator :@organizer, :start
     def_delegator :@organizer, :stop
 
-    def_delegator :@organizer, :open_deep_space
-    def_delegator :@organizer, :open_deepspace
-    def_delegator :@organizer, :close_deep_space
-    def_delegator :@organizer, :close_deepspace
     def_delegator :@organizer, :when_connected
     def_delegator :@organizer, :when_disconnected
 
@@ -52,6 +48,15 @@ module DeepConnect
 
     def_delegator :@organizer, :local_id
 
+    def open_deep_space(*args)
+      @organizer.open_deep_space(*args).front
+    end
+    alias open_deepspace open_deep_space
+    
+    def close_deep_space(front)
+      @organizer.close_deep_space(front.backend)
+    end
+    alias close_deepspace close_deep_space
   end
 
   def DC.start(service = nil)

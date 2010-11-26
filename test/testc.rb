@@ -86,6 +86,9 @@ when "4.3"
     a += 1
     break if a==2
   end
+  r.each do |e|
+    puts e
+  end
 
 when "4.4"
   r = deepspace.get_service("TEST1")
@@ -667,6 +670,10 @@ when "34.2"
     mq.push(ref, :req){|ret, exp| puts "#{i}: ret=#{ret.inspect} exp=#{exp.inspect}"}
   end
   puts "A1"
+
+when "35"
+  ref = deepspace::TEST35
+  p ref
 end
 
 sleep 2

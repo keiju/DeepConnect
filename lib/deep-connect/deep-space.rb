@@ -17,6 +17,7 @@ module DeepConnect
   class DeepSpace
     extend Forwardable
 
+
     def initialize(org, port, local_id = nil)
       @status = :INITIALIZE
 
@@ -34,10 +35,20 @@ module DeepConnect
 
       @peer_uuid = [ipaddr.to_s, local_id]
 
+      init_front_feature
       init_class_spec_feature
       init_export_feature
       init_import_feature
     end
+
+    def init_front_feature
+      @front = Module.new
+      @front.extend Front
+      @front.backend = self
+      @front
+    end
+
+    attr_reader :front
 
     attr_reader :status
     attr_reader :organizer
@@ -360,7 +371,19 @@ module DeepConnect
       puts "#{$$}: GC: send deregister id: #{ids.join(' ')}" if Conf.DISPLAY_GC
       @session.deregister_root_to_peer(ids)
     end
-    
+
+    module Front
+      extend Forwardable
+      attr_accessor :backend
+
+      def_delegator :@backend, :close
+      def_delegator :@backend, :import
+      alias get_service :import
+
+      def const_missing(name)
+	@backend.import(name)
+      end
+    end
   end
 
   class DeepSpaceNoConnection

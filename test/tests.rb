@@ -29,11 +29,12 @@ dc.export("TEST2", ["foo", "bar", "baz"])
 dc.export("TEST3", Array)
 dc.export("TEST22", Object.new)
 dc.export("TEST4", [["foo"], ["bar"], ["baz"]])
+dc.export(:TEST35, [["foo"], ["bar"], ["baz"]])
 
 case ARGV[0]
 when "5", "S2"
-#  session = dc.open_deep_space("localhost", 65533)
-  session = dc.open_deep_space("gentoo", 65533)
+  session = dc.open_deep_space("localhost", 65533)
+#  session = dc.open_deep_space("gentoo", 65533)
   s2ary = session.import("s2ary")
   dc.export("TEST.S2", s2ary)
 
@@ -204,7 +205,7 @@ when "7.param"
 
 when "8"
 
-  DeepConnect::MESSAGE_DISPLAY = true
+  DeepConnect::Conf.MESSAGE_DISPLAY = true
   
   class Foo
     def foo(i)

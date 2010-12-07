@@ -419,8 +419,9 @@ module DeepConnect
     def send(*opts)
       DC.Raise IllegalReference, @id, opts.first
     end
-    alias __send__ send
-    alias __public_send__ send
+# Ruby has warned from version 1.9.2.
+#    alias __send__ send
+#    alias __public_send__ send
   end
 end
 

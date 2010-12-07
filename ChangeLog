@@ -1,3 +1,8 @@
+Tue Dec  7 13:48:26 2010  Keiju Ishitsuka  <keiju@ishitsuka.com>
+
+	* deep-space.rb: Ruby1.9.2から__send__を再定義するとワーニングが出
+	  るようになったことに対して対処した.
+
 Sat Nov 27 01:23:34 2010  Keiju Ishitsuka  <keiju@ishitsuka.com>
 
 	* organizer.rb: deepspace::Const機能追加

@@ -1,3 +1,8 @@
+Wed Dec  8 16:59:10 2010  Keiju Ishitsuka  <keiju@ishitsuka.com>
+
+	* reference.rb: Referenceから, BaseReference, Referenceに分離,
+	  ModuleReference作成
+
 Tue Dec  7 13:48:26 2010  Keiju Ishitsuka  <keiju@ishitsuka.com>
 
 	* deep-space.rb: Ruby1.9.2から__send__を再定義するとワーニングが出

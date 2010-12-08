@@ -683,6 +683,14 @@ when "35.2"
   ref = deepspace::Foo
   p ref
 
+when "36"
+  ref = deepspace::Rational
+  p ref
+
+when "36.1"
+  rObject = deepspace::Object
+  p rObject.new
+
 end
 
 sleep 2

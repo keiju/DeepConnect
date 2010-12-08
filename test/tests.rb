@@ -30,6 +30,7 @@ dc.export("TEST3", Array)
 dc.export("TEST22", Object.new)
 dc.export("TEST4", [["foo"], ["bar"], ["baz"]])
 dc.export(:TEST35, [["foo"], ["bar"], ["baz"]])
+dc.export(:TEST36, Rational)
 
 case ARGV[0]
 when "5", "S2"

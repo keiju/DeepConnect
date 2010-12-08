@@ -12,7 +12,7 @@
 require "deep-connect/class-spec-space"
 
 module DeepConnect
-  class Reference
+  module BaseReference
 
     preserved = [
       :__id__, :object_id, :__send__, :public_send, :respond_to?, :send,
@@ -27,9 +27,9 @@ module DeepConnect
     # session ローカルなプロキシを生成
     #	[クラス名, 値]
     #	[クラス名, ローカルSESSION, 値]
-    def Reference.serialize(deep_space, value, spec = nil)
+    def BaseReference.serialize(deep_space, value, spec = nil)
       if spec
-	return Reference.serialize_with_spec(deep_space, value, spec)
+	return BaseReference.serialize_with_spec(deep_space, value, spec)
       end
 
       if value.__deep_connect_reference?
@@ -47,6 +47,10 @@ module DeepConnect
 	case value
 	when *Organizer::immutable_classes
 	  [value.__deep_connect_real_class, value.__deep_connect_real_class.name, value]
+	when Module
+	  object_id = deep_space.set_root(value)
+	  csid = deep_space.my_csid_of(value)
+	  [ModuleReference,  csid, object_id]
 	else
 	  object_id = deep_space.set_root(value)
 	  csid = deep_space.my_csid_of(value)
@@ -55,7 +59,7 @@ module DeepConnect
       end
     end
 
-    def Reference.serialize_with_spec(deep_space, value, spec)
+    def BaseReference.serialize_with_spec(deep_space, value, spec)
       if value.__deep_connect_reference?
 	if deep_space == value.deep_space
 	  [value.__deep_connect_real_class, value.csid, value.peer_id, :PEER_OBJECT]
@@ -72,7 +76,7 @@ module DeepConnect
       else 
 	case spec
 	when MethodSpec::DefaultParamSpec
-	  Reference.serialize(deep_space, value)
+	  BaseReference.serialize(deep_space, value)
 	when MethodSpec::RefParamSpec
 	  object_id = deep_space.set_root(value)
 	  csid = deep_space.my_csid_of(value)
@@ -89,7 +93,7 @@ module DeepConnect
       end
     end
 
-    def Reference.serialize_val(deep_space, value, spec)
+    def BaseReference.serialize_val(deep_space, value, spec)
       case value
       when *Organizer::immutable_classes
 	[value.__deep_connect_real_class, value.__deep_connect_real_class.name, value]
@@ -99,8 +103,8 @@ module DeepConnect
       end
     end
     
-    def Reference.materialize(deep_space, type, csid, object_id, uuid=nil)
-      if type == Reference
+    def BaseReference.materialize(deep_space, type, csid, object_id, uuid=nil)
+      if type == Reference  || type == ModuleReference
 	if uuid
 	  if uuid == :PEER_OBJECT
 	    deep_space.root(object_id)
@@ -110,23 +114,21 @@ module DeepConnect
 	    end
 	    peer_deep_space = deep_space.organizer.deep_space(uuid)
 	    peer_deep_space.register_root_to_peer(object_id)
-	    type.new(peer_deep_space, csid, object_id)
+	    type.create(peer_deep_space, csid, object_id)
 	  end
 	else
-	    type.new(deep_space, csid, object_id)
+	    type.create(deep_space, csid, object_id)
 	end
+      elsif type == :VAL
+	materialize_val(deep_space, type, 
+			csid, object_id[0], object_id[1])
       else
-	if type == :VAL
-	  materialize_val(deep_space, type, 
-			  csid, object_id[0], object_id[1])
-	else
-	  # 即値
-	  object_id
-	end
+	# 即値
+	object_id
       end
     end
 
-    def Reference.materialize_val(deep_space, type, csid, klass, value)
+    def BaseReference.materialize_val(deep_space, type, csid, klass, value)
       klass.deep_connect_materialize_val(deep_space, value)
     end
 
@@ -135,7 +137,7 @@ module DeepConnect
 #       Reference.new(session, o.id)
 #     end
 
-    def Reference.new(deep_space, csid, peer_id)
+    def BaseReference.new(deep_space, csid, peer_id)
       if r = deep_space.import_reference(peer_id)
 	return r
       end
@@ -144,11 +146,12 @@ module DeepConnect
       r
     end
     
-    def initialize(deep_space, csid, peer_id)
+    def init_ref(deep_space, csid, peer_id)
       @deep_space = deep_space
       @csid = csid
       @peer_id = peer_id
     end
+    alias initialize init_ref
     
     attr_reader :deep_space
     alias deepspace deep_space
@@ -397,6 +400,59 @@ module DeepConnect
       @deep_space.session.send_to(self, :deep_connect_deep_copy)
     end
     alias dc_deep_copy deep_connect_deep_copy
+  end
+
+  class Reference
+    include BaseReference
+
+    extend SingleForwardable
+    def_delegator BaseReference, :serialize
+    def_delegator BaseReference, :serialize_with_spec
+    def_delegator BaseReference, :serialize_val
+    def_delegator BaseReference, :materialize
+    def_delegator BaseReference, :materialize_val
+
+    def self.create(deep_space, csid, peer_id)
+      if r = deep_space.import_reference(peer_id)
+	return r
+      end
+      r = new(deep_space, csid, peer_id)
+      deep_space.register_import_reference(r)
+      r
+    end
+  end
+
+  module ModuleReference
+    include BaseReference
+
+    def self.create(*opts)
+      m = Module.new
+      m.extend self
+      m.init_ref(*opts)
+      m
+    end
+
+    def inspect(force = false)
+      if !force && /deep-connect/ =~ caller(1).first
+	unless /deep-connect\/test/ =~ caller(1).first
+	  return sprintf("<DC::MRef: deep_space=%s csid=%s id=%x>", 
+		@deep_space.to_s, 
+		@csid, 
+		@peer_id)
+	end
+      end
+
+      if Conf.DEBUG_REFERENCE
+	sprintf("<DC::MRef[deep_space=%s csid=%s id=%x]: %s>", 
+		@deep_space.to_s, 
+		@csid, 
+		@peer_id,
+		to_s) 
+      else
+	sprintf("<DC::MRef: %s>", to_s(true)) 
+      end
+    end
+
   end
 end
 

@@ -432,6 +432,10 @@ module DeepConnect
       m
     end
 
+    def const_missing(const)
+      @deep_space.session.send_to(self, :const_get, [const])
+    end
+
     def inspect(force = false)
       if !force && /deep-connect/ =~ caller(1).first
 	unless /deep-connect\/test/ =~ caller(1).first

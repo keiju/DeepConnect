@@ -1,3 +1,7 @@
+Wed Dec  8 22:48:18 2010  Keiju Ishitsuka  <keiju@ishitsuka.com>
+
+	* reference.rb: クラスリファレンスに対する定数取り出しを可能にした.
+
 Wed Dec  8 16:59:10 2010  Keiju Ishitsuka  <keiju@ishitsuka.com>
 
 	* reference.rb: Referenceから, BaseReference, Referenceに分離,

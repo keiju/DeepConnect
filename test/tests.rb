@@ -32,6 +32,14 @@ dc.export("TEST4", [["foo"], ["bar"], ["baz"]])
 dc.export(:TEST35, [["foo"], ["bar"], ["baz"]])
 dc.export(:TEST36, Rational)
 
+class XCONST
+  FOO = 1
+  class Bar
+    Baz = 2
+  end
+end
+
+
 case ARGV[0]
 when "5", "S2"
   session = dc.open_deep_space("localhost", 65533)

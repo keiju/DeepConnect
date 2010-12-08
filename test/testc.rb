@@ -691,6 +691,22 @@ when "36.1"
   rObject = deepspace::Object
   p rObject.new
 
+when "37"
+  ref = deepspace::XCONST
+  p ref
+
+when "37.1"
+  ref = deepspace::XCONST::FOO
+  p ref
+
+when "37.2"
+  ref = deepspace::XCONST::Bar
+  p ref
+
+when "37.3"
+  ref = deepspace::XCONST::Bar::Baz
+  p ref
+  
 end
 
 sleep 2

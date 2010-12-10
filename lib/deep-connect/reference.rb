@@ -425,10 +425,14 @@ module DeepConnect
   module ModuleReference
     include BaseReference
 
-    def self.create(*opts)
+    def self.create(deep_space, csid, peer_id)
+      if m = deep_space.import_reference(peer_id)
+	return m
+      end
       m = Module.new
       m.extend self
-      m.init_ref(*opts)
+      m.init_ref(deep_space, csid, peer_id)
+      deep_space.register_import_reference(m)
       m
     end
 

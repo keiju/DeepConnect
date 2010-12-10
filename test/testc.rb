@@ -706,7 +706,16 @@ when "37.2"
 when "37.3"
   ref = deepspace::XCONST::Bar::Baz
   p ref
-  
+
+when "37.4"
+  ref1 = deepspace::XCONST::Bar
+  p ref1
+  ref2 = deepspace::XCONST::Bar
+  p ref2
+  p ref1.equal?(ref2)
+  p ref1.object_id
+  p ref2.object_id
+
 end
 
 sleep 2

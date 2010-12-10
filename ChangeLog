@@ -1,3 +1,8 @@
+Fri Dec 10 20:42:16 2010  Keiju Ishitsuka  <keiju@ishitsuka.com>
+
+	* reference.rb: ModuleReferenceのインスタンスをReferneceのサブクラ
+	  スにした.
+
 Fri Dec 10 15:11:39 2010  Keiju Ishitsuka  <keiju@ishitsuka.com>
 
 	* reference.rb: ModuleReferenceの同一性がくずれていた.

@@ -689,7 +689,9 @@ when "36"
 
 when "36.1"
   rObject = deepspace::Object
-  p rObject.new
+  r = rObject.new
+  p r
+  puts r.inspect(true)
 
 when "37"
   ref = deepspace::XCONST

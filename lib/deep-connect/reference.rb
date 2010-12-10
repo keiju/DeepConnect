@@ -176,7 +176,8 @@ module DeepConnect
 # 	return self.dc_dup.send(method)
 #       end
       begin
-	if iterator?
+#	if iterator?
+	if block.nil?
 	  @deep_space.session.send_to(self, method, args, &block)
 	else
 	  @deep_space.session.send_to(self, method, args)
@@ -402,15 +403,15 @@ module DeepConnect
     alias dc_deep_copy deep_connect_deep_copy
   end
 
-  class Reference
+  class Reference<BasicObject
     include BaseReference
 
-    extend SingleForwardable
-    def_delegator BaseReference, :serialize
-    def_delegator BaseReference, :serialize_with_spec
-    def_delegator BaseReference, :serialize_val
-    def_delegator BaseReference, :materialize
-    def_delegator BaseReference, :materialize_val
+    extend ::SingleForwardable
+    def_single_delegator BaseReference, :serialize
+    def_single_delegator BaseReference, :serialize_with_spec
+    def_single_delegator BaseReference, :serialize_val
+    def_single_delegator BaseReference, :materialize
+    def_single_delegator BaseReference, :materialize_val
 
     def self.create(deep_space, csid, peer_id)
       if r = deep_space.import_reference(peer_id)
@@ -429,11 +430,16 @@ module DeepConnect
       if m = deep_space.import_reference(peer_id)
 	return m
       end
-      m = Module.new
+      m = Class.new(Reference)
       m.extend self
       m.init_ref(deep_space, csid, peer_id)
       deep_space.register_import_reference(m)
+#      m.instance_eval{undef :new}
       m
+    end
+
+    def new(*args)
+      @deep_space.session.send_to(self, :new, *args)
     end
 
     def const_missing(const)

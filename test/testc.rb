@@ -11,7 +11,7 @@
 #   
 #
 
-$DEBUG = 1
+#$DEBUG = 1
 require "tracer"
 
 require "deep-connect"
@@ -115,6 +115,8 @@ when "4.4"
 
 
 when "5"
+  # test/tests2.rb を立ち上げ
+  # test/tests.rb 5 で立ち上げておく
   r = deepspace.get_service("TEST.S2")
 #  sleep 5
   p r
@@ -122,8 +124,9 @@ when "5"
 
 when "6"
   a = deepspace.get_service("TEST3")
+  p a
   1000.times do
-    a.new(10)
+    p a.new(10)
   end
 
   ObjectSpace.garbage_collect
@@ -135,24 +138,30 @@ when "6"
 when "6.2"
   a = deepspace.get_service("TEST.S2ARRAY")
   10.times do
-    a.new(10)
+    p a.new(10)
   end
 
   ObjectSpace.garbage_collect
   puts "Sleep IN"
 
 when "7"
+  # test/tests.rb 7 で立ち上げておく
+
   foo = deepspace.get_service("TEST7")
   puts "TEST7: foo: #{foo.inspect}"
   ret = foo.foo(["a", "b"])
   puts "TEST7: #{ret.inspect}"
 
 when "7.1"
+  # test/tests.rb 7.1 で立ち上げておく
+
   foo = deepspace.get_service("TEST7")
   puts "TEST7.1a: #{foo.foo(["a", [["b"]]]).inspect}"
   puts "TEST7.1b: #{foo.bar(["a", ["b"]]).inspect}"
 
 when "7.2"
+  # test/tests.rb 7.2 で立ち上げておく
+
   foo = deepspace.get_service("TEST7")
   puts "TEST7.1a: #{foo.foo("aaaa").inspect}"
   puts "TEST7.1b: #{foo.foo("aaaa").peer_inspect}"
@@ -316,6 +325,7 @@ when "8"
 when "9"
 
   a = deepspace.import("Array")
+  p a
   b = a - [1,2]
   p b.peer_inspect
 
@@ -324,6 +334,7 @@ when "9.1"
   DeepConnect::MESSAGE_DISPLAY = true
 
   r = deepspace.import("regexp")
+  p r
   p r.peer_inspect
   p r.methods
   p r =~ "foo"

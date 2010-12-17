@@ -172,14 +172,13 @@ module DeepConnect
 #    TO_METHODS = [:to_ary, :to_str, :to_int, :to_regexp, :to_splat]
     
     def method_missing(method, *args, &block)
-      $stdout.puts "SEND MESSAGE: #{self.inspect} #{method.id2name}" if ::DeepConnect::Conf.DISPLAY_MESSAGE_TRACE
+      puts "SEND MESSAGE: #{self.inspect} #{method.id2name}" if Conf.DISPLAY_MESSAGE_TRACE
 
 #       if TO_METHODS.include?(method)
 # 	return self.dc_dup.send(method)
 #       end
       begin
-#	if iterator?
-	if block.nil?
+	if iterator?
 	  @deep_space.session.send_to(self, method, args, &block)
 	else
 	  @deep_space.session.send_to(self, method, args)
@@ -344,10 +343,10 @@ module DeepConnect
 #     end
 
     def to_s(force = false)
-      if !force && /deep-connect/ =~ ::Kernel.caller(1).first
-	unless /deep-connect\/test/ =~ ::Kernel.caller(1).first
-	  return ::Kernel.sprintf("<%s: r%x>", 
-			 class_name,
+      if !force && /deep-connect/ =~ caller(1).first
+	unless /deep-connect\/test/ =~ caller(1).first
+	  return sprintf("<%s: r%x>", 
+			 self.class.name,
 			 @peer_id)
 	end
       end
@@ -361,9 +360,9 @@ module DeepConnect
 
     def inspect(force = false)
       class_name = self.class.name
-      if !force && /deep-connect/ =~ ::Kernel.caller(1).first
-	unless /deep-connect\/test/ =~ ::Kernel.caller(1).first
-	  return ::Kernel.sprintf("<%s deep_space=%s csid=%s id=%x>", 
+      if !force && /deep-connect/ =~ caller(1).first
+	unless /deep-connect\/test/ =~ caller(1).first
+	  return sprintf("<%s deep_space=%s csid=%s id=%x>", 
 			 class_name,
 			 @deep_space.to_s, 
 			 @csid, 
@@ -372,14 +371,14 @@ module DeepConnect
       end
 
       if Conf.DEBUG_REFERENCE
-	::Kernel.sprintf("<%s[deep_space=%s csid=%s id=%x]: %s>", 
+	sprintf("<%s[deep_space=%s csid=%s id=%x]: %s>", 
 		class_name,
 		@deep_space.to_s, 
 		@csid, 
 		@peer_id,
 		to_s) 
       else
-	::Kernel.sprintf("<%s: %s>", class_name, to_s(true)) 
+	sprintf("<%s: %s>", class_name, to_s(true)) 
       end
     end
 
@@ -387,7 +386,7 @@ module DeepConnect
       begin
 	@deep_space.session.send_to(self, :inspect)
       rescue SessionServiceStopped
-	::Kernel.sprintf("<%s[deep_space=%s csid=%s id=%x]: %s>", 
+	sprintf("<%s[deep_space=%s csid=%s id=%x]: %s>", 
 		self.class.name, 
 		@deep_space.to_s, 
 		@csid, 
@@ -471,9 +470,9 @@ module DeepConnect
     end
 
     def inspect(force = false)
-      if !force && /deep-connect/ =~ ::Kernel.caller(1).first
-	unless /deep-connect\/test/ =~ ::Kernel.caller(1).first
-	  return ::Kernel.sprintf("<%s: deep_space=%s csid=%s id=%x>", 
+      if !force && /deep-connect/ =~ caller(1).first
+	unless /deep-connect\/test/ =~ caller(1).first
+	  return sprintf("<%s: deep_space=%s csid=%s id=%x>", 
 			 name, 
 			 @deep_space.to_s, 
 			 @csid, 
@@ -482,13 +481,13 @@ module DeepConnect
       end
 
       if Conf.DEBUG_REFERENCE
-	::Kernel.sprintf("<DC::MRef[deep_space=%s csid=%s id=%x]: %s>", 
+	sprintf("<DC::MRef[deep_space=%s csid=%s id=%x]: %s>", 
 		@deep_space.to_s, 
 		@csid, 
 		@peer_id,
 		to_s) 
       else
-	::Kernel.sprintf("<%s>", name) 
+	sprintf("<%s>", name) 
       end
     end
 
@@ -517,7 +516,7 @@ module DeepConnect
     end
 
      def new(*args)
-       @deep_space.session.send_to(self, :new, *args)
+       @deep_space.session.send_to(self, :new, args)
      end
   end
 end

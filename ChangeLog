@@ -1,3 +1,8 @@
+Sat Dec 18 00:03:44 2010  Keiju Ishitsuka  <keiju@ishitsuka.com>
+
+	* reference.rb: BaseReferenceでKernelをincludeするようにした. 
+	* reference.rb: ClassReference#newでsend_toの引数が間違っていた.
+
 Fri Dec 17 20:42:05 2010  Keiju Ishitsuka  <keiju@ishitsuka.com>
 
 	* accepter.rb, port.rb, session.rb: eventの受信後の処理をスレッド化

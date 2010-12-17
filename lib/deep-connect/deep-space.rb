@@ -95,6 +95,38 @@ module DeepConnect
     alias get_mq import_mq
 
     #
+    # class reference feature
+    #
+    def class_reference(peer_id)
+      return nil unless peer_id
+	
+      if klass = import_reference(peer_id)
+	return klass 
+      end
+
+      attr = @session.get_module_attr(peer_id)
+      name = attr.shift
+      csid = attr.shift
+      rsuperclass = class_reference(attr.shift)
+      rmodules = attr.collect{|id| module_reference(id)}
+      ClassReference.create(self, name, csid, peer_id, rsuperclass, rmodules)
+    end
+
+    def module_reference(peer_id)
+      return nil unless peer_id
+
+      if mod = import_reference(peer_id)
+	return mod
+      end
+
+      attr = @session.get_module_attr(peer_id)	
+      name = attr.shift
+      csid = attr.shift
+      rmodules = attr.collect{|id| module_reference(id)}
+      ModuleReference.create(self, name, csid, peer_id, rmodules)
+    end
+
+    #
     # class spec feature
     #
     def init_class_spec_feature
@@ -408,7 +440,7 @@ module DeepConnect
     def register_root_to_peer(object_id)
       # do nothing
     end
-
+    
   end
 
   class IllegalObject

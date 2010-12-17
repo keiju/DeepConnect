@@ -33,18 +33,20 @@ module DeepConnect
 	  Thread.start do
 	    port = Port.new(sock)
 	    begin
-	      unless (ev = port.import).kind_of?(Event::InitSessionEvent)
-		puts "WARN: 接続初期化エラー: [#{port.peeraddr}]"
-	      end
-	      begin
-		@organizer.connect_deep_space_with_port port, ev.local_id
-	      rescue ConnectCancel
-		puts "INFO: クライアント(#{ev.local_id}からの接続を拒否しました."
-	      rescue ConnectionRefused
-		puts "WARN: クライアント(#{ev.local_id}への接続が拒否されました"
-	      rescue ProtocolError, IOError
-		puts "WARN: 接続初期化エラー: [#{port.peeraddr}]"
+	      port.import do |ev|
+		unless ev.kind_of?(Event::InitSessionEvent)
+		  puts "WARN: 接続初期化エラー: [#{port.peeraddr}]"
+		end
+		begin
+		  @organizer.connect_deep_space_with_port port, ev.local_id
+		rescue ConnectCancel
+		  puts "INFO: クライアント(#{ev.local_id}からの接続を拒否しました."
+		rescue ConnectionRefused
+		  puts "WARN: クライアント(#{ev.local_id}への接続が拒否されました"
+		rescue ProtocolError, IOError
+		  puts "WARN: 接続初期化エラー: [#{port.peeraddr}]"
 
+		end
 	      end
 	    rescue EOFError
 	      puts "WARN: 接続初期化中に[#{port.peeraddr}]との接続が切れました"

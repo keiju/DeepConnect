@@ -12,6 +12,7 @@
 
 $DEBUG = 1
 require "tracer"
+require "irb"
 
 require "deep-connect"
 
@@ -19,6 +20,9 @@ Thread.abort_on_exception=true
 STDOUT.sync
 
 #Tracer.on
-$org = DeepConnect.start(19998)
-$session = $org.open_session("localhost", 19999)
+$dc = DeepConnect.start(19998)
+$deep_space = $dc.open_deep_space("localhost", 65535)
+
+IRB.start
+
 

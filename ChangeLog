@@ -1,3 +1,10 @@
+Fri Dec 17 20:42:05 2010  Keiju Ishitsuka  <keiju@ishitsuka.com>
+
+	* accepter.rb, port.rb, session.rb: eventの受信後の処理をスレッド化
+	* deep-space.rb, reference.rb, session.rb: リファレンスオブジェク
+	  トのクラスを実クラスのリファレンスにした
+	* event.rb: inspectを変更
+
 Fri Dec 10 20:42:16 2010  Keiju Ishitsuka  <keiju@ishitsuka.com>
 
 	* reference.rb: ModuleReferenceのインスタンスをReferneceのサブクラ

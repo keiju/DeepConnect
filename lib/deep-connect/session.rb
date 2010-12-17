@@ -54,7 +54,14 @@ module DeepConnect
       @import_thread = Thread.start {
 	loop do
 	  begin
-	    ev = @port.import
+	    @port.import do |ev|
+	      if @status == :SERVICING
+		receive(ev)
+	      else
+		puts "INFO: service is stoped, imported event abandoned(#{ev.inspect})" 
+	      end
+	    end
+	      
 	    @last_keep_alive = @organizer.tick
 	  rescue EOFError, DC::DisconnectClient
 	    # EOFError: クライアントが閉じていた場合
@@ -65,11 +72,6 @@ module DeepConnect
 	    Thread.stop
 	  rescue DC::ProtocolError
 	    # 何らかの障害のためにプロトコルが正常じゃなくなった
-	  end
-	  if @status == :SERVICING
-	    receive(ev)
-	  else
-	    puts "INFO: service is stoped, imported event abandoned(#{ev.inspect})" 
 	  end
 	end
       }
@@ -314,6 +316,28 @@ module DeepConnect
 #p specs
     end
     Organizer.def_interface(self, :recv_class_specs_impl)
+
+    # return: mod.name, csid, superclass, included_modules
+    def get_module_attr(mod_id)
+      parents = send_peer_session(:get_module_attr, mod_id)
+      Marshal.load(parents)
+    end
+
+    def get_module_attr_impl(mod_id)
+      begin
+	mod = ObjectSpace._id2ref(mod_id)
+      rescue
+	p $!
+      end
+      if mod.kind_of?(Class)
+	Marshal.dump([mod.name, @deep_space.my_csid_of(mod), 
+		       (mod.superclass ? mod.superclass.object_id : nil), 
+		       *mod.included_modules.collect{|m| (m ? m.object_id: nil)}])
+      else
+	Marshal.dump([mod.name, @deep_space.my_csid_of(mod), 
+		       *mod.included_modules.collect{|m| (m ? m.object_id: nil)}])
+      end
+    end
 
 
 #     def send_class_specs(cspecs)

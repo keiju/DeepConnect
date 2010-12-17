@@ -31,11 +31,12 @@ when "1"
 
 when "2"
   ref = deepspace.import("TEST1")
-puts "A"
   p ref
   p ref[0]
   p ref.push 3
   puts ref.peer_inspect
+  p ref.class
+  p ref.class.ancestors
 
 when "2.1"
   ref = deepspace.import("TEST1")
@@ -52,9 +53,12 @@ when "3"
 
 when "4"
   r = deepspace.get_service("TEST1")
+p r
   r.each{|e| puts "TEST1: #{e}"
     sleep 5
   }
+  puts "END"
+
 when "4.0.1"
   r = deepspace.get_service("TEST4")
   r.each{|e| puts "TEST1: #{e}"
@@ -689,8 +693,28 @@ when "36"
 
 when "36.1"
   rObject = deepspace::Object
+  p rObject
   r = rObject.new
   p r
+
+
+when "36.2"
+  rObject = deepspace::Object
+  p rObject
+  r = rObject.new
+  p r
+  puts r.inspect(true)
+  DeepConnect::RO = rObject
+  p rObject
+  p r
+  p rObject.ancestors
+
+when "36.3"
+  rArray = deepspace::Array
+  p rArray
+  r = rArray.new
+  p r
+  r.push 1
   puts r.inspect(true)
 
 when "37"
@@ -717,6 +741,40 @@ when "37.4"
   p ref1.equal?(ref2)
   p ref1.object_id
   p ref2.object_id
+
+when "37.5"
+  ref = deepspace::Object::Foo
+  p ref
+
+when "37.6"
+  ref = deepspace::Object.foo
+  p ref
+
+when "37.7"
+  ref = deepspace::Object.new
+  p ref.foo
+
+when "37.8"
+  ref = deepspace::Object.new
+  begin
+    ref.foo
+  rescue
+    p $!
+    p $@
+  end
+
+when "38"
+  rObject = deepspace::Object
+  p rObject
+  puts rObject.to_s
+
+when "38.1"
+  rObject = deepspace::Object
+  r = rObject.new
+  puts "INSPECT: #{r.inspect}"
+  puts "INSPECT(true): #{r.inspect(true)}"
+  puts "TO_S: #{r.to_s}"
+  puts "TO_S(true): #{r.to_s(true)}"
 
 end
 

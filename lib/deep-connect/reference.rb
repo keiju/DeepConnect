@@ -13,6 +13,7 @@ require "deep-connect/class-spec-space"
 
 module DeepConnect
   module BaseReference
+    include Kernel
 
     preserved = [
       :__id__, :object_id, :__send__, :public_send, :respond_to?, :send,
@@ -34,27 +35,31 @@ module DeepConnect
 
       if value.__deep_connect_reference?
 	if deep_space == value.deep_space
-	  [value.__deep_connect_real_class, value.csid, value.peer_id, :PEER_OBJECT]
+	  [value.__deep_connect_real_class.object_id, value.csid, value.peer_id, :PEER_OBJECT]
 	else
 	  uuid = value.deep_space.peer_uuid.dup
 	  if uuid[0] == "127.0.0.1" || uuid[0] == "::ffff:127.0.0.1"
 	    uuid[0] = :SAME_UUIDADDR
 	  end
 	    
-	  [value.__deep_connect_real_class, value.csid, value.peer_id, uuid]
+	  [value.__deep_connect_real_class.object_id, value.csid, value.peer_id, uuid]
 	end
       else
 	case value
 	when *Organizer::immutable_classes
-	  [value.__deep_connect_real_class, value.__deep_connect_real_class.name, value]
+	  [:IVAL, value.__deep_connect_real_class.name, value]
+	when Class
+	  object_id = deep_space.set_root(value)
+	  csid = deep_space.my_csid_of(value)
+	  [:CLS,  csid, object_id]
 	when Module
 	  object_id = deep_space.set_root(value)
 	  csid = deep_space.my_csid_of(value)
-	  [ModuleReference,  csid, object_id]
+	  [:MOD,  csid, object_id]
 	else
 	  object_id = deep_space.set_root(value)
 	  csid = deep_space.my_csid_of(value)
-	  [Reference,  csid, object_id]
+	  [value.class.object_id,  csid, object_id]
 	end
       end
     end
@@ -62,17 +67,17 @@ module DeepConnect
     def BaseReference.serialize_with_spec(deep_space, value, spec)
       if value.__deep_connect_reference?
 	if deep_space == value.deep_space
-	  [value.__deep_connect_real_class, value.csid, value.peer_id, :PEER_OBJECT]
+	  [value.__deep_connect_real_class.object_id, value.csid, value.peer_id, :PEER_OBJECT]
 	else
 	  uuid = value.deep_space.peer_uuid.dup
 	  if uuid[0] == "127.0.0.1" || uuid[0] == "::ffff:127.0.0.1"
 	    uuid[0] = :SAME_UUIDADDR
 	  end
 	    
-	  [value.__deep_connect_real_class, value.csid, value.peer_id, uuid]
+	  [value.__deep_connect_real_class.object_id, value.csid, value.peer_id, uuid]
 	end
       elsif Organizer::absolute_immutable_classes.include?(value.class)
-	[value.__deep_connect_real_class, value.__deep_connect_real_class.name, value]
+	[:IVAL, value.__deep_connect_real_class.name, value]
       else 
 	case spec
 	when MethodSpec::DefaultParamSpec
@@ -80,12 +85,12 @@ module DeepConnect
 	when MethodSpec::RefParamSpec
 	  object_id = deep_space.set_root(value)
 	  csid = deep_space.my_csid_of(value)
-	  [Reference,  csid, object_id]
+	  [value.class.object_id,  csid, object_id]
 	when MethodSpec::ValParamSpec
 	  serialize_val(deep_space, value, spec)
 	when MethodSpec::DValParamSpec
 	  # 第2引数意味なし
-	  [value.__deep_connect_real_class, value.__deep_connect_real_class.name, value]
+	  [:IVAL, value.__deep_connect_real_class.name, value]
 	else
 	  raise ArgumentError,
 	    "argument is only specified(#{MethodSpec::ARG_SPEC.join(', ')})(#{spec})"
@@ -96,15 +101,29 @@ module DeepConnect
     def BaseReference.serialize_val(deep_space, value, spec)
       case value
       when *Organizer::immutable_classes
-	[value.__deep_connect_real_class, value.__deep_connect_real_class.name, value]
+	[:IVAL, value.__deep_connect_real_class.name, value]
       else 
 	[:VAL, value.__deep_connect_real_class.name, 
 	  [value.__deep_connect_real_class, value.deep_connect_serialize_val(deep_space)]]
       end
     end
     
-    def BaseReference.materialize(deep_space, type, csid, object_id, uuid=nil)
-      if type == Reference  || type == ModuleReference
+    def BaseReference.materialize(deep_space, klass_id, csid, object_id, uuid=nil)
+      case klass_id
+      when :VAL
+	materialize_val(deep_space, klass_id, 
+			csid, object_id[0], object_id[1])
+      when :IVAL
+	# 即値
+	object_id
+
+      when :MOD
+	deep_space.module_reference(object_id)
+
+      when :CLS
+	deep_space.class_reference(object_id)
+
+      else
 	if uuid
 	  if uuid == :PEER_OBJECT
 	    deep_space.root(object_id)
@@ -114,17 +133,14 @@ module DeepConnect
 	    end
 	    peer_deep_space = deep_space.organizer.deep_space(uuid)
 	    peer_deep_space.register_root_to_peer(object_id)
-	    type.create(peer_deep_space, csid, object_id)
+
+	    klass = deep_space.class_reference(klass_id)
+	    klass.create(peer_deep_space, csid, object_id)
 	  end
 	else
-	    type.create(deep_space, csid, object_id)
+	    klass = deep_space.class_reference(klass_id)
+	    klass.create(deep_space, csid, object_id)
 	end
-      elsif type == :VAL
-	materialize_val(deep_space, type, 
-			csid, object_id[0], object_id[1])
-      else
-	# 即値
-	object_id
       end
     end
 
@@ -132,20 +148,6 @@ module DeepConnect
       klass.deep_connect_materialize_val(deep_space, value)
     end
 
-#     def Reference.register(deep_space, o)
-#       deep_space.peer.set_root(o)
-#       Reference.new(session, o.id)
-#     end
-
-    def BaseReference.new(deep_space, csid, peer_id)
-      if r = deep_space.import_reference(peer_id)
-	return r
-      end
-      r = super
-      deep_space.register_import_reference(r)
-      r
-    end
-    
     def init_ref(deep_space, csid, peer_id)
       @deep_space = deep_space
       @csid = csid
@@ -170,7 +172,7 @@ module DeepConnect
 #    TO_METHODS = [:to_ary, :to_str, :to_int, :to_regexp, :to_splat]
     
     def method_missing(method, *args, &block)
-      puts "SEND MESSAGE: #{self.inspect} #{method.id2name}" if Conf.DISPLAY_MESSAGE_TRACE
+      $stdout.puts "SEND MESSAGE: #{self.inspect} #{method.id2name}" if ::DeepConnect::Conf.DISPLAY_MESSAGE_TRACE
 
 #       if TO_METHODS.include?(method)
 # 	return self.dc_dup.send(method)
@@ -342,9 +344,11 @@ module DeepConnect
 #     end
 
     def to_s(force = false)
-      if !force && /deep-connect/ =~ caller(1).first
-	unless /deep-connect\/test/ =~ caller(1).first
-	  return __deep_connect_org_to_s
+      if !force && /deep-connect/ =~ ::Kernel.caller(1).first
+	unless /deep-connect\/test/ =~ ::Kernel.caller(1).first
+	  return ::Kernel.sprintf("<%s: r%x>", 
+			 class_name,
+			 @peer_id)
 	end
       end
 
@@ -356,23 +360,26 @@ module DeepConnect
     end
 
     def inspect(force = false)
-      if !force && /deep-connect/ =~ caller(1).first
-	unless /deep-connect\/test/ =~ caller(1).first
-	  return sprintf("<DC::Ref: deep_space=%s csid=%s id=%x>", 
-		@deep_space.to_s, 
-		@csid, 
-		@peer_id)
+      class_name = self.class.name
+      if !force && /deep-connect/ =~ ::Kernel.caller(1).first
+	unless /deep-connect\/test/ =~ ::Kernel.caller(1).first
+	  return ::Kernel.sprintf("<%s deep_space=%s csid=%s id=%x>", 
+			 class_name,
+			 @deep_space.to_s, 
+			 @csid, 
+			 @peer_id)
 	end
       end
 
       if Conf.DEBUG_REFERENCE
-	sprintf("<DC::Ref[deep_space=%s csid=%s id=%x]: %s>", 
+	::Kernel.sprintf("<%s[deep_space=%s csid=%s id=%x]: %s>", 
+		class_name,
 		@deep_space.to_s, 
 		@csid, 
 		@peer_id,
 		to_s) 
       else
-	sprintf("<DC::Ref: %s>", to_s(true)) 
+	::Kernel.sprintf("<%s: %s>", class_name, to_s(true)) 
       end
     end
 
@@ -380,16 +387,13 @@ module DeepConnect
       begin
 	@deep_space.session.send_to(self, :inspect)
       rescue SessionServiceStopped
-	sprintf("<DC::Ref[deep_space=%s csid=%s id=%x]: %s>", 
+	::Kernel.sprintf("<%s[deep_space=%s csid=%s id=%x]: %s>", 
+		self.class.name, 
 		@deep_space.to_s, 
 		@csid, 
 		@peer_id,
 		"(service stoped)") 
       end
-    end
-
-    def my_inspect
-      __deep_connect_org_inspect
     end
 
     def deep_connect_dup
@@ -417,56 +421,104 @@ module DeepConnect
       if r = deep_space.import_reference(peer_id)
 	return r
       end
-      r = new(deep_space, csid, peer_id)
+      r = allocate
+      r.init_ref(deep_space, csid, peer_id)
       deep_space.register_import_reference(r)
+      r.class = self
       r
     end
+
+    attr_accessor :class
   end
 
   module ModuleReference
     include BaseReference
 
-    def self.create(deep_space, csid, peer_id)
+    def self.create(deep_space, name, csid, peer_id, rmodules=nil)
       if m = deep_space.import_reference(peer_id)
 	return m
       end
-      m = Class.new(Reference)
+      m = Module.new
       m.extend self
+      m.peer_name = name
       m.init_ref(deep_space, csid, peer_id)
       deep_space.register_import_reference(m)
-#      m.instance_eval{undef :new}
+      if rmodules
+	m.module_eval{rmodules.each{|rm| include rm}}
+      end
       m
     end
 
-    def new(*args)
-      @deep_space.session.send_to(self, :new, *args)
+    attr_accessor :peer_name
+
+    def name
+      n = super
+      if n
+	n
+	# class_name = n.sub(/^DeepConnect/, "DC")
+      else
+	class_name = "DeepConnect::r["+@peer_name+"]"
+      end
     end
+
 
     def const_missing(const)
       @deep_space.session.send_to(self, :const_get, [const])
     end
 
+    def to_s(force = false)
+      name
+    end
+
     def inspect(force = false)
-      if !force && /deep-connect/ =~ caller(1).first
-	unless /deep-connect\/test/ =~ caller(1).first
-	  return sprintf("<DC::MRef: deep_space=%s csid=%s id=%x>", 
-		@deep_space.to_s, 
-		@csid, 
-		@peer_id)
+      if !force && /deep-connect/ =~ ::Kernel.caller(1).first
+	unless /deep-connect\/test/ =~ ::Kernel.caller(1).first
+	  return ::Kernel.sprintf("<%s: deep_space=%s csid=%s id=%x>", 
+			 name, 
+			 @deep_space.to_s, 
+			 @csid, 
+			 @peer_id)
 	end
       end
 
       if Conf.DEBUG_REFERENCE
-	sprintf("<DC::MRef[deep_space=%s csid=%s id=%x]: %s>", 
+	::Kernel.sprintf("<DC::MRef[deep_space=%s csid=%s id=%x]: %s>", 
 		@deep_space.to_s, 
 		@csid, 
 		@peer_id,
 		to_s) 
       else
-	sprintf("<DC::MRef: %s>", to_s(true)) 
+	::Kernel.sprintf("<%s>", name) 
       end
     end
 
+  end
+
+  module ClassReference
+    include ModuleReference
+
+    def self.create(deep_space, name, csid, peer_id, rsuper = Reference, rmodules=nil)
+      if m = deep_space.import_reference(peer_id)
+	return m
+      end
+      unless rsuper
+	# BasicObjectの時
+	rsuper = Reference
+      end
+      m = Class.new(rsuper)
+      m.extend self
+      m.peer_name = name
+      m.init_ref(deep_space, csid, peer_id)
+      deep_space.register_import_reference(m)
+      if rmodules
+	m.module_eval{rmodules.each{|rm| include rm}}
+      end
+      m
+    end
+
+     def new(*args)
+       @deep_space.session.send_to(self, :new, *args)
+     end
   end
 end
 

@@ -123,5 +123,3 @@ class Struct
     to_a.collect{|e| DeepConnect::Reference.serialize(deep_space, e)}
   end
 end
-
-

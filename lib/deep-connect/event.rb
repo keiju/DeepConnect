@@ -510,7 +510,7 @@ module DeepConnect
       end
 
       def inspect
-	sprintf "#<#{self.class}, session=#{@session}, seq=#{@seq},  result=#{@result}}>"
+	"#<#{self.class}, session=#{@session}, seq=#{@seq},  result=#{@result}}>"
       end
     end
 

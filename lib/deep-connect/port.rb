@@ -49,7 +49,7 @@ module DeepConnect
 #      bin = read(sz)
       a = Marshal.load(@io)
       begin
-	# ĳĳć, ōŃňů|ůČ??8Ĺī??-ĢĪ.
+	# ここで, ネットワーク通信発生する可能性あり.
 	ev = Event.materialize(@session, a.first, *a)
       rescue
 	p $!, $@
@@ -59,7 +59,7 @@ module DeepConnect
       ev
     end
 
-    def import
+    def import(&block)
 #      puts "IMPORT: start0" 
       sz = read(PACK_N_SIZE).unpack("N").first
       bin = read(sz)
@@ -70,15 +70,29 @@ module DeepConnect
 	p $!, $@
 	raise
       end
-      begin
-	# ここで, ネットワーク通信発生する可能性あり.
-	ev = Event.materialize(@session, a.first, *a)
-      rescue
-	p $!, $@
-	raise
+      if iterator?
+	Thread.start do
+	  begin
+	    # ここで, ネットワーク通信発生する可能性あり.
+	    ev = Event.materialize(@session, a.first, *a)
+	    puts "IMPORT: #{ev.inspect}" if Conf.MESSAGE_DISPLAY
+	    block.call ev
+	  rescue
+	    p $!, $@
+	    raise
+	  end
+	end
+      else
+	begin
+	  # ここで, ネットワーク通信発生する可能性あり.
+	  ev = Event.materialize(@session, a.first, *a)
+	  puts "IMPORT: #{ev.inspect}" if Conf.MESSAGE_DISPLAY
+	  ev
+	rescue
+	  p $!, $@
+	  raise
+	end
       end
-      puts "IMPORT: #{ev.inspect}" if Conf.MESSAGE_DISPLAY
-      ev
     end
 
     def export2(ev)

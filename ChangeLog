@@ -1,3 +1,7 @@
+Sat Dec 18 15:28:02 2010  Keiju Ishitsuka  <keiju@ishitsuka.com>
+
+	* doc/deep-connect.asta: 現状に更新
+
 Sat Dec 18 00:03:44 2010  Keiju Ishitsuka  <keiju@ishitsuka.com>
 
 	* reference.rb: BaseReferenceでKernelをincludeするようにした. 

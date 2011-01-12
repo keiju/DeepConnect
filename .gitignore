@@ -5,6 +5,9 @@
 Snapshot
 Obsolated
 Packages
+/ext-lib
+/lib/fiber-mon.rb
+
 
 
 
